@@ -1103,7 +1103,13 @@ const ChurchApp = {
             { ref: 'Luke 12:34', text: 'For where your treasure is, there will your heart be also.' },
             { ref: 'Romans 12:1', text: 'I appeal to you therefore, brothers, by the mercies of God, to present your bodies as a living sacrifice, holy and acceptable to God.' },
             { ref: 'Proverbs 11:25', text: 'A generous soul will prosper; he who refreshes others will himself be refreshed.' },
-            { ref: 'Hebrews 11:1', text: 'Now faith is the assurance of things hoped for, the conviction of things not seen.' }
+            { ref: 'Hebrews 11:1', text: 'Now faith is the assurance of things hoped for, the conviction of things not seen.' },
+            { ref: 'Ephesians 2:8', text: 'For by grace you have been saved through faith. And this is not your own doing; it is the gift of God.' },
+            { ref: 'John 3:16', text: 'For God so loved the world, that he gave his only Son, that whoever believes in him should not perish but have eternal life.' },
+            { ref: 'Isaiah 40:31', text: 'But they who wait for the Lord shall renew their strength; they shall mount up with wings like eagles; they shall run and not be weary; they shall walk and not faint.' },
+            { ref: 'Philippians 4:13', text: 'I can do all things through him who strengthens me.' },
+            { ref: 'Hebrews 11:6', text: 'And without faith it is impossible to please him, for whoever would draw near to God must believe that he exists and that he rewards those who seek him.' },
+            { ref: '1 Corinthians 13:13', text: 'So now faith, hope, and love abide, these three; but the greatest of these is love.' }
         ];
 
         verseContainer.innerHTML = '';

@@ -31,6 +31,18 @@ const AIEngine = {
         {
             keywords: ['hello', 'hi', 'hey', 'greetings'],
             response: "Hello! I am your **Pastoral Care Assistant**. How can I help you today? You can ask me about service times, giving links, events, volunteering, or submitting a prayer request!"
+        },
+        {
+            keywords: ['grace', 'salvation', 'forgiveness', 'sin', 'repent'],
+            response: "We believe that salvation is by grace through faith, a free gift of God. Forgiveness is always available to those who seek it with a sincere heart. God's grace is sufficient for you!"
+        },
+        {
+            keywords: ['faith', 'trust', 'believe', 'hope'],
+            response: "Faith is the assurance of things hoped for, the conviction of things not seen (Hebrews 11:1). Trust in the Lord with all your heart, and do not lean on your own understanding."
+        },
+        {
+            keywords: ['jesus', 'christ', 'god', 'lord'],
+            response: "Jesus Christ is the center of our community. He is our Savior, Lord, and Shepherd, who guides us in path of righteousness."
         }
     ],
 
@@ -83,7 +95,11 @@ const AIEngine = {
         const atRiskMembers = members
             .filter(m => m.engagement_score < 45)
             .slice(0, 3)
-            .map(m => `${m.first_name} ${m.last_name} (${m.branchName || 'Nairobi HQ'}) - Engagement Score: ${m.engagement_score}%`);
+            .map(m => {
+                const fName = m.firstName || m.first_name || '';
+                const lName = m.lastName || m.last_name || '';
+                return `${fName} ${lName} (${m.branchName || 'Nairobi HQ'}) - Engagement Score: ${m.engagement_score}%`;
+            });
 
         // Summary generation
         const weeklySummaryText = `Weekly Ministry Health Report:
@@ -259,7 +275,10 @@ The AI Care alert system flags **${atRiskMembers.length}** members whose engagem
     }
 };
 
-// Export to window if running in browser
+// Export for browser and Node environments
 if (typeof window !== 'undefined') {
     window.AIEngine = AIEngine;
+}
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = AIEngine;
 }
