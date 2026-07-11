@@ -868,3 +868,192 @@ body {
     border-radius: 12px;
     margin-top: 15px;
 }
+
+/* ==================================================== */
+/* 8. Premium Theme Configurations                     */
+/* ==================================================== */
+
+/* Theme: Glassmorphism Light Mode */
+body.theme-light {
+    --bg-dark: #f8fafc;
+    --panel-dark: rgba(255, 255, 255, 0.7);
+    --border-light: rgba(0, 0, 0, 0.08);
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    
+    background-image: 
+        radial-gradient(at 10% 20%, rgba(99, 102, 241, 0.06) 0px, transparent 50%),
+        radial-gradient(at 90% 80%, rgba(139, 92, 246, 0.04) 0px, transparent 50%);
+}
+
+body.theme-light .sidebar {
+    background: #ffffff;
+    border-right: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+body.theme-light .global-header {
+    background: rgba(248, 250, 252, 0.8);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+body.theme-light .stats-info .value {
+    background: linear-gradient(180deg, #0f172a 0%, #334155 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+body.theme-light .form-control {
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    color: #0f172a;
+}
+
+body.theme-light .select-custom {
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    color: #0f172a;
+}
+
+body.theme-light .financial-table th {
+    background: rgba(0, 0, 0, 0.02);
+    color: #475569;
+}
+
+body.theme-light .financial-table td {
+    color: #1e293b;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+body.theme-light .smartphone {
+    border-color: #cbd5e1;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+}
+
+body.theme-light .mobile-screen {
+    background: #f8fafc;
+}
+
+body.theme-light .mobile-header h3 {
+    color: #0f172a;
+}
+
+body.theme-light .mobile-nav-bar {
+    background: rgba(255, 255, 255, 0.95);
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+body.theme-light .mobile-event-card {
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+body.theme-light .chat-bubble.bot {
+    background: rgba(0, 0, 0, 0.04);
+    color: #1e293b;
+}
+
+body.theme-light .repurposed-card {
+    background: rgba(0, 0, 0, 0.02);
+    border-color: rgba(99, 102, 241, 0.15);
+}
+
+
+/* Theme: Cyber Neon Mode */
+body.theme-cyber {
+    --bg-dark: #02010a;
+    --panel-dark: rgba(10, 3, 20, 0.85);
+    --border-light: rgba(0, 242, 254, 0.2);
+    --text-primary: #00f2fe;
+    --text-secondary: #ff007f;
+    --primary-gradient: linear-gradient(135deg, #00f2fe 0%, #ff007f 100%);
+    --accent-gradient: linear-gradient(135deg, #ff007f 0%, #9d00ff 100%);
+    --accent-gold: #ff007f;
+    --success-green: #39ff14;
+    --danger-red: #ff073a;
+    
+    background-image: 
+        radial-gradient(at 10% 20%, rgba(0, 242, 254, 0.12) 0px, transparent 50%),
+        radial-gradient(at 90% 80%, rgba(255, 0, 127, 0.12) 0px, transparent 50%);
+    text-shadow: 0 0 5px rgba(0, 242, 254, 0.2);
+}
+
+body.theme-cyber .card-glass {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 10px rgba(0, 242, 254, 0.1);
+}
+
+body.theme-cyber .card-glass:hover {
+    border-color: #ff007f;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 0, 127, 0.2);
+}
+
+body.theme-cyber .sidebar {
+    background: #04010f;
+    border-right: 1px solid rgba(0, 242, 254, 0.2);
+}
+
+body.theme-cyber .brand-logo {
+    box-shadow: 0 0 15px #ff007f;
+}
+
+body.theme-cyber .stats-info .value {
+    background: linear-gradient(180deg, #00f2fe 0%, #ff007f 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+body.theme-cyber .form-control {
+    background: #060214;
+    border: 1px solid rgba(0, 242, 254, 0.3);
+    color: #00f2fe;
+}
+
+body.theme-cyber .form-control:focus {
+    border-color: #ff007f;
+    box-shadow: 0 0 8px rgba(255, 0, 127, 0.5);
+}
+
+body.theme-cyber .select-custom {
+    background: #060214;
+    border: 1px solid rgba(0, 242, 254, 0.3);
+    color: #00f2fe;
+}
+
+body.theme-cyber .financial-table th {
+    color: #ff007f;
+    border-bottom: 1px solid rgba(0, 242, 254, 0.2);
+}
+
+body.theme-cyber .financial-table td {
+    color: #d1d5db;
+}
+
+body.theme-cyber .smartphone {
+    border-color: #ff007f;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.8), 0 0 20px rgba(255,0,127,0.3);
+}
+
+body.theme-cyber .mobile-screen {
+    background: #02010a;
+}
+
+body.theme-cyber .mobile-nav-bar {
+    background: #04010f;
+    border-top: 1px solid rgba(0, 242, 254, 0.2);
+}
+
+body.theme-cyber .mobile-tab-btn.active {
+    color: #00f2fe;
+    text-shadow: 0 0 5px rgba(0, 242, 254, 0.8);
+}
+
+body.theme-cyber .chat-bubble.bot {
+    background: rgba(0, 242, 254, 0.05);
+    border: 1px solid rgba(0, 242, 254, 0.2);
+    color: #00f2fe;
+}
+
+body.theme-cyber .chat-bubble.user {
+    background: linear-gradient(135deg, #ff007f 0%, #9d00ff 100%);
+    box-shadow: 0 0 10px rgba(255, 0, 127, 0.4);
+}

@@ -144,6 +144,53 @@ try {
 console.log("");
 
 // ----------------------------------------------------
+// TEST GROUP 6: Bible Trivia Quiz Manager
+// ----------------------------------------------------
+console.log("Test Group 6: Interactive Bible Trivia Quiz Manager");
+try {
+    // Start Quiz
+    const quizStartText = AIEngine.QuizManager.startQuiz();
+    assert(AIEngine.QuizManager.active === true, "Quiz Manager successfully sets active session status.");
+    assert(quizStartText.includes("books are in the Bible"), "Quiz Manager outputs the first trivia question on startup.");
+
+    // Answer Question 1 (Correct: 66)
+    const q2Response = AIEngine.QuizManager.handleAnswer("66");
+    assert(q2Response.includes("Correct"), "Quiz Manager identifies correct numeric answer input.");
+    assert(AIEngine.QuizManager.score === 1, "Quiz Manager increments score for correct answers.");
+
+    // Answer Question 2 (Incorrect)
+    const q3Response = AIEngine.QuizManager.handleAnswer("Matthew"); // Correct is Luke
+    assert(q3Response.includes("Incorrect") && q3Response.includes("Luke"), "Quiz Manager flags incorrect answer and returns correction.");
+
+    // Reset Quiz state for safety
+    AIEngine.QuizManager.active = false;
+} catch (e) {
+    failedTestsCount++;
+    console.error("  ❌ FAIL: Quiz Manager crashed with error:", e);
+}
+console.log("");
+
+// ----------------------------------------------------
+// TEST GROUP 7: Custom Study Plan Compiler
+// ----------------------------------------------------
+console.log("Test Group 7: Custom Theological Study Plan Compiler");
+try {
+    // Generate Study Plan on Grace
+    const gracePlan = AIEngine.StudyPlanManager.generateStudyPlan("grace");
+    assert(gracePlan.includes("Ephesians 2:8") && gracePlan.includes("Titus 2:11"), "Compiles expected scripture chapters for Grace.");
+    assert(gracePlan.includes("5-Day Study Plan: [Grace]"), "Study plan contains expected topic header.");
+
+    // Generate Study Plan on unrecognized topic (fallback)
+    const generalPlan = AIEngine.StudyPlanManager.generateStudyPlan("randomtopic");
+    assert(generalPlan.includes("Psalm 119:105") && generalPlan.includes("Proverbs 3:5"), "Compiles general growth scriptures for unknown topics.");
+    assert(generalPlan.includes("5-Day Study Plan: [General Spiritual Growth]"), "Study plan falls back to General Spiritual Growth topic.");
+} catch (e) {
+    failedTestsCount++;
+    console.error("  ❌ FAIL: Study Plan Compiler crashed with error:", e);
+}
+console.log("");
+
+// ----------------------------------------------------
 // TEST RESULTS SUMMARY
 // ----------------------------------------------------
 console.log("=== TEST EXECUTION COMPLETE ===");

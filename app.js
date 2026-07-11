@@ -55,9 +55,45 @@ const ChurchApp = {
 
     // 4. Initialize Data & Render
     init() {
-        this.generateInitialTransactions();
+        this.loadDB();
+        this.loadTheme();
         this.setupEventHandlers();
         this.renderAll();
+    },
+
+    // Persistence: Save state
+    saveDB() {
+        if (typeof localStorage !== 'undefined') {
+            localStorage.setItem('church2_db', JSON.stringify(this.db));
+        }
+    },
+
+    // Persistence: Load state
+    loadDB() {
+        if (typeof localStorage !== 'undefined') {
+            const saved = localStorage.getItem('church2_db');
+            if (saved) {
+                try {
+                    this.db = JSON.parse(saved);
+                    return;
+                } catch (e) {
+                    console.error("Error parsing saved DB:", e);
+                }
+            }
+        }
+        // Fallback: generate and save
+        this.generateInitialTransactions();
+        this.saveDB();
+    },
+
+    // Theme: Load state
+    loadTheme() {
+        if (typeof localStorage !== 'undefined') {
+            const savedTheme = localStorage.getItem('church2_theme') || 'dark';
+            document.body.className = savedTheme === 'dark' ? '' : 'theme-' + savedTheme;
+            const themeSelect = document.getElementById('interface-theme-select');
+            if (themeSelect) themeSelect.value = savedTheme;
+        }
     },
 
     // Helper: Generate historical transactions over the last 14 days
@@ -98,6 +134,18 @@ const ChurchApp = {
 
     // 5. Setup Action Listeners
     setupEventHandlers() {
+        // Interface Theme Switcher
+        const themeSelectEl = document.getElementById('interface-theme-select');
+        if (themeSelectEl) {
+            themeSelectEl.addEventListener('change', (e) => {
+                const theme = e.target.value;
+                document.body.className = theme === 'dark' ? '' : 'theme-' + theme;
+                if (typeof localStorage !== 'undefined') {
+                    localStorage.setItem('church2_theme', theme);
+                }
+            });
+        }
+
         // Role Selector Change
         document.getElementById('role-simulator-select').addEventListener('change', (e) => {
             this.session.currentRole = e.target.value;
@@ -573,6 +621,7 @@ const ChurchApp = {
             member.spiritualMilestones.push(milestone);
             // Boost engagement score slightly for milestone achievement
             member.engagement_score = Math.min(member.engagement_score + 5, 100);
+            this.saveDB();
             
             // Re-render
             this.viewMemberDetails(member.id);
@@ -607,6 +656,7 @@ const ChurchApp = {
         };
 
         this.db.members.push(newMember);
+        this.saveDB();
         document.getElementById('add-member-form').reset();
         
         // Notification simulation
@@ -691,6 +741,7 @@ const ChurchApp = {
         };
 
         this.db.transactions.unshift(newTx);
+        this.saveDB();
         document.getElementById('record-tx-form').reset();
         
         // Reset defaults
@@ -850,6 +901,7 @@ const ChurchApp = {
         const event = this.db.events.find(e => e.id === eventId);
         if (event) {
             event.volunteersSignedUp = event.volunteersSignedUp.filter(v => v !== volunteerId);
+            this.saveDB();
             this.renderMinistry();
         }
     },
@@ -896,6 +948,7 @@ const ChurchApp = {
             if (!event.volunteersSignedUp.includes(volunteerId)) {
                 event.volunteersSignedUp.push(volunteerId);
             }
+            this.saveDB();
             this.closeModal('ai-matcher-modal');
             this.renderMinistry();
         }
@@ -936,12 +989,14 @@ const ChurchApp = {
 
     approvePrayer(prId) {
         this.db.prayerRequests = this.db.prayerRequests.filter(p => p.id !== prId);
+        this.saveDB();
         alert("Prayer request approved and routed to departmental prayer lists.");
         this.renderCommunications();
     },
 
     deletePrayer(prId) {
         this.db.prayerRequests = this.db.prayerRequests.filter(p => p.id !== prId);
+        this.saveDB();
         this.renderCommunications();
     },
 
@@ -1184,6 +1239,7 @@ const ChurchApp = {
         
         // Boost engagement index
         memberObj.engagement_score = Math.min(memberObj.engagement_score + 5, 100);
+        this.saveDB();
 
         document.getElementById('mobile-giving-form').reset();
         
@@ -1261,6 +1317,7 @@ const ChurchApp = {
 
             // Boost engagement index
             m1.engagement_score = Math.min(m1.engagement_score + 6, 100);
+            this.saveDB();
 
             alert(`Thank you for serving! You are assigned to role: ${role} for event: ${event.title}.`);
             this.renderAll();
@@ -1277,6 +1334,7 @@ const ChurchApp = {
             if (!m1.volunteer_skills.includes(newSkill)) {
                 m1.volunteer_skills.push(newSkill);
             }
+            this.saveDB();
             input.value = '';
             this.renderMobileServe();
         }
@@ -1357,6 +1415,7 @@ const ChurchApp = {
         };
 
         this.db.prayerRequests.push(newPrayer);
+        this.saveDB();
         textarea.value = '';
 
         alert(`Prayer Request submitted! AI analyzed this request as Category: [${categoryResult.category}] and successfully routed it to the [${categoryResult.route}].`);

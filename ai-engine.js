@@ -2,7 +2,135 @@
 // Designed to mimic advanced Natural Language Processing and Analytics
 
 const AIEngine = {
-    // 1. Chatbot Answer Engine
+    // 1. Bible Quiz Sub-engine
+    QuizManager: {
+        active: false,
+        questionIndex: 0,
+        score: 0,
+        questions: [
+            { q: "How many books are in the Bible?", a: "66", options: ["55", "66", "72", "84"] },
+            { q: "Which book contains the verse: 'For where your treasure is, there will your heart be also'?", a: "Luke", options: ["Matthew", "Mark", "Luke", "John"] },
+            { q: "By what means are we saved according to Ephesians 2:8?", a: "Grace through faith", options: ["Good deeds", "Grace through faith", "Tradition", "Strict laws"] },
+            { q: "Which prophet was swallowed by a great fish?", a: "Jonah", options: ["Jonah", "Elijah", "Isaiah", "Moses"] },
+            { q: "What is the longest chapter in the Bible?", a: "Psalm 119", options: ["Psalm 23", "Psalm 119", "Genesis 1", "John 3"] }
+        ],
+        startQuiz() {
+            this.active = true;
+            this.questionIndex = 0;
+            this.score = 0;
+            return `📖 **Bible Trivia Quiz Started!**\n\nAnswer the questions by typing the correct option or word.\n\n*Question 1*: ${this.questions[0].q}\nOptions:\n${this.questions[0].options.map(o => `- **${o}**`).join("\n")}`;
+        },
+        handleAnswer(answerText) {
+            const currentQ = this.questions[this.questionIndex];
+            const normalizedUser = answerText.trim().toLowerCase();
+            const normalizedCorrect = currentQ.a.toLowerCase();
+
+            let isCorrect = normalizedUser.includes(normalizedCorrect) || normalizedCorrect.includes(normalizedUser);
+
+            if (!isCorrect) {
+                const matchedOpt = currentQ.options.find(opt => normalizedUser.includes(opt.toLowerCase()));
+                if (matchedOpt && matchedOpt.toLowerCase() === normalizedCorrect) {
+                    isCorrect = true;
+                }
+            }
+
+            if (isCorrect) {
+                this.score++;
+                answerText = `✅ **Correct!**`;
+            } else {
+                answerText = `❌ **Incorrect.** The correct answer was: **${currentQ.a}**.`;
+            }
+
+            this.questionIndex++;
+
+            if (this.questionIndex < this.questions.length) {
+                const nextQ = this.questions[this.questionIndex];
+                return `${answerText}\n\n*Question ${this.questionIndex + 1}*: ${nextQ.q}\nOptions:\n${nextQ.options.map(o => `- **${o}**`).join("\n")}`;
+            } else {
+                const finalScore = this.score;
+                this.active = false;
+                let feedback = "Excellent! You have a deep understanding of scripture. 🌟";
+                if (finalScore < 3) feedback = "Good effort! Keep studying scripture to grow in knowledge. 📖";
+                return `${answerText}\n\n🏁 **Quiz Finished!**\nYour Final Score: **${finalScore} / ${this.questions.length}**\n\n${feedback}`;
+            }
+        }
+    },
+
+    // 2. Study Plan Sub-engine
+    StudyPlanManager: {
+        plans: {
+            grace: {
+                topic: "Grace",
+                days: [
+                    { day: 1, ref: "Ephesians 2:8", focus: "Salvation is a gift, not earned by deeds." },
+                    { day: 2, ref: "Romans 3:24", focus: "Justified freely by His grace through redemption." },
+                    { day: 3, ref: "2 Corinthians 12:9", focus: "God's grace is sufficient in our weakness." },
+                    { day: 4, ref: "Titus 2:11", focus: "Grace teaches us to live godly lives." },
+                    { day: 5, ref: "Hebrews 4:16", focus: "Approach the throne of grace with confidence." }
+                ]
+            },
+            faith: {
+                topic: "Faith",
+                days: [
+                    { day: 1, ref: "Hebrews 11:1", focus: "The assurance of things hoped for." },
+                    { day: 2, ref: "Romans 10:17", focus: "Faith comes by hearing the word of God." },
+                    { day: 3, ref: "James 2:17", focus: "Faith without works is dead." },
+                    { day: 4, ref: "Matthew 17:20", focus: "Faith as small as a mustard seed moves mountains." },
+                    { day: 5, ref: "Hebrews 11:6", focus: "Without faith, it is impossible to please God." }
+                ]
+            },
+            love: {
+                topic: "Love",
+                days: [
+                    { day: 1, ref: "1 Corinthians 13:4-7", focus: "Patience, kindness, and endurance of love." },
+                    { day: 2, ref: "John 3:16", focus: "God's ultimate demonstration of love." },
+                    { day: 3, ref: "1 John 4:19", focus: "We love because He first loved us." },
+                    { day: 4, ref: "Luke 10:27", focus: "Love the Lord and love your neighbor." },
+                    { day: 5, ref: "Romans 13:10", focus: "Love is the fulfillment of the law." }
+                ]
+            },
+            stewardship: {
+                topic: "Stewardship",
+                days: [
+                    { day: 1, ref: "Malachi 3:10", focus: "Bringing tithes into the storehouse." },
+                    { day: 2, ref: "Luke 12:34", focus: "Where your treasure is, there your heart is." },
+                    { day: 3, ref: "Proverbs 11:25", focus: "A generous soul will prosper." },
+                    { day: 4, ref: "2 Corinthians 9:7", focus: "God loves a cheerful giver." },
+                    { day: 5, ref: "1 Peter 4:10", focus: "Use whatever gift you received to serve." }
+                ]
+            }
+        },
+        generateStudyPlan(topicInput) {
+            const cleaned = (topicInput || '').trim().toLowerCase();
+            let plan = this.plans[cleaned];
+
+            if (!plan) {
+                for (const key in this.plans) {
+                    if (cleaned.includes(key) || key.includes(cleaned)) {
+                        plan = this.plans[key];
+                        break;
+                    }
+                }
+            }
+
+            if (!plan) {
+                plan = {
+                    topic: "General Spiritual Growth",
+                    days: [
+                        { day: 1, ref: "Psalm 119:105", focus: "God's word is a lamp to guide our feet." },
+                        { day: 2, ref: "Philippians 4:6", focus: "Do not worry; present requests to God." },
+                        { day: 3, ref: "Proverbs 3:5", focus: "Trust in the Lord with all your heart." },
+                        { day: 4, ref: "Isaiah 40:31", focus: "Waiting on the Lord renews strength." },
+                        { day: 5, ref: "Galatians 5:22", focus: "Walking in the fruit of the Spirit." }
+                    ]
+                };
+            }
+
+            return `📅 **Personalized 5-Day Study Plan: [${plan.topic}]**\n\nHere is your custom devotional plan to read and reflect on this week:\n\n${plan.days.map(d => `*Day ${d.day}*: **${d.ref}**\n- *Focus*: ${d.focus}`).join("\n\n")}\n\n*Tip: Study these scriptures inside the app's Scripture tab!*`;
+        }
+    },
+
+    // 3. Chatbot Answer Engine Mappings
     chatbotResponses: [
         {
             keywords: ['service', 'time', 'worship', 'schedule', 'when'],
@@ -48,6 +176,32 @@ const AIEngine = {
 
     getBotResponse(messageText) {
         const query = messageText.toLowerCase();
+
+        // 1. If a quiz session is active, evaluate answer
+        if (this.QuizManager.active) {
+            return this.QuizManager.handleAnswer(messageText);
+        }
+
+        // 2. Launch quiz
+        if (query.includes('quiz') || query.includes('trivia') || query.includes('start quiz')) {
+            return this.QuizManager.startQuiz();
+        }
+
+        // 3. Launch study plans
+        if (query.startsWith('plan ') || query.includes('study plan')) {
+            let topic = '';
+            if (query.includes('study plan')) {
+                topic = query.split('study plan')[1];
+            } else {
+                topic = query.split('plan')[1];
+            }
+            return this.StudyPlanManager.generateStudyPlan(topic);
+        }
+        if (query === 'plan') {
+            return "📖 **Personalized Study Plan Builder**\n\nTo generate a study plan, type: `plan <topic>` (for example: `plan grace`, `plan faith`, `plan love`, `plan stewardship`).";
+        }
+
+        // 4. Default responses
         for (const item of this.chatbotResponses) {
             if (item.keywords.some(kw => query.includes(kw))) {
                 return item.response;
