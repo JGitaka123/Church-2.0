@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Church 2.0 - Unified Multi-Branch Management Ecosystem</title>
     
+    <!-- PWA configuration and mobile styling -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#09090e">
+    
     <!-- Fonts and Styling links -->
     <link rel="stylesheet" href="styles.css">
     
@@ -407,8 +413,47 @@
                                 <div class="mobile-header">
                                     <h3>Interactive Scriptures</h3>
                                 </div>
+                                <div style="display:flex; gap:6px; margin-bottom:8px;">
+                                    <select id="mobile-bible-book" class="select-custom" style="flex-grow:1; padding:6px; font-size:0.75rem;">
+                                        <option value="all">All Books</option>
+                                        <option value="Genesis">Genesis</option>
+                                        <option value="Psalm">Psalms</option>
+                                        <option value="Proverbs">Proverbs</option>
+                                        <option value="Malachi">Malachi</option>
+                                        <option value="Isaiah">Isaiah</option>
+                                        <option value="Matthew">Matthew</option>
+                                        <option value="Mark">Mark</option>
+                                        <option value="Luke">Luke</option>
+                                        <option value="John">John</option>
+                                        <option value="Romans">Romans</option>
+                                        <option value="Ephesians">Ephesians</option>
+                                        <option value="Philippians">Philippians</option>
+                                        <option value="Hebrews">Hebrews</option>
+                                        <option value="James">James</option>
+                                        <option value="1 Corinthians">1 Corinthians</option>
+                                        <option value="2 Corinthians">2 Corinthians</option>
+                                        <option value="Titus">Titus</option>
+                                    </select>
+                                    <select id="mobile-bible-chapter" class="select-custom" style="width:75px; padding:6px; font-size:0.75rem;">
+                                        <option value="all">Ch. All</option>
+                                        <option value="1">Ch. 1</option>
+                                        <option value="2">Ch. 2</option>
+                                        <option value="3">Ch. 3</option>
+                                        <option value="4">Ch. 4</option>
+                                        <option value="5">Ch. 5</option>
+                                        <option value="10">Ch. 10</option>
+                                        <option value="11">Ch. 11</option>
+                                        <option value="12">Ch. 12</option>
+                                        <option value="13">Ch. 13</option>
+                                        <option value="17">Ch. 17</option>
+                                        <option value="23">Ch. 23</option>
+                                        <option value="40">Ch. 40</option>
+                                        <option value="105">Ch. 105</option>
+                                        <option value="119">Ch. 119</option>
+                                    </select>
+                                </div>
                                 <div style="display:flex; gap:6px; margin-bottom:10px;">
-                                    <input type="text" id="mobile-bible-search" class="form-control" style="font-size:0.75rem; padding:6px 10px;" placeholder="Search e.g. Luke, trust...">
+                                    <input type="text" id="mobile-bible-search" class="form-control" style="font-size:0.75rem; padding:6px 10px;" placeholder="Search e.g. trust, salvation...">
                                     <select id="mobile-bible-version" class="select-custom" style="padding:6px; font-size:0.75rem;">
                                         <option value="ESV">ESV</option>
                                         <option value="NIV">NIV</option>

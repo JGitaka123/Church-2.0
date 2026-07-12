@@ -59,6 +59,17 @@ const ChurchApp = {
         this.loadTheme();
         this.setupEventHandlers();
         this.renderAll();
+        
+        // Register PWA Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').then((reg) => {
+                    console.log('ServiceWorker registration successful with scope: ', reg.scope);
+                }).catch((err) => {
+                    console.error('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
     },
 
     // Persistence: Save state
@@ -1151,6 +1162,8 @@ const ChurchApp = {
     renderMobileBible() {
         const verseContainer = document.getElementById('mobile-bible-verses');
         const searchInput = document.getElementById('mobile-bible-search').value.toLowerCase();
+        const selectedBook = document.getElementById('mobile-bible-book').value;
+        const selectedChapter = document.getElementById('mobile-bible-chapter').value;
         
         // Mock bible translation data
         const bibleData = [
@@ -1169,10 +1182,25 @@ const ChurchApp = {
 
         verseContainer.innerHTML = '';
         
-        const filtered = bibleData.filter(v => 
-            v.ref.toLowerCase().includes(searchInput) || 
-            v.text.toLowerCase().includes(searchInput)
-        );
+        const filtered = bibleData.filter(v => {
+            // Book match
+            if (selectedBook !== 'all') {
+                if (!v.ref.toLowerCase().includes(selectedBook.toLowerCase())) return false;
+            }
+            // Chapter match
+            if (selectedChapter !== 'all') {
+                const parts = v.ref.split(':');
+                if (parts.length > 0) {
+                    const chapterPart = parts[0].trim().split(' ').pop();
+                    if (chapterPart !== selectedChapter) return false;
+                }
+            }
+            // Search text match
+            if (searchInput) {
+                if (!v.ref.toLowerCase().includes(searchInput) && !v.text.toLowerCase().includes(searchInput)) return false;
+            }
+            return true;
+        });
 
         filtered.forEach(v => {
             const p = document.createElement('div');
@@ -1190,6 +1218,8 @@ const ChurchApp = {
 
         // Add bind events
         document.getElementById('mobile-bible-search').oninput = () => this.renderMobileBible();
+        document.getElementById('mobile-bible-book').onchange = () => this.renderMobileBible();
+        document.getElementById('mobile-bible-chapter').onchange = () => this.renderMobileBible();
         document.getElementById('mobile-bible-version').onchange = (e) => {
             this.session.bibleVersion = e.target.value;
             this.renderMobileBible();

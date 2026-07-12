@@ -191,6 +191,39 @@ try {
 console.log("");
 
 // ----------------------------------------------------
+// TEST GROUP 8: Dynamic Scripture Filtering Engine
+// ----------------------------------------------------
+console.log("Test Group 8: Dynamic Scripture Query & Filter Engine");
+try {
+    const bibleData = [
+        { ref: 'Malachi 3:10', text: 'Bring the full tithe into the storehouse...' },
+        { ref: 'Luke 12:34', text: 'For where your treasure is...' },
+        { ref: 'Romans 12:1', text: 'I appeal to you therefore...' }
+    ];
+    
+    // Test book filter logic
+    const filterByBook = (data, book) => data.filter(v => v.ref.toLowerCase().includes(book.toLowerCase()));
+    const resultBook = filterByBook(bibleData, 'Luke');
+    assert(resultBook.length === 1 && resultBook[0].ref.startsWith('Luke'), "Filters scripture lists correctly by book name.");
+
+    // Test chapter extract logic
+    const filterByChapter = (data, chapter) => data.filter(v => {
+        const parts = v.ref.split(':');
+        if (parts.length > 0) {
+            const chapterPart = parts[0].trim().split(' ').pop();
+            return chapterPart === chapter;
+        }
+        return false;
+    });
+    const resultChapter = filterByChapter(bibleData, '12');
+    assert(resultChapter.length === 2, "Filters chapters correctly even with multiple different books.");
+} catch (e) {
+    failedTestsCount++;
+    console.error("  ❌ FAIL: Scripture filtering test crashed:", e);
+}
+console.log("");
+
+// ----------------------------------------------------
 // TEST RESULTS SUMMARY
 // ----------------------------------------------------
 console.log("=== TEST EXECUTION COMPLETE ===");

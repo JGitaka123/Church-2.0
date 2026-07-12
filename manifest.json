@@ -1,0 +1,16 @@
+{
+  "short_name": "Church 2.0",
+  "name": "Church 2.0 Ministry Intelligence Platform",
+  "icons": [
+    {
+      "src": "church_logo.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "./index.html",
+  "background_color": "#09090e",
+  "theme_color": "#6366f1",
+  "display": "standalone",
+  "orientation": "portrait"
+}
