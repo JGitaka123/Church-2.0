@@ -770,8 +770,11 @@ const ChurchApp = {
         const modal = document.getElementById('receipt-modal');
         modal.innerHTML = `
             <div class="modal-card receipt-card">
+                <div class="receipt-seal">
+                    <span>Approved<br>HQ System</span>
+                </div>
                 <div class="modal-header">
-                    <h3>STEVARDSHIP RECEIPT</h3>
+                    <h3>STEWARDSHIP RECEIPT</h3>
                     <button class="modal-close" onclick="ChurchApp.closeModal('receipt-modal')">×</button>
                 </div>
                 <div class="modal-body receipt-print-area">
@@ -804,8 +807,25 @@ const ChurchApp = {
                     <hr style="border: 0; border-top: 1px dashed rgba(255,255,255,0.15); margin: 15px 0;">
                     <div class="receipt-row total-row">
                         <span style="font-size: 1.1rem;">TOTAL AMOUNT RECEIVED:</span>
-                        <strong style="color: #10b981; font-size: 1.4rem;">$${tx.amount.toFixed(2)}</strong>
+                        <strong style="color: #10b981; font-size: 1.4rem;">$${parseFloat(tx.amount).toFixed(2)}</strong>
                     </div>
+                    
+                    <div class="simulated-barcode">
+                        <div class="thick"></div>
+                        <div class="thin"></div>
+                        <div class="space"></div>
+                        <div class="thick"></div>
+                        <div class="thick"></div>
+                        <div class="thin"></div>
+                        <div class="space"></div>
+                        <div class="thin"></div>
+                        <div class="thick"></div>
+                        <div class="thin"></div>
+                        <div class="space"></div>
+                        <div class="thick"></div>
+                        <div class="thin"></div>
+                    </div>
+
                     <div class="receipt-footer">
                         <p>Thank you for your generous stewardship.</p>
                         <p style="font-size:0.7rem; color:#9ca3af; margin-top:8px;">Signed Electronically by Church 2.0 HQ Admin System</p>
@@ -1406,15 +1426,50 @@ const ChurchApp = {
         // Simulate AI Bot response after 600ms
         setTimeout(() => {
             const botResponse = window.AIEngine.getBotResponse(text);
+            
+            // Parse optional buttons
+            const options = [];
+            const lines = botResponse.split('\n');
+            lines.forEach(line => {
+                const trimmed = line.trim();
+                if (trimmed.startsWith('- **') && trimmed.includes('**')) {
+                    const opt = trimmed.split('**')[1];
+                    options.push(opt);
+                } else if (trimmed.startsWith('- ') && trimmed.length > 2 && !trimmed.includes('**')) {
+                    const opt = trimmed.substring(2);
+                    options.push(opt);
+                }
+            });
+
+            let buttonsHtml = '';
+            if (options.length > 0) {
+                buttonsHtml = `
+                    <div class="chat-options-container" style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
+                        ${options.map(opt => `
+                            <button class="chat-option-btn" onclick="ChurchApp.handleChatOptionClick('${opt.replace(/'/g, "\\'")}')">${opt}</button>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
             const botDiv = document.createElement('div');
             botDiv.className = 'chat-bubble bot animate-fade-in';
             botDiv.innerHTML = `
-                <p>${botResponse}</p>
+                <p style="white-space:pre-wrap;">${botResponse}</p>
+                ${buttonsHtml}
                 <span class="chat-time">${new Date().toLocaleTimeString(undefined, {hour: '2-digit', minute:'2-digit'})}</span>
             `;
             body.appendChild(botDiv);
             body.scrollTop = body.scrollHeight;
         }, 600);
+    },
+
+    handleChatOptionClick(optionValue) {
+        const input = document.getElementById('mobile-chat-input');
+        if (input) {
+            input.value = optionValue;
+            this.handleMobileChatSend();
+        }
     },
 
     // UI Helpers

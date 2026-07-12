@@ -1057,3 +1057,133 @@ body.theme-cyber .chat-bubble.user {
     background: linear-gradient(135deg, #ff007f 0%, #9d00ff 100%);
     box-shadow: 0 0 10px rgba(255, 0, 127, 0.4);
 }
+
+/* ==================================================== */
+/* 9. Premium Invoice & Receipt Visuals                 */
+/* ==================================================== */
+.receipt-card {
+    background: linear-gradient(135deg, rgba(20, 20, 35, 0.9) 0%, rgba(10, 5, 20, 0.95) 100%) !important;
+    border: 1px solid rgba(139, 92, 246, 0.35) !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 25px rgba(139, 92, 246, 0.15) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Watermark background icon */
+.receipt-card::before {
+    content: '🕊️';
+    position: absolute;
+    top: 55%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 14rem;
+    opacity: 0.03;
+    pointer-events: none;
+}
+
+.receipt-print-area {
+    font-family: var(--font-body);
+    padding: 10px 0;
+}
+
+.receipt-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.receipt-header h2 {
+    font-family: var(--font-header);
+    font-weight: 800;
+    letter-spacing: 1px;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 4px;
+    font-size: 1.5rem;
+}
+
+.receipt-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    font-size: 0.85rem;
+}
+
+.receipt-row span {
+    color: var(--text-secondary);
+}
+
+.receipt-row strong {
+    color: var(--text-primary);
+}
+
+.total-row {
+    border-bottom: none;
+    padding: 16px 0 10px 0;
+    margin-top: 10px;
+    border-top: 2px dashed var(--border-light);
+}
+
+.receipt-footer {
+    text-align: center;
+    margin-top: 25px;
+}
+
+.receipt-footer p {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+/* Dynamic Simulated Barcode */
+.simulated-barcode {
+    display: flex;
+    justify-content: center;
+    gap: 2px;
+    margin-top: 18px;
+    opacity: 0.6;
+    height: 35px;
+}
+
+.simulated-barcode div {
+    background-color: var(--text-primary);
+    width: 2px;
+    height: 100%;
+}
+.simulated-barcode div.thin { width: 1px; }
+.simulated-barcode div.thick { width: 4px; }
+.simulated-barcode div.space { background-color: transparent; }
+
+/* Official Authenticity Seal */
+.receipt-seal {
+    position: absolute;
+    bottom: 85px;
+    right: 25px;
+    width: 70px;
+    height: 70px;
+    border: 2px dashed rgba(245, 158, 11, 0.35);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.52rem;
+    color: var(--accent-gold);
+    text-transform: uppercase;
+    font-weight: bold;
+    transform: rotate(-15deg);
+    pointer-events: none;
+    opacity: 0.8;
+    text-shadow: 0 0 3px rgba(245, 158, 11, 0.2);
+    text-align: center;
+    line-height: 1.2;
+}
+
+/* Option Pill Hover Animations */
+.chat-option-btn:hover {
+    background: var(--primary-gradient) !important;
+    color: #fff !important;
+    border-color: transparent !important;
+    transform: scale(1.05);
+    box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+}
