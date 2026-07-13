@@ -31,6 +31,7 @@
                 <li><a href="#" class="nav-link active" data-tab="admin_dashboard"><span>📊</span> Dashboard</a></li>
                 <li><a href="#" class="nav-link" data-tab="admin_directory"><span>👥</span> Member Database</a></li>
                 <li><a href="#" class="nav-link" data-tab="admin_financials"><span>💰</span> Financials</a></li>
+                <li><a href="#" class="nav-link" data-tab="admin_attendance"><span>✅</span> Attendance</a></li>
                 <li><a href="#" class="nav-link" data-tab="admin_ministry"><span>📅</span> Ministry & Rotas</a></li>
                 <li><a href="#" class="nav-link" data-tab="admin_communications"><span>💬</span> Communications</a></li>
                 <li><a href="#" class="nav-link" data-tab="mobile_preview"><span>📱</span> Mobile App Simulator</a></li>
@@ -295,6 +296,49 @@
                         </form>
                     </div>
 
+                </div>
+            </section>
+
+            <!-- VIEW PANEL: ATTENDANCE & CHECK-IN -->
+            <section id="admin_attendance" class="view-panel" style="display: none;">
+                <div class="grid-dashboard" style="grid-template-columns: 2fr 1fr; align-items: start;">
+                    <!-- Check-in roster -->
+                    <div class="card-glass">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:15px;">
+                            <div>
+                                <h3 style="font-family: var(--font-header); font-size:1.05rem;">Service Check-In Roster</h3>
+                                <span style="font-size:0.75rem; color:var(--text-secondary);">Tap a member to toggle attendance for the selected service</span>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <label for="attendance-service-select" style="font-size:0.8rem; color:var(--text-primary);">Service:</label>
+                                <select id="attendance-service-select" class="select-custom"></select>
+                            </div>
+                        </div>
+                        <div id="attendance-headcount" class="attendance-headcount"></div>
+                        <div class="table-responsive">
+                            <table class="financial-table">
+                                <thead>
+                                    <tr>
+                                        <th>Member</th>
+                                        <th>Campus</th>
+                                        <th style="text-align:center;">Status</th>
+                                        <th style="text-align:right;">Check-In</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="attendance-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Attendance trend + summary -->
+                    <div class="card-glass">
+                        <h3 style="font-family: var(--font-header); font-size:1.05rem; margin-bottom:12px;">Attendance Trend</h3>
+                        <span style="font-size:0.75rem; color:var(--text-secondary);">Present headcount over the last 8 services</span>
+                        <div class="chart-container-wrapper" style="height:200px;">
+                            <canvas id="attendance-trend-chart"></canvas>
+                        </div>
+                        <div id="attendance-summary" style="margin-top:14px;"></div>
+                    </div>
                 </div>
             </section>
 

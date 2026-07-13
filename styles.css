@@ -1484,3 +1484,84 @@ body.theme-cyber .member-email { color: #00f2fe; }
         scroll-behavior: auto !important;
     }
 }
+
+
+/* ==========================================================================
+   Attendance & Check-In module (v2)
+   ========================================================================== */
+.attendance-headcount {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    border-radius: 12px;
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    font-size: 0.95rem;
+    color: var(--text-primary);
+}
+.attendance-headcount strong { color: var(--text-primary); }
+.attendance-pct {
+    background: var(--success-green);
+    color: #04140e;
+    font-weight: 700;
+    font-size: 0.8rem;
+    padding: 2px 8px;
+    border-radius: 999px;
+}
+.attendance-when { color: var(--text-secondary); font-size: 0.85rem; }
+
+.attendance-status {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 999px;
+}
+.attendance-status.is-present { background: rgba(16, 185, 129, 0.18); color: #34d399; }
+.attendance-status.is-absent { background: rgba(107, 114, 128, 0.18); color: var(--text-secondary); }
+
+/* Accessible toggle switch */
+.attendance-toggle {
+    position: relative;
+    width: 46px;
+    height: 26px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    background: rgba(148, 163, 184, 0.3);
+    transition: background 0.2s ease;
+    padding: 0;
+    vertical-align: middle;
+}
+.attendance-toggle.on { background: var(--success-green); }
+.attendance-toggle-knob {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.attendance-toggle.on .attendance-toggle-knob { transform: translateX(20px); }
+
+.attendance-summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    font-size: 0.85rem;
+}
+.attendance-summary-row strong { font-size: 1.1rem; color: var(--accent-gold); }
+
+body.theme-light .attendance-headcount strong,
+body.theme-light .attendance-status.is-absent { color: #334155; }
+body.theme-light .attendance-toggle { background: rgba(15, 23, 42, 0.18); }

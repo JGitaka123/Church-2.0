@@ -369,6 +369,7 @@ const ChurchApp = {
         // Sidebar link visibilities based on role
         const directoryLink = document.querySelector('.nav-link[data-tab="admin_directory"]');
         const financialsLink = document.querySelector('.nav-link[data-tab="admin_financials"]');
+        const attendanceLink = document.querySelector('.nav-link[data-tab="admin_attendance"]');
         const ministryLink = document.querySelector('.nav-link[data-tab="admin_ministry"]');
         const communicationLink = document.querySelector('.nav-link[data-tab="admin_communications"]');
         const dashboardLink = document.querySelector('.nav-link[data-tab="admin_dashboard"]');
@@ -387,6 +388,7 @@ const ChurchApp = {
             // Hide all admin links
             directoryLink.style.display = 'none';
             financialsLink.style.display = 'none';
+            attendanceLink.style.display = 'none';
             ministryLink.style.display = 'none';
             communicationLink.style.display = 'none';
             dashboardLink.style.display = 'none';
@@ -394,6 +396,7 @@ const ChurchApp = {
         } else {
             directoryLink.style.display = 'flex';
             financialsLink.style.display = 'flex';
+            attendanceLink.style.display = 'flex';
             ministryLink.style.display = 'flex';
             communicationLink.style.display = 'flex';
             dashboardLink.style.display = 'flex';
@@ -406,7 +409,7 @@ const ChurchApp = {
         }
 
         // Render main view panels
-        const panels = ['admin_dashboard', 'admin_directory', 'admin_financials', 'admin_ministry', 'admin_communications', 'mobile_preview'];
+        const panels = ['admin_dashboard', 'admin_directory', 'admin_financials', 'admin_attendance', 'admin_ministry', 'admin_communications', 'mobile_preview'];
         panels.forEach(p => {
             const panelEl = document.getElementById(p);
             if (panelEl) {
@@ -421,6 +424,8 @@ const ChurchApp = {
             this.renderMemberDirectory();
         } else if (activeTab === 'admin_financials') {
             this.renderFinancials();
+        } else if (activeTab === 'admin_attendance') {
+            this.renderAttendance();
         } else if (activeTab === 'admin_ministry') {
             this.renderMinistry();
         } else if (activeTab === 'admin_communications') {
@@ -606,6 +611,158 @@ const ChurchApp = {
                 }
             });
         }
+    },
+
+    // Panel: Attendance & Check-In
+    renderAttendance() {
+        const branchId = this.session.currentBranch;
+        const inScope = (m) => (!branchId || branchId === 'global') ? true : m.branchId === branchId;
+        const members = this.db.members.filter(inScope);
+        const attendance = (this.db.attendance || []).filter(a => members.some(m => m.id === a.memberId));
+
+        // Service dropdown (most recent first)
+        const serviceDates = [...new Set((this.db.attendance || []).map(a => a.date))].sort().reverse();
+        if (!this.session.selectedServiceDate || !serviceDates.includes(this.session.selectedServiceDate)) {
+            this.session.selectedServiceDate = serviceDates[0] || null;
+        }
+        const select = document.getElementById('attendance-service-select');
+        if (select) {
+            select.innerHTML = serviceDates.map((d, i) =>
+                `<option value="${esc(d)}"${d === this.session.selectedServiceDate ? ' selected' : ''}>${esc(this.formatServiceLabel(d))}${i === 0 ? ' (latest)' : ''}</option>`
+            ).join('');
+            select.onchange = (e) => { this.session.selectedServiceDate = e.target.value; this.renderAttendance(); };
+        }
+
+        const serviceDate = this.session.selectedServiceDate;
+        const recordFor = (memberId) => (this.db.attendance || []).find(a => a.memberId === memberId && a.date === serviceDate);
+
+        // Headcount for the selected service (in scope)
+        const presentCount = members.filter(m => (recordFor(m.id) || {}).present).length;
+        const headEl = document.getElementById('attendance-headcount');
+        if (headEl) {
+            const pct = members.length ? Math.round((presentCount / members.length) * 100) : 0;
+            headEl.innerHTML = `<strong>${presentCount}</strong> of <strong>${members.length}</strong> present
+                <span class="attendance-pct">${pct}%</span>
+                <span class="attendance-when">· ${esc(this.formatServiceLabel(serviceDate) || 'no service selected')}</span>`;
+        }
+
+        // Roster rows
+        const tbody = document.getElementById('attendance-tbody');
+        if (tbody) {
+            tbody.innerHTML = members.map(m => {
+                const present = !!(recordFor(m.id) || {}).present;
+                return `<tr>
+                    <td>
+                        <div class="member-profile-cell">
+                            <div class="member-avatar">${esc((m.firstName[0] || '') + (m.lastName[0] || ''))}</div>
+                            <span class="member-name">${esc(m.firstName)} ${esc(m.lastName)}</span>
+                        </div>
+                    </td>
+                    <td><span class="branch-pill badge-${esc(m.branchId)}">${esc(m.branchName)}</span></td>
+                    <td style="text-align:center;">
+                        <span class="attendance-status ${present ? 'is-present' : 'is-absent'}">${present ? 'Present' : 'Absent'}</span>
+                    </td>
+                    <td style="text-align:right;">
+                        <button class="attendance-toggle ${present ? 'on' : ''}" role="switch" aria-checked="${present}"
+                            aria-label="Toggle attendance for ${esc(m.firstName)} ${esc(m.lastName)}"
+                            onclick="ChurchApp.toggleAttendance('${esc(m.id)}')">
+                            <span class="attendance-toggle-knob"></span>
+                        </button>
+                    </td>
+                </tr>`;
+            }).join('') || `<tr><td colspan="4" class="muted-italic" style="text-align:center; padding:24px;">No members in this scope.</td></tr>`;
+        }
+
+        // Trend + summary
+        this.renderAttendanceChart(attendance, serviceDates);
+        this.renderAttendanceSummary(members, attendance);
+    },
+
+    formatServiceLabel(dateStr) {
+        if (!dateStr) return '';
+        const d = new Date(dateStr + 'T00:00:00');
+        return d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+    },
+
+    toggleAttendance(memberId) {
+        const serviceDate = this.session.selectedServiceDate;
+        if (!serviceDate) return;
+        this.db.attendance = this.db.attendance || [];
+        let rec = this.db.attendance.find(a => a.memberId === memberId && a.date === serviceDate);
+        const member = this.db.members.find(m => m.id === memberId);
+        if (rec) {
+            rec.present = !rec.present;
+        } else if (member) {
+            this.db.attendance.push({ id: `att_${memberId}_${serviceDate}`, memberId, branchId: member.branchId, date: serviceDate, present: true });
+        }
+        this.saveDB();
+        this.renderAttendance();
+    },
+
+    renderAttendanceChart(attendance, serviceDatesDesc) {
+        const wrap = document.getElementById('attendance-trend-chart')?.parentElement;
+        if (typeof Chart === 'undefined') {
+            if (wrap && !wrap.querySelector('.chart-fallback')) {
+                const n = document.createElement('div');
+                n.className = 'chart-fallback';
+                n.textContent = '📊 Attendance chart is unavailable offline.';
+                wrap.appendChild(n);
+            }
+            return;
+        }
+        const ctx = document.getElementById('attendance-trend-chart')?.getContext('2d');
+        if (!ctx) return;
+        if (this.charts.attendance) this.charts.attendance.destroy();
+
+        const dates = [...serviceDatesDesc].sort(); // ascending
+        const counts = dates.map(d => attendance.filter(a => a.date === d && a.present).length);
+        const labels = dates.map(d => new Date(d + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' }));
+
+        this.charts.attendance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Present',
+                    data: counts,
+                    backgroundColor: 'rgba(16, 185, 129, 0.55)',
+                    borderColor: '#10b981',
+                    borderWidth: 1.5,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { color: '#9ca3af', precision: 0 }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                    x: { ticks: { color: '#9ca3af' }, grid: { display: false } }
+                }
+            }
+        });
+    },
+
+    renderAttendanceSummary(members, attendance) {
+        const el = document.getElementById('attendance-summary');
+        if (!el) return;
+        // At-risk = 3+ consecutive most-recent absences
+        const byMember = {};
+        attendance.forEach(a => (byMember[a.memberId] = byMember[a.memberId] || []).push(a));
+        const atRisk = members.filter(m => {
+            const recs = (byMember[m.id] || []).slice().sort((a, b) => new Date(b.date) - new Date(a.date));
+            let streak = 0;
+            for (const r of recs) { if (!r.present) streak++; else break; }
+            return streak >= 3;
+        });
+        el.innerHTML = `
+            <div class="attendance-summary-row">
+                <span>⚠️ At-risk (3+ absences)</span>
+                <strong>${atRisk.length}</strong>
+            </div>
+            ${atRisk.length ? `<ul class="at-risk-list" style="margin-top:8px;">
+                ${atRisk.slice(0, 5).map(m => `<li>${esc(m.firstName)} ${esc(m.lastName)}</li>`).join('')}
+            </ul>` : '<p class="muted-italic" style="margin-top:8px;">No members in an absence streak — healthy engagement. 🎉</p>'}`;
     },
 
     // 8. Panel: Member Directory View Rendering
