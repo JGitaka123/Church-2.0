@@ -135,13 +135,40 @@ const ChurchApp = {
     // 3. Application Charts (Chart.js references)
     charts: {},
 
+    // Demo accounts for the mock auth gate. In a real deployment these live in
+    // a backend identity store; here they map a login to a role for RBAC.
+    DEMO_USERS: [
+        { email: 'admin@church2.org', password: 'grace', name: 'HQ Administrator', role: 'hq_admin', branchId: 'b1' },
+        { email: 'dallas@church2.org', password: 'grace', name: 'Dallas Campus Admin', role: 'branch_admin', branchId: 'b2' },
+        { email: 'worship@church2.org', password: 'grace', name: 'Worship Leader', role: 'ministry_leader', branchId: 'b1' },
+        { email: 'john@church2.org', password: 'grace', name: 'John Kamau', role: 'member', branchId: 'b1' }
+    ],
+
+    // RBAC: which tabs each role may access. Enforced in renderAll — not just
+    // hidden in the nav, so a member cannot reach an admin panel by any route.
+    ROLE_TABS: {
+        hq_admin: ['admin_dashboard', 'admin_directory', 'admin_financials', 'admin_attendance', 'admin_ministry', 'admin_followups', 'admin_groups', 'admin_communications', 'mobile_preview'],
+        branch_admin: ['admin_dashboard', 'admin_directory', 'admin_financials', 'admin_attendance', 'admin_followups', 'admin_groups', 'admin_communications', 'mobile_preview'],
+        ministry_leader: ['admin_dashboard', 'admin_attendance', 'admin_ministry', 'admin_followups', 'admin_groups', 'admin_communications', 'mobile_preview'],
+        member: ['mobile_preview']
+    },
+
     // 4. Initialize Data & Render
     init() {
         this.loadDB();
         this.loadTheme();
         this.setupEventHandlers();
-        this.renderAll();
-        
+
+        // Auth gate: restore a saved session, else show the login screen.
+        const session = this.loadSession();
+        if (session) {
+            this.applyUser(session);
+            this.showApp();
+            this.renderAll();
+        } else {
+            this.showAuthScreen('credentials');
+        }
+
         // Register PWA Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -271,6 +298,137 @@ const ChurchApp = {
             const themeSelect = document.getElementById('interface-theme-select');
             if (themeSelect) themeSelect.value = savedTheme;
         }
+    },
+
+    // ---- Auth gate (mock login + MFA + RBAC) --------------------------------
+    loadSession() {
+        if (typeof localStorage === 'undefined') return null;
+        try {
+            const raw = localStorage.getItem('church2_session');
+            return raw ? JSON.parse(raw) : null;
+        } catch (e) { return null; }
+    },
+
+    saveSession(user) {
+        if (typeof localStorage !== 'undefined') {
+            localStorage.setItem('church2_session', JSON.stringify(user));
+        }
+    },
+
+    applyUser(user) {
+        this.session.currentUser = user;
+        this.session.currentRole = user.role;
+        this.session.currentBranch = user.role === 'hq_admin' ? 'b1' : user.branchId;
+        this.session.mfaVerified = true;
+        this.session.activeTab = user.role === 'member' ? 'mobile_preview' : 'admin_dashboard';
+        // Reflect the signed-in role in the simulator dropdown.
+        const roleSel = document.getElementById('role-simulator-select');
+        if (roleSel) roleSel.value = user.role;
+    },
+
+    showApp() {
+        const auth = document.getElementById('auth-screen');
+        const app = document.getElementById('app-container');
+        if (auth) auth.style.display = 'none';
+        if (app) app.style.display = 'flex';
+    },
+
+    showAuthScreen(step, ctx) {
+        const auth = document.getElementById('auth-screen');
+        const app = document.getElementById('app-container');
+        if (app) app.style.display = 'none';
+        if (!auth) return;
+        auth.style.display = 'flex';
+
+        if (step === 'mfa') {
+            auth.innerHTML = `
+                <div class="auth-card">
+                    <div class="auth-brand"><span class="auth-logo">✝</span><span>Church 2.0</span></div>
+                    <h2 class="auth-title">Two-factor verification</h2>
+                    <p class="auth-sub">We texted a 6-digit code to the phone on file for <strong>${esc(ctx.email)}</strong>. Enter it to continue. <span class="auth-hint">(demo code: 123456)</span></p>
+                    <form id="mfa-form" class="auth-form">
+                        <input type="text" id="mfa-code" class="auth-input" inputmode="numeric" maxlength="6" placeholder="000000" autocomplete="one-time-code" aria-label="6-digit code" required>
+                        <p id="auth-error" class="auth-error" role="alert"></p>
+                        <button type="submit" class="auth-btn">Verify &amp; sign in</button>
+                        <button type="button" class="auth-link" id="mfa-back">← Back to login</button>
+                    </form>
+                </div>`;
+            document.getElementById('mfa-form').onsubmit = (e) => { e.preventDefault(); this.handleMfa(ctx); };
+            document.getElementById('mfa-back').onclick = () => this.showAuthScreen('credentials');
+            document.getElementById('mfa-code').focus();
+            return;
+        }
+
+        // credentials step
+        auth.innerHTML = `
+            <div class="auth-card">
+                <div class="auth-brand"><span class="auth-logo">✝</span><span>Church 2.0</span></div>
+                <h2 class="auth-title">Sign in to your ministry console</h2>
+                <p class="auth-sub">Secure access to your church's data.</p>
+                <form id="login-form" class="auth-form">
+                    <label class="auth-label" for="login-email">Email</label>
+                    <input type="email" id="login-email" class="auth-input" placeholder="you@church2.org" autocomplete="username" required>
+                    <label class="auth-label" for="login-password">Password</label>
+                    <input type="password" id="login-password" class="auth-input" placeholder="••••••••" autocomplete="current-password" required>
+                    <p id="auth-error" class="auth-error" role="alert"></p>
+                    <button type="submit" class="auth-btn">Continue</button>
+                </form>
+                <div class="auth-demo">
+                    <span>Demo accounts (password <code>grace</code>):</span>
+                    <div class="auth-demo-chips">
+                        <button type="button" class="auth-demo-chip" data-email="admin@church2.org">HQ Admin</button>
+                        <button type="button" class="auth-demo-chip" data-email="dallas@church2.org">Branch Admin</button>
+                        <button type="button" class="auth-demo-chip" data-email="worship@church2.org">Ministry Leader</button>
+                        <button type="button" class="auth-demo-chip" data-email="john@church2.org">Member</button>
+                    </div>
+                </div>
+            </div>`;
+        document.getElementById('login-form').onsubmit = (e) => { e.preventDefault(); this.handleLogin(); };
+        auth.querySelectorAll('.auth-demo-chip').forEach(chip => {
+            chip.onclick = () => {
+                document.getElementById('login-email').value = chip.dataset.email;
+                document.getElementById('login-password').value = 'grace';
+            };
+        });
+    },
+
+    handleLogin() {
+        const email = document.getElementById('login-email').value.trim().toLowerCase();
+        const password = document.getElementById('login-password').value;
+        const err = document.getElementById('auth-error');
+        const user = this.DEMO_USERS.find(u => u.email === email && u.password === password);
+        if (!user) {
+            if (err) err.textContent = 'Invalid email or password. Try a demo account below.';
+            return;
+        }
+        // Proceed to MFA step.
+        this.showAuthScreen('mfa', { email: user.email });
+    },
+
+    handleMfa(ctx) {
+        const code = (document.getElementById('mfa-code').value || '').trim();
+        const err = document.getElementById('auth-error');
+        if (!/^\d{6}$/.test(code)) {
+            if (err) err.textContent = 'Enter the 6-digit code.';
+            return;
+        }
+        // Mock verification accepts the demo code.
+        if (code !== '123456') {
+            if (err) err.textContent = 'Incorrect code. (demo code: 123456)';
+            return;
+        }
+        const user = this.DEMO_USERS.find(u => u.email === ctx.email);
+        this.saveSession(user);
+        this.applyUser(user);
+        this.showApp();
+        this.renderAll();
+        this.toast(`Welcome, ${user.name}. 👋`);
+    },
+
+    logout() {
+        if (typeof localStorage !== 'undefined') localStorage.removeItem('church2_session');
+        this.session.currentUser = null;
+        this.showAuthScreen('credentials');
     },
 
     // Helper: Generate historical transactions over the last 14 days
@@ -430,12 +588,24 @@ const ChurchApp = {
             e.preventDefault();
             this.handleMobileVolunteerSignup();
         });
+
+        // Sign out
+        document.getElementById('logout-btn')?.addEventListener('click', () => this.logout());
     },
 
     // 6. Master Render Coordinator
     renderAll() {
         const role = this.session.currentRole;
         const branchId = this.session.currentBranch;
+
+        // RBAC enforcement: if the current role isn't permitted the active tab,
+        // redirect to that role's default landing tab. This is real access
+        // control — not merely hiding nav links — so no route reaches a panel
+        // the role can't see.
+        const allowed = this.ROLE_TABS[role] || this.ROLE_TABS.member;
+        if (!allowed.includes(this.session.activeTab)) {
+            this.session.activeTab = (role === 'member') ? 'mobile_preview' : 'admin_dashboard';
+        }
         const activeTab = this.session.activeTab;
 
         // Sync header displays. "global" is a valid selection (All Branches) that

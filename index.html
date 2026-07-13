@@ -19,7 +19,10 @@
 </head>
 <body>
 
-    <div class="app-container">
+    <!-- Authentication gate (login + MFA). Populated and toggled by app.js. -->
+    <div id="auth-screen" class="auth-screen" style="display:none;"></div>
+
+    <div class="app-container" id="app-container" style="display:none;">
         <!-- 1. Side Navigation Menu -->
         <aside class="sidebar">
             <div class="brand-section">
@@ -85,6 +88,7 @@
                     </div>
                     
                     <span class="simulator-badge" id="active-role-indicator">HQ SUPER ADMIN</span>
+                    <button id="logout-btn" class="logout-btn" aria-label="Sign out" title="Sign out">⏻</button>
                 </div>
             </header>
 
