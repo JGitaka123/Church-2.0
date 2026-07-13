@@ -34,6 +34,7 @@
                 <li><a href="#" class="nav-link" data-tab="admin_attendance"><span>✅</span> Attendance</a></li>
                 <li><a href="#" class="nav-link" data-tab="admin_ministry"><span>📅</span> Ministry & Rotas</a></li>
                 <li><a href="#" class="nav-link" data-tab="admin_followups"><span>🧭</span> Follow-Ups</a></li>
+                <li><a href="#" class="nav-link" data-tab="admin_groups"><span>🫂</span> Groups</a></li>
                 <li><a href="#" class="nav-link" data-tab="admin_communications"><span>💬</span> Communications</a></li>
                 <li><a href="#" class="nav-link" data-tab="mobile_preview"><span>📱</span> Mobile App Simulator</a></li>
             </nav>
@@ -384,6 +385,43 @@
                 </div>
             </section>
 
+            <!-- VIEW PANEL: SMALL GROUPS -->
+            <section id="admin_groups" class="view-panel" style="display: none;">
+                <div class="grid-dashboard" style="grid-template-columns: 2fr 1fr; align-items: start;">
+                    <div class="card-glass">
+                        <h3 style="font-family: var(--font-header); font-size:1.05rem; margin-bottom:4px;">Small Groups Directory</h3>
+                        <span style="font-size:0.75rem; color:var(--text-secondary);">Community groups where members connect midweek — distinct from serving ministries</span>
+                        <div id="groups-grid" class="groups-grid"></div>
+                    </div>
+                    <div class="card-glass">
+                        <h3 style="font-family: var(--font-header); font-size:1.05rem; margin-bottom:15px;">Start a New Group</h3>
+                        <form id="add-group-form" style="display:flex; flex-direction:column; gap:12px;">
+                            <div>
+                                <label style="font-size:0.75rem; color:var(--text-secondary); display:block; margin-bottom:4px;">Group Name</label>
+                                <input type="text" id="group-name" class="form-control" required placeholder="e.g. Young Adults Life Group">
+                            </div>
+                            <div>
+                                <label style="font-size:0.75rem; color:var(--text-secondary); display:block; margin-bottom:4px;">Meeting Schedule</label>
+                                <input type="text" id="group-schedule" class="form-control" placeholder="e.g. Tue 7:00 PM">
+                            </div>
+                            <div>
+                                <label style="font-size:0.75rem; color:var(--text-secondary); display:block; margin-bottom:4px;">Campus</label>
+                                <select id="group-branch" class="select-custom" style="width:100%;">
+                                    <option value="b1">Nairobi HQ</option>
+                                    <option value="b2">Dallas Branch</option>
+                                    <option value="b3">London Branch</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size:0.75rem; color:var(--text-secondary); display:block; margin-bottom:4px;">Description</label>
+                                <input type="text" id="group-desc" class="form-control" placeholder="Short description">
+                            </div>
+                            <button type="submit" class="btn btn-primary-gradient" style="margin-top:6px;">Create Group</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
             <!-- 7. VIEW PANEL: COMMUNICATIONS -->
             <section id="admin_communications" class="view-panel" style="display: none;">
                 <div class="grid-dashboard" style="grid-template-columns:1fr 1fr;">
@@ -452,6 +490,11 @@
 
                                 <h4 style="font-size:0.8rem; font-family:var(--font-header); margin-bottom:8px; color:#fff;">Upcoming Events & RSVP</h4>
                                 <div id="mobile-upcoming-events" style="display:flex; flex-direction:column; gap:8px;">
+                                    <!-- Populated dynamically -->
+                                </div>
+
+                                <h4 style="font-size:0.8rem; font-family:var(--font-header); margin: 15px 0 8px 0; color:#fff;">Find a Small Group</h4>
+                                <div id="mobile-groups-list" style="display:flex; flex-direction:column; gap:8px;">
                                     <!-- Populated dynamically -->
                                 </div>
 

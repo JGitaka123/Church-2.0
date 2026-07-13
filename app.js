@@ -77,6 +77,12 @@ const ChurchApp = {
             { id: 'fu3', name: 'Tom Baker', branchId: 'b2', stage: 'Connected', owner: 'Robert Smith', note: 'Joined the Tuesday home group.' },
             { id: 'fu4', name: 'Aisha Khan', branchId: 'b3', stage: 'New Guest', owner: 'Michael Patel', note: 'First-time guest at London campus.' }
         ],
+        groups: [
+            { id: 'g1', name: 'Young Adults Life Group', branchId: 'b1', schedule: 'Tue 7:00 PM', description: "20s–30s community, study & fun.", memberIds: ['m1', 'm3'] },
+            { id: 'g2', name: 'Marriage & Family', branchId: 'b1', schedule: 'Wed 6:30 PM', description: 'For couples growing together in faith.', memberIds: ['m2'] },
+            { id: 'g3', name: "Men's Morning Prayer", branchId: 'b2', schedule: 'Sat 6:00 AM', description: 'Prayer, accountability & breakfast.', memberIds: ['m5'] },
+            { id: 'g4', name: 'Women of Grace', branchId: 'b3', schedule: 'Thu 10:00 AM', description: 'Bible study & fellowship.', memberIds: ['m8'] }
+        ],
         events: [
             { id: 'e1', branchId: 'b1', title: 'Youth Praise Night', description: 'An evening of worship, drama, and networking for young adults.', date: '2026-07-19', time: '18:00', rolesRequired: ['Worship Vocals', 'Keyboard', 'Guitar', 'Sound Engineering', 'Greeting'], volunteersSignedUp: ['m1'] },
             { id: 'e2', branchId: 'b2', title: 'Dallas Community Charity Drive', description: 'Providing food, clothing, and shelter assistance to local families.', date: '2026-07-25', time: '09:00', rolesRequired: ['Greeting', 'First Aid', 'Security'], volunteersSignedUp: ['m6'] },
@@ -172,6 +178,15 @@ const ChurchApp = {
                 { id: 'fu2', name: 'Linda Achieng', branchId: 'b1', stage: 'Contacted', owner: 'Grace Mwangi', note: 'Called; interested in a small group.' },
                 { id: 'fu3', name: 'Tom Baker', branchId: 'b2', stage: 'Connected', owner: 'Robert Smith', note: 'Joined the Tuesday home group.' },
                 { id: 'fu4', name: 'Aisha Khan', branchId: 'b3', stage: 'New Guest', owner: 'Michael Patel', note: 'First-time guest at London campus.' }
+            ];
+            changed = true;
+        }
+        if (!Array.isArray(this.db.groups)) {
+            this.db.groups = [
+                { id: 'g1', name: 'Young Adults Life Group', branchId: 'b1', schedule: 'Tue 7:00 PM', description: "20s–30s community, study & fun.", memberIds: ['m1', 'm3'] },
+                { id: 'g2', name: 'Marriage & Family', branchId: 'b1', schedule: 'Wed 6:30 PM', description: 'For couples growing together in faith.', memberIds: ['m2'] },
+                { id: 'g3', name: "Men's Morning Prayer", branchId: 'b2', schedule: 'Sat 6:00 AM', description: 'Prayer, accountability & breakfast.', memberIds: ['m5'] },
+                { id: 'g4', name: 'Women of Grace', branchId: 'b3', schedule: 'Thu 10:00 AM', description: 'Bible study & fellowship.', memberIds: ['m8'] }
             ];
             changed = true;
         }
@@ -396,6 +411,7 @@ const ChurchApp = {
         const attendanceLink = document.querySelector('.nav-link[data-tab="admin_attendance"]');
         const ministryLink = document.querySelector('.nav-link[data-tab="admin_ministry"]');
         const followupsLink = document.querySelector('.nav-link[data-tab="admin_followups"]');
+        const groupsLink = document.querySelector('.nav-link[data-tab="admin_groups"]');
         const communicationLink = document.querySelector('.nav-link[data-tab="admin_communications"]');
         const dashboardLink = document.querySelector('.nav-link[data-tab="admin_dashboard"]');
         const mobilePreviewLink = document.querySelector('.nav-link[data-tab="mobile_preview"]');
@@ -416,6 +432,7 @@ const ChurchApp = {
             attendanceLink.style.display = 'none';
             ministryLink.style.display = 'none';
             followupsLink.style.display = 'none';
+            groupsLink.style.display = 'none';
             communicationLink.style.display = 'none';
             dashboardLink.style.display = 'none';
             mobilePreviewLink.style.display = 'flex';
@@ -425,6 +442,7 @@ const ChurchApp = {
             attendanceLink.style.display = 'flex';
             ministryLink.style.display = 'flex';
             followupsLink.style.display = 'flex';
+            groupsLink.style.display = 'flex';
             communicationLink.style.display = 'flex';
             dashboardLink.style.display = 'flex';
             mobilePreviewLink.style.display = 'flex';
@@ -436,7 +454,7 @@ const ChurchApp = {
         }
 
         // Render main view panels
-        const panels = ['admin_dashboard', 'admin_directory', 'admin_financials', 'admin_attendance', 'admin_ministry', 'admin_followups', 'admin_communications', 'mobile_preview'];
+        const panels = ['admin_dashboard', 'admin_directory', 'admin_financials', 'admin_attendance', 'admin_ministry', 'admin_followups', 'admin_groups', 'admin_communications', 'mobile_preview'];
         panels.forEach(p => {
             const panelEl = document.getElementById(p);
             if (panelEl) {
@@ -457,6 +475,8 @@ const ChurchApp = {
             this.renderMinistry();
         } else if (activeTab === 'admin_followups') {
             this.renderFollowUps();
+        } else if (activeTab === 'admin_groups') {
+            this.renderGroups();
         } else if (activeTab === 'admin_communications') {
             this.renderCommunications();
         } else if (activeTab === 'mobile_preview') {
@@ -872,6 +892,93 @@ const ChurchApp = {
         this.saveDB();
         this.renderFollowUps();
         if (item.stage === 'Member') this.toast(`🎉 ${item.name} is now a committed member!`);
+    },
+
+    // Panel: Small Groups (admin)
+    renderGroups() {
+        const branchId = this.session.currentBranch;
+        const inScope = (g) => (!branchId || branchId === 'global') ? true : g.branchId === branchId;
+        const groups = (this.db.groups || []).filter(inScope);
+        const grid = document.getElementById('groups-grid');
+        if (grid) {
+            grid.innerHTML = groups.map(g => {
+                const campus = (this.db.branches.find(b => b.id === g.branchId) || {}).name || '';
+                const count = (g.memberIds || []).length;
+                const roster = (g.memberIds || []).map(id => {
+                    const m = this.db.members.find(mm => mm.id === id);
+                    return m ? `${m.firstName} ${m.lastName}` : null;
+                }).filter(Boolean);
+                return `<div class="group-card">
+                    <div class="group-card-head">
+                        <h4>${esc(g.name)}</h4>
+                        <span class="group-count">🫂 ${count}</span>
+                    </div>
+                    <div class="group-meta">
+                        <span class="branch-pill badge-${esc(g.branchId)}">${esc(campus)}</span>
+                        <span class="group-schedule">🗓️ ${esc(g.schedule || 'TBD')}</span>
+                    </div>
+                    ${g.description ? `<p class="group-desc">${esc(g.description)}</p>` : ''}
+                    <div class="group-roster">${roster.length ? roster.map(n => `<span class="group-member-pill">${esc(n)}</span>`).join('') : '<span class="muted-italic">No members yet</span>'}</div>
+                </div>`;
+            }).join('') || '<p class="muted-italic" style="margin-top:12px;">No groups for this campus yet.</p>';
+        }
+
+        const form = document.getElementById('add-group-form');
+        if (form) {
+            form.onsubmit = (e) => {
+                e.preventDefault();
+                const name = document.getElementById('group-name').value.trim();
+                if (!name) return;
+                this.db.groups.unshift({
+                    id: `g_${Date.now()}`,
+                    name,
+                    branchId: document.getElementById('group-branch').value,
+                    schedule: document.getElementById('group-schedule').value.trim(),
+                    description: document.getElementById('group-desc').value.trim(),
+                    memberIds: []
+                });
+                this.saveDB();
+                form.reset();
+                this.renderGroups();
+                this.toast(`Group "${name}" created.`);
+            };
+        }
+    },
+
+    // Mobile: browse & self-join small groups (logged-in member m1)
+    renderMobileGroups() {
+        const container = document.getElementById('mobile-groups-list');
+        if (!container) return;
+        const me = this.db.members.find(m => m.id === 'm1');
+        const myBranch = me ? me.branchId : 'b1';
+        const groups = (this.db.groups || []).filter(g => g.branchId === myBranch);
+
+        container.innerHTML = groups.map(g => {
+            const joined = (g.memberIds || []).includes('m1');
+            return `<div class="mobile-group-card">
+                <div class="mobile-group-info">
+                    <strong>${esc(g.name)}</strong>
+                    <span>🗓️ ${esc(g.schedule || 'TBD')} · ${(g.memberIds || []).length} members</span>
+                </div>
+                <button class="mobile-group-btn${joined ? ' joined' : ''}" onclick="ChurchApp.toggleGroupJoin('${esc(g.id)}')">${joined ? 'Joined ✓' : 'Join'}</button>
+            </div>`;
+        }).join('') || '<p class="muted-italic" style="font-size:0.72rem;">No groups at your campus yet.</p>';
+    },
+
+    toggleGroupJoin(groupId) {
+        const group = (this.db.groups || []).find(g => g.id === groupId);
+        if (!group) return;
+        group.memberIds = group.memberIds || [];
+        const idx = group.memberIds.indexOf('m1');
+        if (idx >= 0) {
+            group.memberIds.splice(idx, 1);
+            this.toast(`Left ${group.name}.`, 'info');
+        } else {
+            group.memberIds.push('m1');
+            this.toast(`Joined ${group.name}! See you there. 🙌`);
+        }
+        this.saveDB();
+        this.renderMobileGroups();
     },
 
     // 8. Panel: Member Directory View Rendering
@@ -1642,6 +1749,8 @@ const ChurchApp = {
             `;
             eventsContainer.appendChild(div);
         });
+
+        this.renderMobileGroups();
     },
 
     handleMobileRSVP(eventId) {
