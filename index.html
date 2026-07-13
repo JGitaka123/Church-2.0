@@ -424,8 +424,50 @@
 
             <!-- 7. VIEW PANEL: COMMUNICATIONS -->
             <section id="admin_communications" class="view-panel" style="display: none;">
+                <!-- Broadcast announcements -->
+                <div class="card-glass" style="margin-bottom:25px;">
+                    <div class="broadcast-layout">
+                        <form id="broadcast-form" class="broadcast-compose">
+                            <h3 style="font-family: var(--font-header); font-size:1.05rem; margin-bottom:4px;">📣 Broadcast Announcement</h3>
+                            <span style="font-size:0.75rem; color:var(--text-secondary);">Reach your congregation across email, SMS, and push</span>
+                            <div style="margin-top:14px;">
+                                <label style="font-size:0.75rem; color:var(--text-secondary); display:block; margin-bottom:4px;">Title</label>
+                                <input type="text" id="broadcast-title" class="form-control" required placeholder="e.g. Sunday service moved to 10 AM">
+                            </div>
+                            <div style="margin-top:12px;">
+                                <label style="font-size:0.75rem; color:var(--text-secondary); display:block; margin-bottom:4px;">Message</label>
+                                <textarea id="broadcast-body" class="form-control" style="min-height:80px; font-family:inherit;" required placeholder="Write your announcement..."></textarea>
+                            </div>
+                            <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:12px;">
+                                <div style="flex:1; min-width:160px;">
+                                    <label style="font-size:0.75rem; color:var(--text-secondary); display:block; margin-bottom:4px;">Audience</label>
+                                    <select id="broadcast-audience" class="select-custom" style="width:100%;">
+                                        <option value="all">All Campuses</option>
+                                        <option value="b1">Nairobi HQ</option>
+                                        <option value="b2">Dallas Branch</option>
+                                        <option value="b3">London Branch</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="font-size:0.75rem; color:var(--text-secondary); display:block; margin-bottom:6px;">Channels</label>
+                                    <div class="broadcast-channels">
+                                        <label><input type="checkbox" class="broadcast-channel" value="email" checked> 📧 Email</label>
+                                        <label><input type="checkbox" class="broadcast-channel" value="sms" checked> 💬 SMS</label>
+                                        <label><input type="checkbox" class="broadcast-channel" value="push"> 🔔 Push</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary-gradient" style="margin-top:16px;">Send Broadcast</button>
+                        </form>
+                        <div class="broadcast-log-wrap">
+                            <h4 style="font-size:0.9rem; font-family:var(--font-header); margin-bottom:10px;">Recent Broadcasts</h4>
+                            <div id="broadcast-log" class="broadcast-log"></div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="grid-dashboard" style="grid-template-columns:1fr 1fr;">
-                    
+
                     <!-- Prayer request inbox -->
                     <div class="card-glass">
                         <h3 style="font-family: var(--font-header); font-size:1.05rem; margin-bottom:15px;">AI Care Inbox (Incoming Prayer Requests)</h3>

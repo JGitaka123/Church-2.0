@@ -83,6 +83,9 @@ const ChurchApp = {
             { id: 'g3', name: "Men's Morning Prayer", branchId: 'b2', schedule: 'Sat 6:00 AM', description: 'Prayer, accountability & breakfast.', memberIds: ['m5'] },
             { id: 'g4', name: 'Women of Grace', branchId: 'b3', schedule: 'Thu 10:00 AM', description: 'Bible study & fellowship.', memberIds: ['m8'] }
         ],
+        announcements: [
+            { id: 'an1', title: 'Baptism Sunday — sign up now', body: 'We are holding a baptism service on the last Sunday of the month. Speak to a pastor or reply to register.', audience: 'all', channels: ['email', 'push'], recipients: 10, sentAt: '2026-07-06T09:00:00Z' }
+        ],
         events: [
             { id: 'e1', branchId: 'b1', title: 'Youth Praise Night', description: 'An evening of worship, drama, and networking for young adults.', date: '2026-07-19', time: '18:00', rolesRequired: ['Worship Vocals', 'Keyboard', 'Guitar', 'Sound Engineering', 'Greeting'], volunteersSignedUp: ['m1'] },
             { id: 'e2', branchId: 'b2', title: 'Dallas Community Charity Drive', description: 'Providing food, clothing, and shelter assistance to local families.', date: '2026-07-25', time: '09:00', rolesRequired: ['Greeting', 'First Aid', 'Security'], volunteersSignedUp: ['m6'] },
@@ -187,6 +190,12 @@ const ChurchApp = {
                 { id: 'g2', name: 'Marriage & Family', branchId: 'b1', schedule: 'Wed 6:30 PM', description: 'For couples growing together in faith.', memberIds: ['m2'] },
                 { id: 'g3', name: "Men's Morning Prayer", branchId: 'b2', schedule: 'Sat 6:00 AM', description: 'Prayer, accountability & breakfast.', memberIds: ['m5'] },
                 { id: 'g4', name: 'Women of Grace', branchId: 'b3', schedule: 'Thu 10:00 AM', description: 'Bible study & fellowship.', memberIds: ['m8'] }
+            ];
+            changed = true;
+        }
+        if (!Array.isArray(this.db.announcements)) {
+            this.db.announcements = [
+                { id: 'an1', title: 'Baptism Sunday — sign up now', body: 'We are holding a baptism service on the last Sunday of the month. Speak to a pastor or reply to register.', audience: 'all', channels: ['email', 'push'], recipients: 10, sentAt: '2026-07-06T09:00:00Z' }
             ];
             changed = true;
         }
@@ -1630,6 +1639,60 @@ const ChurchApp = {
 
         if (this.db.prayerRequests.length === 0) {
             listContainer.innerHTML = `<div class="empty-state">🙏<span>Inbox zero — no pending prayer requests.</span></div>`;
+        }
+
+        this.renderBroadcasts();
+    },
+
+    renderBroadcasts() {
+        const log = document.getElementById('broadcast-log');
+        if (log) {
+            const items = (this.db.announcements || []);
+            log.innerHTML = items.map(a => {
+                const audience = a.audience === 'all' ? 'All Campuses' : ((this.db.branches.find(b => b.id === a.audience) || {}).name || a.audience);
+                const when = a.sentAt ? new Date(a.sentAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : '';
+                return `<div class="broadcast-item">
+                    <div class="broadcast-item-head">
+                        <strong>${esc(a.title)}</strong>
+                        <span class="broadcast-when">${esc(when)}</span>
+                    </div>
+                    <p class="broadcast-body">${esc(a.body)}</p>
+                    <div class="broadcast-tags">
+                        <span class="broadcast-audience-pill">👥 ${esc(audience)}</span>
+                        ${(a.channels || []).map(c => `<span class="broadcast-channel-pill">${c === 'email' ? '📧' : c === 'sms' ? '💬' : '🔔'} ${esc(c)}</span>`).join('')}
+                        <span class="broadcast-reach">Delivered to ${esc(a.recipients)} members</span>
+                    </div>
+                </div>`;
+            }).join('') || '<p class="muted-italic" style="font-size:0.8rem;">No broadcasts sent yet.</p>';
+        }
+
+        const form = document.getElementById('broadcast-form');
+        if (form) {
+            form.onsubmit = (e) => {
+                e.preventDefault();
+                const title = document.getElementById('broadcast-title').value.trim();
+                const body = document.getElementById('broadcast-body').value.trim();
+                const audience = document.getElementById('broadcast-audience').value;
+                const channels = [...document.querySelectorAll('.broadcast-channel:checked')].map(c => c.value);
+                if (!title || !body) return;
+                if (channels.length === 0) { this.toast('Pick at least one channel.', 'error'); return; }
+
+                const recipients = audience === 'all'
+                    ? this.db.members.length
+                    : this.db.members.filter(m => m.branchId === audience).length;
+
+                this.db.announcements = this.db.announcements || [];
+                this.db.announcements.unshift({
+                    id: `an_${Date.now()}`,
+                    title, body, audience, channels, recipients,
+                    sentAt: new Date().toISOString()
+                });
+                this.saveDB();
+                form.reset();
+                document.querySelectorAll('.broadcast-channel').forEach(c => { c.checked = (c.value !== 'push'); });
+                this.renderBroadcasts();
+                this.toast(`📣 Broadcast sent to ${recipients} members via ${channels.join(', ')}.`);
+            };
         }
     },
 
