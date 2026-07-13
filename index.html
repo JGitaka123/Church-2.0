@@ -33,6 +33,7 @@
                 <li><a href="#" class="nav-link" data-tab="admin_financials"><span>💰</span> Financials</a></li>
                 <li><a href="#" class="nav-link" data-tab="admin_attendance"><span>✅</span> Attendance</a></li>
                 <li><a href="#" class="nav-link" data-tab="admin_ministry"><span>📅</span> Ministry & Rotas</a></li>
+                <li><a href="#" class="nav-link" data-tab="admin_followups"><span>🧭</span> Follow-Ups</a></li>
                 <li><a href="#" class="nav-link" data-tab="admin_communications"><span>💬</span> Communications</a></li>
                 <li><a href="#" class="nav-link" data-tab="mobile_preview"><span>📱</span> Mobile App Simulator</a></li>
             </nav>
@@ -362,6 +363,24 @@
                     <div style="display:grid; grid-template-columns:1fr; gap:15px;" id="rota-required-roles">
                         <!-- Roster slots populated here -->
                     </div>
+                </div>
+            </section>
+
+            <!-- VIEW PANEL: FOLLOW-UPS / ASSIMILATION PIPELINE -->
+            <section id="admin_followups" class="view-panel" style="display: none;">
+                <div class="card-glass">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+                        <div>
+                            <h3 style="font-family: var(--font-header); font-size:1.05rem;">Assimilation Pipeline</h3>
+                            <span style="font-size:0.75rem; color:var(--text-secondary);">Move first-time guests toward committed membership</span>
+                        </div>
+                        <form id="add-followup-form" class="followup-add-form">
+                            <input type="text" id="followup-name" class="form-control" placeholder="New guest name" required aria-label="New guest name">
+                            <input type="text" id="followup-owner" class="form-control" placeholder="Assign to (owner)" aria-label="Owner">
+                            <button type="submit" class="btn btn-primary-gradient btn-sm">Add Guest</button>
+                        </form>
+                    </div>
+                    <div id="followup-board" class="followup-board"></div>
                 </div>
             </section>
 

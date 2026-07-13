@@ -71,6 +71,12 @@ const ChurchApp = {
         campaigns: [
             { id: 'camp1', name: 'Youth Center Renovation', goal: 8000, fundCategory: 'Project Donation', branchId: 'b1' }
         ],
+        followUps: [
+            { id: 'fu1', name: 'Peter Njoroge', branchId: 'b1', stage: 'New Guest', owner: 'Pastor Joseph', note: 'Visited Sunday service, filled connect card.' },
+            { id: 'fu2', name: 'Linda Achieng', branchId: 'b1', stage: 'Contacted', owner: 'Grace Mwangi', note: 'Called; interested in a small group.' },
+            { id: 'fu3', name: 'Tom Baker', branchId: 'b2', stage: 'Connected', owner: 'Robert Smith', note: 'Joined the Tuesday home group.' },
+            { id: 'fu4', name: 'Aisha Khan', branchId: 'b3', stage: 'New Guest', owner: 'Michael Patel', note: 'First-time guest at London campus.' }
+        ],
         events: [
             { id: 'e1', branchId: 'b1', title: 'Youth Praise Night', description: 'An evening of worship, drama, and networking for young adults.', date: '2026-07-19', time: '18:00', rolesRequired: ['Worship Vocals', 'Keyboard', 'Guitar', 'Sound Engineering', 'Greeting'], volunteersSignedUp: ['m1'] },
             { id: 'e2', branchId: 'b2', title: 'Dallas Community Charity Drive', description: 'Providing food, clothing, and shelter assistance to local families.', date: '2026-07-25', time: '09:00', rolesRequired: ['Greeting', 'First Aid', 'Security'], volunteersSignedUp: ['m6'] },
@@ -158,6 +164,15 @@ const ChurchApp = {
         if (!Array.isArray(this.db.recurringGifts)) { this.db.recurringGifts = []; changed = true; }
         if (!Array.isArray(this.db.campaigns)) {
             this.db.campaigns = [{ id: 'camp1', name: 'Youth Center Renovation', goal: 8000, fundCategory: 'Project Donation', branchId: 'b1' }];
+            changed = true;
+        }
+        if (!Array.isArray(this.db.followUps)) {
+            this.db.followUps = [
+                { id: 'fu1', name: 'Peter Njoroge', branchId: 'b1', stage: 'New Guest', owner: 'Pastor Joseph', note: 'Visited Sunday service, filled connect card.' },
+                { id: 'fu2', name: 'Linda Achieng', branchId: 'b1', stage: 'Contacted', owner: 'Grace Mwangi', note: 'Called; interested in a small group.' },
+                { id: 'fu3', name: 'Tom Baker', branchId: 'b2', stage: 'Connected', owner: 'Robert Smith', note: 'Joined the Tuesday home group.' },
+                { id: 'fu4', name: 'Aisha Khan', branchId: 'b3', stage: 'New Guest', owner: 'Michael Patel', note: 'First-time guest at London campus.' }
+            ];
             changed = true;
         }
         if (!Array.isArray(this.db.attendance) || this.db.attendance.length === 0) {
@@ -380,6 +395,7 @@ const ChurchApp = {
         const financialsLink = document.querySelector('.nav-link[data-tab="admin_financials"]');
         const attendanceLink = document.querySelector('.nav-link[data-tab="admin_attendance"]');
         const ministryLink = document.querySelector('.nav-link[data-tab="admin_ministry"]');
+        const followupsLink = document.querySelector('.nav-link[data-tab="admin_followups"]');
         const communicationLink = document.querySelector('.nav-link[data-tab="admin_communications"]');
         const dashboardLink = document.querySelector('.nav-link[data-tab="admin_dashboard"]');
         const mobilePreviewLink = document.querySelector('.nav-link[data-tab="mobile_preview"]');
@@ -399,6 +415,7 @@ const ChurchApp = {
             financialsLink.style.display = 'none';
             attendanceLink.style.display = 'none';
             ministryLink.style.display = 'none';
+            followupsLink.style.display = 'none';
             communicationLink.style.display = 'none';
             dashboardLink.style.display = 'none';
             mobilePreviewLink.style.display = 'flex';
@@ -407,6 +424,7 @@ const ChurchApp = {
             financialsLink.style.display = 'flex';
             attendanceLink.style.display = 'flex';
             ministryLink.style.display = 'flex';
+            followupsLink.style.display = 'flex';
             communicationLink.style.display = 'flex';
             dashboardLink.style.display = 'flex';
             mobilePreviewLink.style.display = 'flex';
@@ -418,7 +436,7 @@ const ChurchApp = {
         }
 
         // Render main view panels
-        const panels = ['admin_dashboard', 'admin_directory', 'admin_financials', 'admin_attendance', 'admin_ministry', 'admin_communications', 'mobile_preview'];
+        const panels = ['admin_dashboard', 'admin_directory', 'admin_financials', 'admin_attendance', 'admin_ministry', 'admin_followups', 'admin_communications', 'mobile_preview'];
         panels.forEach(p => {
             const panelEl = document.getElementById(p);
             if (panelEl) {
@@ -437,6 +455,8 @@ const ChurchApp = {
             this.renderAttendance();
         } else if (activeTab === 'admin_ministry') {
             this.renderMinistry();
+        } else if (activeTab === 'admin_followups') {
+            this.renderFollowUps();
         } else if (activeTab === 'admin_communications') {
             this.renderCommunications();
         } else if (activeTab === 'mobile_preview') {
@@ -772,6 +792,86 @@ const ChurchApp = {
             ${atRisk.length ? `<ul class="at-risk-list" style="margin-top:8px;">
                 ${atRisk.slice(0, 5).map(m => `<li>${esc(m.firstName)} ${esc(m.lastName)}</li>`).join('')}
             </ul>` : '<p class="muted-italic" style="margin-top:8px;">No members in an absence streak — healthy engagement. 🎉</p>'}`;
+    },
+
+    // Panel: Follow-Ups / Assimilation Pipeline (kanban)
+    FOLLOWUP_STAGES: ['New Guest', 'Contacted', 'Connected', 'Member'],
+
+    renderFollowUps() {
+        const branchId = this.session.currentBranch;
+        const inScope = (m) => (!branchId || branchId === 'global') ? true : m.branchId === branchId;
+        const items = (this.db.followUps || []).filter(inScope);
+        const board = document.getElementById('followup-board');
+        if (!board) return;
+
+        const stageMeta = {
+            'New Guest': { icon: '👋', tone: 'guest' },
+            'Contacted': { icon: '📞', tone: 'contacted' },
+            'Connected': { icon: '🤝', tone: 'connected' },
+            'Member': { icon: '⭐', tone: 'member' }
+        };
+
+        board.innerHTML = this.FOLLOWUP_STAGES.map((stage, sIdx) => {
+            const inStage = items.filter(i => i.stage === stage);
+            const cards = inStage.map(i => {
+                const canBack = sIdx > 0;
+                const canFwd = sIdx < this.FOLLOWUP_STAGES.length - 1;
+                return `<div class="followup-card">
+                    <div class="followup-card-top">
+                        <strong>${esc(i.name)}</strong>
+                        <span class="branch-pill badge-${esc(i.branchId)}">${esc((this.db.branches.find(b => b.id === i.branchId) || {}).name || '')}</span>
+                    </div>
+                    ${i.owner ? `<div class="followup-owner">👤 ${esc(i.owner)}</div>` : ''}
+                    ${i.note ? `<p class="followup-note">${esc(i.note)}</p>` : ''}
+                    <div class="followup-actions">
+                        <button class="followup-move" ${canBack ? '' : 'disabled'} aria-label="Move ${esc(i.name)} back" onclick="ChurchApp.moveFollowUp('${esc(i.id)}', -1)">←</button>
+                        <button class="followup-move fwd" ${canFwd ? '' : 'disabled'} aria-label="Advance ${esc(i.name)}" onclick="ChurchApp.moveFollowUp('${esc(i.id)}', 1)">${canFwd ? 'Advance →' : 'Assimilated ✓'}</button>
+                    </div>
+                </div>`;
+            }).join('') || '<p class="followup-empty muted-italic">Empty</p>';
+
+            return `<div class="followup-col tone-${stageMeta[stage].tone}">
+                <div class="followup-col-head">
+                    <span>${stageMeta[stage].icon} ${esc(stage)}</span>
+                    <span class="followup-count">${inStage.length}</span>
+                </div>
+                <div class="followup-col-body">${cards}</div>
+            </div>`;
+        }).join('');
+
+        const form = document.getElementById('add-followup-form');
+        if (form) {
+            form.onsubmit = (e) => {
+                e.preventDefault();
+                const name = document.getElementById('followup-name').value.trim();
+                const owner = document.getElementById('followup-owner').value.trim();
+                if (!name) return;
+                const targetBranch = (branchId && branchId !== 'global') ? branchId : 'b1';
+                this.db.followUps.unshift({
+                    id: `fu_${Date.now()}`,
+                    name, owner: owner || 'Unassigned',
+                    branchId: targetBranch,
+                    stage: 'New Guest',
+                    note: ''
+                });
+                this.saveDB();
+                form.reset();
+                this.renderFollowUps();
+                this.toast(`${name} added to the assimilation pipeline.`);
+            };
+        }
+    },
+
+    moveFollowUp(id, dir) {
+        const item = (this.db.followUps || []).find(i => i.id === id);
+        if (!item) return;
+        const idx = this.FOLLOWUP_STAGES.indexOf(item.stage);
+        const next = idx + dir;
+        if (next < 0 || next >= this.FOLLOWUP_STAGES.length) return;
+        item.stage = this.FOLLOWUP_STAGES[next];
+        this.saveDB();
+        this.renderFollowUps();
+        if (item.stage === 'Member') this.toast(`🎉 ${item.name} is now a committed member!`);
     },
 
     // 8. Panel: Member Directory View Rendering
