@@ -563,9 +563,19 @@
 
                             <!-- SCREEN SUBVIEW 3: BIBLE READER -->
                             <div id="mobile-bible" class="mobile-app-body" style="display:none;">
-                                <div class="mobile-header">
-                                    <h3>Interactive Scriptures</h3>
+                                <div class="mobile-header" style="display:flex; justify-content:space-between; align-items:center;">
+                                    <h3>Scriptures</h3>
+                                    <span id="reading-streak" class="reading-streak"></span>
                                 </div>
+
+                                <!-- Verse of the Day -->
+                                <div id="verse-of-day" class="verse-of-day"></div>
+
+                                <!-- Reading plans -->
+                                <h4 style="font-size:0.8rem; font-family:var(--font-header); margin:14px 0 8px; color:#fff;">Reading Plans</h4>
+                                <div id="reading-plans" style="display:flex; flex-direction:column; gap:10px;"></div>
+
+                                <h4 style="font-size:0.8rem; font-family:var(--font-header); margin:16px 0 8px; color:#fff;">Search the Word</h4>
                                 <div style="display:flex; gap:6px; margin-bottom:8px;">
                                     <select id="mobile-bible-book" class="select-custom" style="flex-grow:1; padding:6px; font-size:0.75rem;">
                                         <option value="all">All Books</option>

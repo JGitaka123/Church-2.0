@@ -86,6 +86,25 @@ const ChurchApp = {
         announcements: [
             { id: 'an1', title: 'Baptism Sunday — sign up now', body: 'We are holding a baptism service on the last Sunday of the month. Speak to a pastor or reply to register.', audience: 'all', channels: ['email', 'push'], recipients: 10, sentAt: '2026-07-06T09:00:00Z' }
         ],
+        readingPlans: [
+            { id: 'rp1', title: '7 Days of Peace', emoji: '🕊️', days: [
+                { ref: 'John 14:27', text: 'Peace I leave with you; my peace I give to you.' },
+                { ref: 'Philippians 4:6-7', text: 'Do not be anxious about anything, but in everything by prayer... present your requests to God.' },
+                { ref: 'Isaiah 26:3', text: 'You keep him in perfect peace whose mind is stayed on you.' },
+                { ref: 'Psalm 4:8', text: 'In peace I will both lie down and sleep; for you alone, O Lord, make me dwell in safety.' },
+                { ref: 'Matthew 11:28', text: 'Come to me, all who labor and are heavy laden, and I will give you rest.' },
+                { ref: 'Colossians 3:15', text: 'Let the peace of Christ rule in your hearts.' },
+                { ref: 'Romans 15:13', text: 'May the God of hope fill you with all joy and peace in believing.' }
+            ]},
+            { id: 'rp2', title: 'Foundations of Faith', emoji: '🌱', days: [
+                { ref: 'Hebrews 11:1', text: 'Now faith is the assurance of things hoped for, the conviction of things not seen.' },
+                { ref: 'Ephesians 2:8', text: 'For by grace you have been saved through faith.' },
+                { ref: 'Romans 10:17', text: 'So faith comes from hearing, and hearing through the word of Christ.' },
+                { ref: 'James 2:17', text: 'So also faith by itself, if it does not have works, is dead.' },
+                { ref: 'Mark 11:24', text: 'Whatever you ask in prayer, believe that you have received it, and it will be yours.' }
+            ]}
+        ],
+        readingState: {},
         events: [
             { id: 'e1', branchId: 'b1', title: 'Youth Praise Night', description: 'An evening of worship, drama, and networking for young adults.', date: '2026-07-19', time: '18:00', rolesRequired: ['Worship Vocals', 'Keyboard', 'Guitar', 'Sound Engineering', 'Greeting'], volunteersSignedUp: ['m1'] },
             { id: 'e2', branchId: 'b2', title: 'Dallas Community Charity Drive', description: 'Providing food, clothing, and shelter assistance to local families.', date: '2026-07-25', time: '09:00', rolesRequired: ['Greeting', 'First Aid', 'Security'], volunteersSignedUp: ['m6'] },
@@ -197,6 +216,31 @@ const ChurchApp = {
             this.db.announcements = [
                 { id: 'an1', title: 'Baptism Sunday — sign up now', body: 'We are holding a baptism service on the last Sunday of the month. Speak to a pastor or reply to register.', audience: 'all', channels: ['email', 'push'], recipients: 10, sentAt: '2026-07-06T09:00:00Z' }
             ];
+            changed = true;
+        }
+        if (!Array.isArray(this.db.readingPlans)) {
+            this.db.readingPlans = [
+                { id: 'rp1', title: '7 Days of Peace', emoji: '🕊️', days: [
+                    { ref: 'John 14:27', text: 'Peace I leave with you; my peace I give to you.' },
+                    { ref: 'Philippians 4:6-7', text: 'Do not be anxious about anything, but in everything by prayer... present your requests to God.' },
+                    { ref: 'Isaiah 26:3', text: 'You keep him in perfect peace whose mind is stayed on you.' },
+                    { ref: 'Psalm 4:8', text: 'In peace I will both lie down and sleep; for you alone, O Lord, make me dwell in safety.' },
+                    { ref: 'Matthew 11:28', text: 'Come to me, all who labor and are heavy laden, and I will give you rest.' },
+                    { ref: 'Colossians 3:15', text: 'Let the peace of Christ rule in your hearts.' },
+                    { ref: 'Romans 15:13', text: 'May the God of hope fill you with all joy and peace in believing.' }
+                ]},
+                { id: 'rp2', title: 'Foundations of Faith', emoji: '🌱', days: [
+                    { ref: 'Hebrews 11:1', text: 'Now faith is the assurance of things hoped for, the conviction of things not seen.' },
+                    { ref: 'Ephesians 2:8', text: 'For by grace you have been saved through faith.' },
+                    { ref: 'Romans 10:17', text: 'So faith comes from hearing, and hearing through the word of Christ.' },
+                    { ref: 'James 2:17', text: 'So also faith by itself, if it does not have works, is dead.' },
+                    { ref: 'Mark 11:24', text: 'Whatever you ask in prayer, believe that you have received it, and it will be yours.' }
+                ]}
+            ];
+            changed = true;
+        }
+        if (!this.db.readingState || typeof this.db.readingState !== 'object' || Array.isArray(this.db.readingState)) {
+            this.db.readingState = {};
             changed = true;
         }
         if (!Array.isArray(this.db.attendance) || this.db.attendance.length === 0) {
@@ -1862,12 +1906,104 @@ const ChurchApp = {
         `;
     },
 
+    // Deterministic Verse of the Day — same verse for everyone on a given date.
+    renderVerseOfDay() {
+        const el = document.getElementById('verse-of-day');
+        if (!el) return;
+        const pool = [
+            { ref: 'Lamentations 3:22-23', text: 'His mercies never come to an end; they are new every morning.' },
+            { ref: 'Joshua 1:9', text: 'Be strong and courageous. Do not be frightened, for the Lord your God is with you wherever you go.' },
+            { ref: 'Psalm 118:24', text: 'This is the day that the Lord has made; let us rejoice and be glad in it.' },
+            { ref: 'Proverbs 3:5-6', text: 'Trust in the Lord with all your heart, and do not lean on your own understanding.' },
+            { ref: 'Zephaniah 3:17', text: 'The Lord your God is in your midst, a mighty one who will save.' },
+            { ref: '2 Corinthians 12:9', text: 'My grace is sufficient for you, for my power is made perfect in weakness.' },
+            { ref: 'Psalm 46:1', text: 'God is our refuge and strength, a very present help in trouble.' }
+        ];
+        const now = new Date();
+        const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
+        const v = pool[dayOfYear % pool.length];
+        el.innerHTML = `
+            <span class="votd-eyebrow">✨ Verse of the Day</span>
+            <p class="votd-text">"${esc(v.text)}"</p>
+            <span class="votd-ref">— ${esc(v.ref)}</span>`;
+    },
+
+    _todayStr() { return new Date().toISOString().split('T')[0]; },
+
+    getReadingState() {
+        this.db.readingState = this.db.readingState || {};
+        if (!this.db.readingState.m1) {
+            this.db.readingState.m1 = { streak: 0, lastReadDate: null, plans: {} };
+        }
+        return this.db.readingState.m1;
+    },
+
+    renderReadingPlans() {
+        const state = this.getReadingState();
+        const streakEl = document.getElementById('reading-streak');
+        if (streakEl) {
+            streakEl.innerHTML = state.streak > 0 ? `🔥 ${state.streak}-day streak` : '';
+        }
+
+        const container = document.getElementById('reading-plans');
+        if (!container) return;
+        container.innerHTML = (this.db.readingPlans || []).map(plan => {
+            const done = state.plans[plan.id] || [];
+            const total = plan.days.length;
+            const pct = Math.round((done.length / total) * 100);
+            // "Today's reading" = first uncompleted day, else the last day.
+            let todayIdx = plan.days.findIndex((_, i) => !done.includes(i));
+            if (todayIdx === -1) todayIdx = total - 1;
+            const day = plan.days[todayIdx];
+            const complete = done.includes(todayIdx);
+            const finished = done.length === total;
+            return `<div class="reading-plan-card">
+                <div class="reading-plan-head">
+                    <strong>${esc(plan.emoji)} ${esc(plan.title)}</strong>
+                    <span class="reading-plan-progress">${done.length}/${total}</span>
+                </div>
+                <div class="reading-bar"><div class="reading-bar-fill" style="width:${pct}%;"></div></div>
+                ${finished
+                    ? `<p class="reading-done">✅ Plan complete — well done!</p>`
+                    : `<div class="reading-today">
+                        <span class="reading-day-label">Day ${todayIdx + 1}: ${esc(day.ref)}</span>
+                        <p class="reading-day-text">"${esc(day.text)}"</p>
+                        <button class="reading-mark-btn${complete ? ' done' : ''}" onclick="ChurchApp.markReadingDay('${esc(plan.id)}', ${todayIdx})">${complete ? 'Completed ✓' : 'Mark as read'}</button>
+                    </div>`}
+            </div>`;
+        }).join('');
+    },
+
+    markReadingDay(planId, dayIdx) {
+        const state = this.getReadingState();
+        state.plans[planId] = state.plans[planId] || [];
+        const arr = state.plans[planId];
+        if (arr.includes(dayIdx)) return; // already read
+
+        arr.push(dayIdx);
+
+        // Update streak on the first reading of a new calendar day.
+        const today = this._todayStr();
+        if (state.lastReadDate !== today) {
+            const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+            state.streak = (state.lastReadDate === yesterday) ? state.streak + 1 : 1;
+            state.lastReadDate = today;
+        }
+
+        this.saveDB();
+        this.renderReadingPlans();
+        this.toast('📖 Reading complete. Keep the streak going!');
+    },
+
     renderMobileBible() {
+        this.renderVerseOfDay();
+        this.renderReadingPlans();
+
         const verseContainer = document.getElementById('mobile-bible-verses');
         const searchInput = document.getElementById('mobile-bible-search').value.toLowerCase();
         const selectedBook = document.getElementById('mobile-bible-book').value;
         const selectedChapter = document.getElementById('mobile-bible-chapter').value;
-        
+
         // Mock bible translation data
         const bibleData = [
             { ref: 'Malachi 3:10', text: 'Bring the full tithe into the storehouse, that there may be food in my house. And thereby put me to the test, says the Lord of hosts.' },
