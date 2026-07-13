@@ -138,6 +138,8 @@ Scale: 🟢 competitive · 🟡 partial · 🔴 missing/broken
 
 Sequenced for **maximum credibility gain per unit of work**, staying within the app's no‑backend constraint (everything runs client‑side on the seeded DB) unless noted.
 
+> **Implementation status (July 2026):** Phases 1–4 and the client‑side‑feasible parts of Phase 5 are **complete** — real attendance/analytics, attendance & check‑in, recurring giving + pledges + tax statements, the assimilation pipeline, small groups, broadcast announcements, scripture reading plans/streaks/VOTD, and a login + MFA‑mock + RBAC gate. Remaining: a real cloud backend, live payment processing, and production auth (Phase 5's server‑side portion), which require infrastructure beyond this client‑side app.
+
 ### Phase 1 — Integrity (make the analytics honest) ⬅ *doing first*
 1. Add real **attendance records** to the DB; derive dashboard attendance & week‑over‑week change from data (remove `Math.random`).
 2. Rewrite the AI weekly briefing to report **only real, computed numbers** (no hardcoded 82% / 8% / 10:30 AM).
