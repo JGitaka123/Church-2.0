@@ -67,6 +67,10 @@ const ChurchApp = {
         ],
         transactions: [],
         attendance: [],
+        recurringGifts: [],
+        campaigns: [
+            { id: 'camp1', name: 'Youth Center Renovation', goal: 8000, fundCategory: 'Project Donation', branchId: 'b1' }
+        ],
         events: [
             { id: 'e1', branchId: 'b1', title: 'Youth Praise Night', description: 'An evening of worship, drama, and networking for young adults.', date: '2026-07-19', time: '18:00', rolesRequired: ['Worship Vocals', 'Keyboard', 'Guitar', 'Sound Engineering', 'Greeting'], volunteersSignedUp: ['m1'] },
             { id: 'e2', branchId: 'b2', title: 'Dallas Community Charity Drive', description: 'Providing food, clothing, and shelter assistance to local families.', date: '2026-07-25', time: '09:00', rolesRequired: ['Greeting', 'First Aid', 'Security'], volunteersSignedUp: ['m6'] },
@@ -151,6 +155,11 @@ const ChurchApp = {
         if (!Array.isArray(this.db.events)) { this.db.events = []; changed = true; }
         if (!Array.isArray(this.db.sermons)) { this.db.sermons = []; changed = true; }
         if (!Array.isArray(this.db.prayerRequests)) { this.db.prayerRequests = []; changed = true; }
+        if (!Array.isArray(this.db.recurringGifts)) { this.db.recurringGifts = []; changed = true; }
+        if (!Array.isArray(this.db.campaigns)) {
+            this.db.campaigns = [{ id: 'camp1', name: 'Youth Center Renovation', goal: 8000, fundCategory: 'Project Donation', branchId: 'b1' }];
+            changed = true;
+        }
         if (!Array.isArray(this.db.attendance) || this.db.attendance.length === 0) {
             this.generateInitialAttendance();
             changed = true;
@@ -870,7 +879,10 @@ const ChurchApp = {
                     </div>
 
                     <div style="margin-top: 20px;">
-                        <h4>Recent Giving Ledger</h4>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <h4>Recent Giving Ledger</h4>
+                            <button class="btn btn-secondary btn-sm" onclick="ChurchApp.viewGivingStatement('${esc(member.id)}')">📄 Giving Statement</button>
+                        </div>
                         <table class="financial-table" style="margin-top: 8px;">
                             <thead>
                                 <tr>
@@ -989,6 +1001,110 @@ const ChurchApp = {
 
         // Bind quick export buttons
         document.getElementById('export-csv-btn').onclick = () => this.exportFinancialCSV(filteredTx);
+
+        // Campaign progress + recurring-gift insights strip
+        this.renderGivingInsights(branchId);
+    },
+
+    renderGivingInsights(branchId) {
+        const el = document.getElementById('giving-insights');
+        if (!el) return;
+        const inScope = (bId) => (!branchId || branchId === 'global') ? true : bId === branchId;
+
+        // Pledge campaigns: raised = sum of matching-fund transactions in scope
+        const campaigns = (this.db.campaigns || []).filter(c => inScope(c.branchId) || (branchId === 'global'));
+        const campaignCards = campaigns.map(c => {
+            const raised = this.db.transactions
+                .filter(t => t.category === c.fundCategory && inScope(t.branchId))
+                .reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
+            const pct = c.goal ? Math.min(100, Math.round((raised / c.goal) * 100)) : 0;
+            const money = (n) => `$${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+            return `<div class="card-glass campaign-card">
+                <div class="campaign-head">
+                    <div>
+                        <span class="campaign-eyebrow">🏗️ Pledge Campaign</span>
+                        <h4>${esc(c.name)}</h4>
+                    </div>
+                    <span class="campaign-pct">${pct}%</span>
+                </div>
+                <div class="campaign-bar"><div class="campaign-bar-fill" style="width:${pct}%;"></div></div>
+                <div class="campaign-figures"><strong>${money(raised)}</strong> raised of ${money(c.goal)} goal</div>
+            </div>`;
+        }).join('');
+
+        // Active recurring gifts in scope
+        const recurring = (this.db.recurringGifts || []).filter(r => r.active && inScope(r.branchId));
+        const recurringTotal = recurring.reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
+        const recurringCard = `<div class="card-glass campaign-card">
+            <span class="campaign-eyebrow">🔁 Recurring Giving</span>
+            <h4>${recurring.length} active schedule${recurring.length === 1 ? '' : 's'}</h4>
+            <div class="campaign-figures"><strong>$${recurringTotal.toFixed(2)}</strong> committed per cycle</div>
+            ${recurring.length ? `<ul class="recurring-list">${recurring.slice(0, 3).map(r =>
+                `<li>${esc(r.memberName)} — $${parseFloat(r.amount).toFixed(2)} ${esc(r.frequency)} (${esc(r.category)})</li>`).join('')}</ul>` : ''}
+        </div>`;
+
+        el.innerHTML = campaignCards + recurringCard;
+    },
+
+    // Printable, tax-ready annual giving statement for one member.
+    viewGivingStatement(memberId) {
+        const member = this.db.members.find(m => m.id === memberId);
+        if (!member) return;
+        const year = new Date().getFullYear();
+        const gifts = this.db.transactions
+            .filter(t => t.memberId === memberId && new Date(t.date).getFullYear() === year)
+            .sort((a, b) => new Date(a.date) - new Date(b.date));
+        const total = gifts.reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
+        const money = (n) => `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+        const byFund = {};
+        gifts.forEach(t => { byFund[t.category] = (byFund[t.category] || 0) + (parseFloat(t.amount) || 0); });
+
+        const modal = document.getElementById('receipt-modal');
+        modal.innerHTML = `
+            <div class="modal-card statement-card" role="dialog" aria-modal="true" aria-labelledby="statement-title">
+                <div class="modal-header">
+                    <h3 id="statement-title">${year} Annual Giving Statement</h3>
+                    <button class="modal-close" aria-label="Close statement" onclick="ChurchApp.closeModal('receipt-modal')">×</button>
+                </div>
+                <div class="modal-body receipt-print-area scroll-y">
+                    <div class="receipt-header">
+                        <h2>CHURCH 2.0 ECOSYSTEM</h2>
+                        <p>${esc(member.branchName)}</p>
+                    </div>
+                    <p style="margin-top:10px;"><strong>${esc(member.firstName)} ${esc(member.lastName)}</strong><br>
+                    <span style="color:var(--text-secondary); font-size:0.8rem;">${esc(member.email)}</span></p>
+                    <p style="font-size:0.75rem; color:var(--text-secondary); margin-top:8px;">
+                        Tax-deductible contributions for the ${year} calendar year. No goods or services were provided in exchange for these gifts.
+                    </p>
+                    <hr style="border:0; border-top:1px dashed rgba(150,150,150,0.4); margin:14px 0;">
+                    <table class="financial-table">
+                        <thead><tr><th>Date</th><th>Fund</th><th>Method</th><th style="text-align:right;">Amount</th></tr></thead>
+                        <tbody>
+                            ${gifts.map(t => `<tr>
+                                <td>${esc(t.date)}</td>
+                                <td>${esc(t.category)}</td>
+                                <td>${esc(t.paymentMethod)}</td>
+                                <td style="text-align:right;">${money(parseFloat(t.amount))}</td>
+                            </tr>`).join('') || `<tr><td colspan="4" class="muted-italic" style="text-align:center;">No ${year} contributions on record.</td></tr>`}
+                        </tbody>
+                    </table>
+                    <div class="statement-by-fund">
+                        ${Object.keys(byFund).map(f => `<span class="statement-fund-pill">${esc(f)}: ${money(byFund[f])}</span>`).join('')}
+                    </div>
+                    <div class="receipt-row total-row" style="margin-top:14px;">
+                        <span style="font-size:1.05rem;">TOTAL ${year} CONTRIBUTIONS</span>
+                        <strong style="color:#10b981; font-size:1.35rem;">${money(total)}</strong>
+                    </div>
+                    <p style="font-size:0.7rem; color:var(--text-secondary); margin-top:14px;">Church 2.0 is a registered place of worship. Retain this statement for your tax records.</p>
+                </div>
+                <div style="display:flex; gap:8px; margin-top:15px; justify-content:flex-end;">
+                    <button class="btn btn-secondary" onclick="window.print()">Print / Save PDF</button>
+                    <button class="btn btn-primary-gradient" onclick="ChurchApp.closeModal('receipt-modal')">Close</button>
+                </div>
+            </div>
+        `;
+        this.openModal('receipt-modal');
     },
 
     handleRecordTransaction() {
@@ -1541,6 +1657,11 @@ const ChurchApp = {
         };
     },
 
+    // Processing fee model used for the "cover the fees" option (card rate).
+    givingFee(amount) {
+        return Math.round((amount * 0.029 + 0.30) * 100) / 100;
+    },
+
     renderMobileGive() {
         // Generates dropdown options for giving branches
         const select = document.getElementById('mobile-giving-branch');
@@ -1551,22 +1672,54 @@ const ChurchApp = {
             opt.text = b.name;
             select.appendChild(opt);
         });
+
+        const amountInput = document.getElementById('mobile-giving-amount');
+        const feeLabel = document.getElementById('give-fees-amount');
+        const coverFees = document.getElementById('mobile-giving-cover-fees');
+        const updateFee = () => {
+            const amt = parseFloat(amountInput.value) || 0;
+            if (feeLabel) feeLabel.textContent = `$${this.givingFee(amt).toFixed(2)}`;
+        };
+
+        // Quick-amount chips
+        document.querySelectorAll('#mobile-give .give-chip').forEach(chip => {
+            chip.onclick = () => {
+                amountInput.value = chip.dataset.amount;
+                document.querySelectorAll('#mobile-give .give-chip').forEach(c => c.classList.remove('is-active'));
+                chip.classList.add('is-active');
+                updateFee();
+            };
+        });
+        amountInput.oninput = () => {
+            document.querySelectorAll('#mobile-give .give-chip').forEach(c => c.classList.remove('is-active'));
+            updateFee();
+        };
+        if (coverFees) coverFees.onchange = updateFee;
+        updateFee();
     },
 
     handleMobileGiving() {
         const branchId = document.getElementById('mobile-giving-branch').value;
-        const amount = parseFloat(document.getElementById('mobile-giving-amount').value);
+        let amount = parseFloat(document.getElementById('mobile-giving-amount').value);
         const category = document.getElementById('mobile-giving-category').value;
         const method = document.getElementById('mobile-giving-method').value;
+        const frequency = document.getElementById('mobile-giving-frequency').value;
+        const coverFees = document.getElementById('mobile-giving-cover-fees').checked;
 
         if (isNaN(amount) || amount <= 0) return;
+
+        let feeAdded = 0;
+        if (coverFees) {
+            feeAdded = this.givingFee(amount);
+            amount = Math.round((amount + feeAdded) * 100) / 100;
+        }
 
         const branchObj = this.db.branches.find(b => b.id === branchId);
 
         // Assume logged-in member John Kamau (m1) is doing the giving
         const loggedInMemberId = 'm1';
         const memberObj = this.db.members.find(m => m.id === loggedInMemberId);
-        
+
         const newTx = {
             id: `t_${Date.now()}`,
             branchId,
@@ -1581,13 +1734,35 @@ const ChurchApp = {
         };
 
         this.db.transactions.unshift(newTx);
-        
+
+        // Recurring schedule
+        let recurringNote = '';
+        if (frequency !== 'once') {
+            this.db.recurringGifts = this.db.recurringGifts || [];
+            const next = new Date();
+            next.setDate(next.getDate() + (frequency === 'weekly' ? 7 : 30));
+            this.db.recurringGifts.unshift({
+                id: `rec_${Date.now()}`,
+                memberId: loggedInMemberId,
+                memberName: `${memberObj.firstName} ${memberObj.lastName}`,
+                branchId,
+                branchName: branchObj.name,
+                amount,
+                category,
+                frequency,
+                method,
+                nextDate: next.toISOString().split('T')[0],
+                active: true
+            });
+            recurringNote = `<p style="font-size:0.7rem; color:#34d399; margin-top:6px;">🔁 Recurring ${esc(frequency)} gift scheduled — next on ${esc(next.toISOString().split('T')[0])}.</p>`;
+        }
+
         // Boost engagement index
         memberObj.engagement_score = Math.min(memberObj.engagement_score + 5, 100);
         this.saveDB();
 
         document.getElementById('mobile-giving-form').reset();
-        
+
         // Generate simulated mobile success dialog
         const modal = document.getElementById('mobile-giving-success-overlay');
         modal.style.display = 'flex';
@@ -1595,8 +1770,9 @@ const ChurchApp = {
             <div style="background: #1c1c2d; padding:20px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); width: 85%; max-width:280px; text-align:center;">
                 <span style="font-size:3rem;">🎉</span>
                 <h4 style="color:#fff; margin-top:10px;">Giving Successful!</h4>
-                <p style="font-size:0.75rem; color:#9ca3af; margin-top:5px;">Thank you for your donation of <strong style="color:#fff;">$${amount.toFixed(2)}</strong> toward ${esc(category)}.</p>
+                <p style="font-size:0.75rem; color:#9ca3af; margin-top:5px;">Thank you for your donation of <strong style="color:#fff;">$${amount.toFixed(2)}</strong> toward ${esc(category)}.${feeAdded ? ` <span style="color:#9ca3af;">(includes $${feeAdded.toFixed(2)} fees)</span>` : ''}</p>
                 <p style="font-size:0.7rem; color:#a5b4fc; font-weight:bold; margin-top:8px;">Receipt Generated: ${esc(newTx.receiptNumber)}</p>
+                ${recurringNote}
                 <button class="btn btn-primary-gradient btn-sm" style="margin-top:15px; width:100%;" onclick="document.getElementById('mobile-giving-success-overlay').style.display='none'">Awesome</button>
             </div>
         `;

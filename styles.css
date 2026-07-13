@@ -1565,3 +1565,92 @@ body.theme-cyber .member-email { color: #00f2fe; }
 body.theme-light .attendance-headcount strong,
 body.theme-light .attendance-status.is-absent { color: #334155; }
 body.theme-light .attendance-toggle { background: rgba(15, 23, 42, 0.18); }
+
+
+/* ==========================================================================
+   Giving upgrades (v2): campaigns, recurring, chips, statements
+   ========================================================================== */
+.giving-insights {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-bottom: 6px;
+}
+.campaign-card { padding: 18px; }
+.campaign-head { display: flex; justify-content: space-between; align-items: flex-start; }
+.campaign-eyebrow {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #a5b4fc;
+}
+.campaign-card h4 { font-family: var(--font-header); font-size: 1rem; margin-top: 4px; color: var(--text-primary); }
+.campaign-pct { font-family: var(--font-header); font-weight: 700; font-size: 1.2rem; color: var(--success-green); }
+.campaign-bar {
+    margin: 12px 0 8px;
+    height: 10px;
+    border-radius: 999px;
+    background: rgba(148, 163, 184, 0.2);
+    overflow: hidden;
+}
+.campaign-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #10b981, #34d399);
+    transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.campaign-figures { font-size: 0.82rem; color: var(--text-secondary); }
+.campaign-figures strong { color: var(--text-primary); }
+.recurring-list { list-style: none; margin: 10px 0 0; padding: 0; }
+.recurring-list li { font-size: 0.75rem; color: var(--text-secondary); padding: 2px 0; }
+
+/* Quick-amount chips + cover-fees row (member giving) */
+.give-quick-chips { display: flex; gap: 6px; margin-bottom: 6px; }
+.give-chip {
+    flex: 1;
+    padding: 6px 4px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.give-chip:hover { border-color: #8b5cf6; }
+.give-chip.is-active {
+    background: var(--primary-gradient);
+    border-color: transparent;
+    color: #fff;
+}
+.give-fees-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+.give-fees-row input { width: 15px; height: 15px; accent-color: #8b5cf6; }
+
+/* Annual statement modal */
+.statement-card { max-width: 560px; width: 92%; }
+.statement-by-fund { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.statement-fund-pill {
+    font-size: 0.72rem;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: rgba(99, 102, 241, 0.15);
+    color: #a5b4fc;
+}
+
+body.theme-light .give-chip { color: #0f172a; background: rgba(15,23,42,0.04); border-color: rgba(15,23,42,0.12); }
+body.theme-light .campaign-bar { background: rgba(15, 23, 42, 0.12); }
+
+@media print {
+    .sidebar, .global-header, .modal-close, .btn { display: none !important; }
+    .modal-overlay { position: static !important; background: #fff !important; }
+    .statement-card, .receipt-card { box-shadow: none !important; border: none !important; color: #000 !important; }
+}
