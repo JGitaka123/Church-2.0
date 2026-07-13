@@ -214,68 +214,122 @@ const AIEngine = {
     },
 
     // 2. Weekly Ministry Health Snapshot Compiler
-    generateWeeklySnapshot(branches, members, transactions, events) {
-        // Calculate total giving this week vs last week (simulated)
-        // Assume transactions before 7 days are "last week"
+    // Every figure below is derived from real transaction & attendance records
+    // for the given scope. No Math.random(), no hardcoded percentages.
+    generateWeeklySnapshot(branches, members, transactions, events, attendance) {
+        attendance = Array.isArray(attendance) ? attendance : [];
+
+        // Helper: format a signed percentage, or a friendly label when there is
+        // no prior-period baseline to compare against (avoids fake "+X%").
+        const pctChange = (current, previous) => {
+            if (!previous || previous === 0) {
+                return current > 0 ? { text: 'new', up: true, hasBaseline: false }
+                                   : { text: '0%', up: true, hasBaseline: false };
+            }
+            const pct = ((current - previous) / previous) * 100;
+            const sign = pct >= 0 ? '+' : '';
+            return { text: `${sign}${pct.toFixed(1)}%`, up: pct >= 0, hasBaseline: true };
+        };
+
+        // ---- Giving: this week vs last week, from real transactions ----
         const now = new Date();
         const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
         const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
 
         let thisWeekGiving = 0;
         let lastWeekGiving = 0;
-        let titheCount = 0;
+        const thisWeekGiverIds = new Set();
+        const fundTotals = {};
 
         transactions.forEach(t => {
             const tDate = new Date(t.date);
+            const amt = parseFloat(t.amount) || 0;
             if (tDate >= sevenDaysAgo) {
-                thisWeekGiving += parseFloat(t.amount);
-                if (t.category === 'Tithe') titheCount++;
+                thisWeekGiving += amt;
+                if (t.memberId) thisWeekGiverIds.add(t.memberId);
+                fundTotals[t.category] = (fundTotals[t.category] || 0) + amt;
             } else if (tDate >= fourteenDaysAgo && tDate < sevenDaysAgo) {
-                lastWeekGiving += parseFloat(t.amount);
+                lastWeekGiving += amt;
             }
         });
+        const giving = pctChange(thisWeekGiving, lastWeekGiving);
 
-        // Add dummy base value if no transactions to make it look realistic
-        if (thisWeekGiving === 0) thisWeekGiving = 8450.00;
-        if (lastWeekGiving === 0) lastWeekGiving = 7920.00;
+        // ---- Attendance: counts per service date, from real records ----
+        const presentByDate = {};
+        attendance.forEach(a => {
+            if (!(a.date in presentByDate)) presentByDate[a.date] = 0;
+            if (a.present) presentByDate[a.date] += 1;
+        });
+        const serviceDates = Object.keys(presentByDate).sort(); // ascending
+        const latestCount = serviceDates.length ? presentByDate[serviceDates[serviceDates.length - 1]] : 0;
+        const prevCount = serviceDates.length > 1 ? presentByDate[serviceDates[serviceDates.length - 2]] : 0;
+        const avgAttendance = serviceDates.length
+            ? Math.round(serviceDates.reduce((s, d) => s + presentByDate[d], 0) / serviceDates.length)
+            : 0;
+        const attendance7 = pctChange(latestCount, prevCount);
 
-        const givingDiffPercent = (((thisWeekGiving - lastWeekGiving) / lastWeekGiving) * 100).toFixed(1);
-        const givingSign = givingDiffPercent >= 0 ? '+' : '';
+        // ---- At-risk: real absence streaks (last 3 services all absent) ----
+        const byMember = {};
+        attendance.forEach(a => {
+            (byMember[a.memberId] = byMember[a.memberId] || []).push(a);
+        });
+        const atRiskMembers = members.filter(m => {
+            const recs = (byMember[m.id] || []).slice().sort((a, b) => new Date(a.date) - new Date(b.date));
+            const last3 = recs.slice(-3);
+            return last3.length >= 3 && last3.every(r => !r.present);
+        }).slice(0, 5).map(m => {
+            const fName = m.firstName || m.first_name || '';
+            const lName = m.lastName || m.last_name || '';
+            const missed = (byMember[m.id] || []).slice().sort((a, b) => new Date(b.date) - new Date(a.date));
+            let streak = 0;
+            for (const r of missed) { if (!r.present) streak++; else break; }
+            return `${fName} ${lName} (${m.branchName || 'Unknown campus'}) — absent ${streak} consecutive services`;
+        });
 
-        // Calculate attendance metrics
-        const avgAttendanceThisWeek = 385 + Math.floor(Math.random() * 40);
-        const avgAttendanceLastWeek = 370 + Math.floor(Math.random() * 20);
-        const attendanceDiffPercent = (((avgAttendanceThisWeek - avgAttendanceLastWeek) / avgAttendanceLastWeek) * 100).toFixed(1);
-        const attendanceSign = attendanceDiffPercent >= 0 ? '+' : '';
+        // ---- Participation & top fund, from real data ----
+        const participationPct = members.length
+            ? Math.round((thisWeekGiverIds.size / members.length) * 100) : 0;
+        const topFund = Object.keys(fundTotals).sort((a, b) => fundTotals[b] - fundTotals[a])[0] || null;
 
-        // Find at-risk members (engagement score < 45)
-        const atRiskMembers = members
-            .filter(m => m.engagement_score < 45)
-            .slice(0, 3)
-            .map(m => {
-                const fName = m.firstName || m.first_name || '';
-                const lName = m.lastName || m.last_name || '';
-                return `${fName} ${lName} (${m.branchName || 'Nairobi HQ'}) - Engagement Score: ${m.engagement_score}%`;
-            });
+        const money = (n) => `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-        // Summary generation
+        // ---- Natural-language summaries (real numbers only) ----
+        const givingLine = giving.hasBaseline
+            ? `Giving is at **${money(thisWeekGiving)}** (${giving.text} vs last week).`
+            : `Giving is at **${money(thisWeekGiving)}** (no prior-week giving to compare against).`;
+        const attLine = serviceDates.length
+            ? (attendance7.hasBaseline
+                ? `Latest service attendance was **${latestCount}** (${attendance7.text} vs the prior service), averaging **${avgAttendance}** over the last ${serviceDates.length} services.`
+                : `Latest service attendance was **${latestCount}** (first service on record).`)
+            : `No attendance has been recorded yet.`;
+
         const weeklySummaryText = `Weekly Ministry Health Report:
-• **Financials**: Giving is at **$${thisWeekGiving.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}** (${givingSign}${givingDiffPercent}% compared to last week).
-• **Attendance**: Average service attendance was **${avgAttendanceThisWeek}** (${attendanceSign}${attendanceDiffPercent}%).
-• **Care Alerts**: ${atRiskMembers.length} members flagged for slipping attendance/engagement. Pastoral care outreach is recommended.`;
+• **Financials**: ${givingLine}
+• **Attendance**: ${attLine}
+• **Care Alerts**: **${atRiskMembers.length}** member(s) flagged for a 3+ service absence streak. Pastoral care outreach is recommended.`;
 
-        const executiveSnapshot = `The church saw a steady **${givingDiffPercent >= 0 ? 'increase' : 'decrease'}** in total donations this week, totaling **$${thisWeekGiving.toLocaleString()}**. Tithe compliance was at approximately 82% of regular givers.
-Average attendance across all physical campuses peaked during the 10:30 AM service. Our online stream also recorded an 8% rise in unique IP addresses.
-The AI Care alert system flags **${atRiskMembers.length}** members whose engagement index has dropped below the threshold of 45%. We suggest scheduling follow-up calls for these individuals.`;
+        const trendWord = giving.hasBaseline ? (giving.up ? 'increase' : 'decrease') : 'result';
+        const execParts = [
+            `Giving this week totaled **${money(thisWeekGiving)}**` +
+                (giving.hasBaseline ? `, a ${giving.text} ${trendWord} versus last week.` : ` (no prior-week baseline).`),
+            `**${participationPct}%** of members in this scope gave this week` +
+                (topFund ? `, with **${topFund}** the largest fund.` : '.'),
+            serviceDates.length
+                ? `Average attendance across the last ${serviceDates.length} services is **${avgAttendance}**.`
+                : `No attendance records exist for this scope yet.`,
+            `**${atRiskMembers.length}** member(s) have missed 3+ consecutive services and are recommended for follow-up.`
+        ];
 
         return {
             thisWeekGiving,
-            givingDiffPercent: `${givingSign}${givingDiffPercent}%`,
-            avgAttendance: avgAttendanceThisWeek,
-            attendanceDiffPercent: `${attendanceSign}${attendanceDiffPercent}%`,
+            givingDiffPercent: giving.text,
+            avgAttendance,
+            attendanceDiffPercent: attendance7.hasBaseline ? attendance7.text : (serviceDates.length ? 'new' : '—'),
+            participationPct,
+            topFund,
             atRisk: atRiskMembers,
             bulletSummary: weeklySummaryText,
-            executiveSnapshot: executiveSnapshot
+            executiveSnapshot: execParts.join(' ')
         };
     },
 
@@ -314,49 +368,31 @@ The AI Care alert system flags **${atRiskMembers.length}** members whose engagem
     categorizePrayerRequest(text) {
         if (!text) return { category: 'General', route: 'Pastoral Staff', confidence: 1.0, tags: [] };
 
-        const query = text.toLowerCase();
         let scoreHealing = 0;
         let scoreFinancial = 0;
         let scoreGrief = 0;
         let scoreFamily = 0;
-        
+
         const tags = [];
 
-        // Healing keywords
-        const healingWords = ['sick', 'illness', 'cancer', 'pain', 'hospital', 'doctor', 'surgery', 'healing', 'disease', 'recovery', 'health', 'pneumonia', 'covid'];
-        healingWords.forEach(w => {
-            if (query.includes(w)) {
-                scoreHealing += 2;
-                tags.push(w);
-            }
-        });
+        // Match whole words only, so "parent" doesn't trip the "rent" keyword and
+        // "reason"/"season" don't trip "son". Multi-word phrases match as phrases.
+        const hasWord = (w) => {
+            const escaped = w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            return new RegExp(`\\b${escaped}\\b`, 'i').test(text);
+        };
+        const scoreWords = (words) => {
+            let s = 0;
+            words.forEach(w => {
+                if (hasWord(w)) { s += 2; tags.push(w); }
+            });
+            return s;
+        };
 
-        // Financial keywords
-        const financialWords = ['job', 'money', 'debt', 'finance', 'rent', 'bills', 'unemployed', 'business', 'financial', 'mortgage', 'poverty'];
-        financialWords.forEach(w => {
-            if (query.includes(w)) {
-                scoreFinancial += 2;
-                tags.push(w);
-            }
-        });
-
-        // Grief keywords
-        const griefWords = ['died', 'passed away', 'loss', 'grief', 'funeral', 'mourning', 'death', 'lost', 'passed'];
-        griefWords.forEach(w => {
-            if (query.includes(w)) {
-                scoreGrief += 2;
-                tags.push(w);
-            }
-        });
-
-        // Family keywords
-        const familyWords = ['marriage', 'husband', 'wife', 'son', 'daughter', 'children', 'divorce', 'family', 'parent', 'relationship', 'kids'];
-        familyWords.forEach(w => {
-            if (query.includes(w)) {
-                scoreFamily += 2;
-                tags.push(w);
-            }
-        });
+        scoreHealing = scoreWords(['sick', 'illness', 'cancer', 'pain', 'hospital', 'doctor', 'surgery', 'healing', 'disease', 'recovery', 'health', 'pneumonia', 'covid']);
+        scoreFinancial = scoreWords(['job', 'money', 'debt', 'finance', 'rent', 'bills', 'unemployed', 'business', 'financial', 'mortgage', 'poverty']);
+        scoreGrief = scoreWords(['died', 'passed away', 'loss', 'grief', 'funeral', 'mourning', 'death', 'lost', 'passed']);
+        scoreFamily = scoreWords(['marriage', 'husband', 'wife', 'son', 'daughter', 'children', 'divorce', 'family', 'parent', 'relationship', 'kids']);
 
         let category = 'General';
         let route = 'Pastoral Care Team';

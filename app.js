@@ -66,6 +66,7 @@ const ChurchApp = {
             { id: 'm10', branchId: 'b1', branchName: 'Nairobi HQ', firstName: 'Kennedy', lastName: 'Otieno', email: 'kennedy.o@email.com', phone: '+254755555555', familyId: 'fam_otieno', familyRole: 'Husband', spiritualMilestones: ['Baptized: 2010-08-15'], volunteer_skills: ['Youth Mentorship', 'Security'], engagement_score: 30 } // Flagged at risk
         ],
         transactions: [],
+        attendance: [],
         events: [
             { id: 'e1', branchId: 'b1', title: 'Youth Praise Night', description: 'An evening of worship, drama, and networking for young adults.', date: '2026-07-19', time: '18:00', rolesRequired: ['Worship Vocals', 'Keyboard', 'Guitar', 'Sound Engineering', 'Greeting'], volunteersSignedUp: ['m1'] },
             { id: 'e2', branchId: 'b2', title: 'Dallas Community Charity Drive', description: 'Providing food, clothing, and shelter assistance to local families.', date: '2026-07-25', time: '09:00', rolesRequired: ['Greeting', 'First Aid', 'Security'], volunteersSignedUp: ['m6'] },
@@ -129,6 +130,7 @@ const ChurchApp = {
             if (saved) {
                 try {
                     this.db = JSON.parse(saved);
+                    this.ensureSchema();
                     return;
                 } catch (e) {
                     console.error("Error parsing saved DB:", e);
@@ -137,7 +139,36 @@ const ChurchApp = {
         }
         // Fallback: generate and save
         this.generateInitialTransactions();
+        this.generateInitialAttendance();
         this.saveDB();
+    },
+
+    // Backfill collections added in later versions onto an older saved DB so
+    // renderers never hit undefined. Attendance was added in v2.
+    ensureSchema() {
+        let changed = false;
+        if (!Array.isArray(this.db.transactions)) { this.db.transactions = []; changed = true; }
+        if (!Array.isArray(this.db.events)) { this.db.events = []; changed = true; }
+        if (!Array.isArray(this.db.sermons)) { this.db.sermons = []; changed = true; }
+        if (!Array.isArray(this.db.prayerRequests)) { this.db.prayerRequests = []; changed = true; }
+        if (!Array.isArray(this.db.attendance) || this.db.attendance.length === 0) {
+            this.generateInitialAttendance();
+            changed = true;
+        }
+        if (changed) this.saveDB();
+    },
+
+    // The Sundays we hold services on — most recent `count`, oldest first.
+    getRecentServiceDates(count) {
+        const dates = [];
+        const anchor = new Date();
+        anchor.setHours(0, 0, 0, 0);
+        anchor.setDate(anchor.getDate() - anchor.getDay()); // back to most recent Sunday
+        for (let i = 0; i < count; i++) {
+            const d = new Date(anchor.getTime() - i * 7 * 24 * 60 * 60 * 1000);
+            dates.push(d.toISOString().split('T')[0]);
+        }
+        return dates.reverse();
     },
 
     // Theme: Load state
@@ -184,6 +215,37 @@ const ChurchApp = {
         
         // Sort transactions by date descending
         this.db.transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+    },
+
+    // Helper: Seed real attendance records over the last 8 Sundays. These records
+    // are the single source of truth for all attendance analytics — the dashboard
+    // and AI briefing read them, never a random number.
+    generateInitialAttendance() {
+        this.db.attendance = [];
+        const services = this.getRecentServiceDates(8); // oldest -> newest
+        // Members deliberately given a recent absence streak so at-risk detection
+        // has something real to surface.
+        const streakIds = ['m7', 'm9', 'm10'];
+
+        this.db.members.forEach(member => {
+            const base = Math.min(0.95, Math.max(0.35, (member.engagement_score || 60) / 100));
+            services.forEach((date, idx) => {
+                const isRecent = idx >= services.length - 3; // last 3 services
+                let present;
+                if (streakIds.includes(member.id) && isRecent) {
+                    present = false; // guaranteed 3-service absence streak
+                } else {
+                    present = Math.random() < base;
+                }
+                this.db.attendance.push({
+                    id: `att_${member.id}_${date}`,
+                    memberId: member.id,
+                    branchId: member.branchId,
+                    date,
+                    present
+                });
+            });
+        });
     },
 
     // 5. Setup Action Listeners
@@ -373,32 +435,35 @@ const ChurchApp = {
         const branchId = this.session.currentBranch;
         const role = this.session.currentRole;
 
-        // Filter transactions for calculations. Scope to a single campus unless
-        // "All Branches (Global)" is selected, in which case aggregate everything.
+        // Filter transactions/attendance for calculations. Scope to a single campus
+        // unless "All Branches (Global)" is selected, in which case aggregate everything.
         let branchTx = this.db.transactions;
         let branchMembers = this.db.members;
+        let branchAttendance = this.db.attendance || [];
 
         if (branchId && branchId !== 'global') {
             branchTx = this.db.transactions.filter(t => t.branchId === branchId);
             branchMembers = this.db.members.filter(m => m.branchId === branchId);
+            branchAttendance = branchAttendance.filter(a => a.branchId === branchId);
         }
 
-        // Compute AI Snapshot Metrics
+        // Compute AI Snapshot Metrics — all derived from real records, no randomness
         const snapshot = window.AIEngine.generateWeeklySnapshot(
             this.db.branches,
             branchMembers,
             branchTx,
-            this.db.events
+            this.db.events,
+            branchAttendance
         );
 
         // Update dashboard counters
-        document.getElementById('dash-giving-total').innerText = `$${snapshot.thisWeekGiving.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+        document.getElementById('dash-giving-total').innerText = `$${snapshot.thisWeekGiving.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
         document.getElementById('dash-giving-change').innerText = snapshot.givingDiffPercent;
-        document.getElementById('dash-giving-change').className = snapshot.givingDiffPercent.startsWith('+') ? 'changeup' : 'changedown';
+        document.getElementById('dash-giving-change').className = snapshot.givingDiffPercent.startsWith('-') ? 'changedown' : 'changeup';
 
         document.getElementById('dash-attendance-total').innerText = snapshot.avgAttendance;
         document.getElementById('dash-attendance-change').innerText = snapshot.attendanceDiffPercent;
-        document.getElementById('dash-attendance-change').className = snapshot.attendanceDiffPercent.startsWith('+') ? 'changeup' : 'changedown';
+        document.getElementById('dash-attendance-change').className = snapshot.attendanceDiffPercent.startsWith('-') ? 'changedown' : 'changeup';
 
         document.getElementById('dash-members-total').innerText = branchMembers.length;
 

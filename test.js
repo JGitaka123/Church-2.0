@@ -61,17 +61,31 @@ try {
     const tenDaysAgo = new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     
     const mockTransactions = [
-        { id: 't1', amount: 1000, category: 'Tithe', date: twoDaysAgo },
-        { id: 't2', amount: 500, category: 'Offering', date: twoDaysAgo },
-        { id: 't3', amount: 800, category: 'Tithe', date: tenDaysAgo }
+        { id: 't1', amount: 1000, category: 'Tithe', date: twoDaysAgo, memberId: 'm1' },
+        { id: 't2', amount: 500, category: 'Offering', date: twoDaysAgo, memberId: 'm1' },
+        { id: 't3', amount: 800, category: 'Tithe', date: tenDaysAgo, memberId: 'm2' }
     ];
     const mockEvents = [];
 
-    const report = AIEngine.generateWeeklySnapshot(mockBranches, mockMembers, mockTransactions, mockEvents);
+    // Attendance is now the source of truth for at-risk: Jane (m2) missed the last
+    // 3 services; John (m1) attended. Build 3 recent service dates.
+    const svc = (d) => new Date(now.getTime() - d * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const mockAttendance = [
+        { memberId: 'm1', branchId: 'b1', date: svc(21), present: true },
+        { memberId: 'm1', branchId: 'b1', date: svc(14), present: true },
+        { memberId: 'm1', branchId: 'b1', date: svc(7), present: true },
+        { memberId: 'm2', branchId: 'b1', date: svc(21), present: false },
+        { memberId: 'm2', branchId: 'b1', date: svc(14), present: false },
+        { memberId: 'm2', branchId: 'b1', date: svc(7), present: false }
+    ];
+
+    const report = AIEngine.generateWeeklySnapshot(mockBranches, mockMembers, mockTransactions, mockEvents, mockAttendance);
 
     assert(report.thisWeekGiving === 1500, "Weekly snapshot aggregates this week's giving amounts correctly.");
-    assert(report.atRisk.some(m => m.includes("Jane Adair")), "At-risk tracker correctly flags members with engagement scores below 45%.");
+    assert(report.atRisk.some(m => m.includes("Jane Adair")), "At-risk tracker flags members with a 3+ service absence streak.");
+    assert(!report.atRisk.some(m => m.includes("John Kamau")), "At-risk tracker does NOT flag consistently-present members.");
     assert(report.bulletSummary.includes("Giving is at"), "Snapshot compiles a structured bulleted summary text block.");
+    assert(report.avgAttendance === 1, "Average attendance is derived from real records, not randomized.");
 } catch (e) {
     failedTestsCount++;
     console.error("  ❌ FAIL: Snapshot calculations crashed with error:", e);
@@ -114,8 +128,13 @@ try {
 
     // Family test
     const familyResult = AIEngine.categorizePrayerRequest("Pray for counseling for our marriage. My husband and I are struggling to connect.");
-    assert(familyResult.category === "Family" && familyResult.route.includes("Family Life"), 
+    assert(familyResult.category === "Family" && familyResult.route.includes("Family Life"),
         "Routes marriage and husband requests to Family Life Care.");
+
+    // Word-boundary regression: "parent" must NOT match the financial keyword "rent".
+    const parentResult = AIEngine.categorizePrayerRequest("Please pray for my parents as they travel.");
+    assert(!parentResult.tags.includes("rent"),
+        "Word-boundary matching: 'parent' does not trigger the 'rent' financial keyword.");
 } catch (e) {
     failedTestsCount++;
     console.error("  ❌ FAIL: Prayer routing crashed with error:", e);
