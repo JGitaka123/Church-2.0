@@ -1187,3 +1187,300 @@ body.theme-cyber .chat-bubble.user {
     transform: scale(1.05);
     box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
 }
+
+
+/* ==========================================================================
+   Church 2.0 — UI/UX elevation & accessibility layer
+   Added in the design/debug pass: safe-Markdown typography, readable themes,
+   focus states, reduced-motion support, toasts, and component polish.
+   ========================================================================== */
+
+/* ---- Accessibility: visible keyboard focus everywhere ---- */
+a:focus-visible,
+button:focus-visible,
+select:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible,
+.nav-link:focus-visible,
+.mobile-tab-btn:focus-visible {
+    outline: 2px solid #8b5cf6;
+    outline-offset: 2px;
+    border-radius: 6px;
+}
+body.theme-cyber a:focus-visible,
+body.theme-cyber button:focus-visible,
+body.theme-cyber select:focus-visible,
+body.theme-cyber input:focus-visible,
+body.theme-cyber .mobile-tab-btn:focus-visible {
+    outline-color: #00f2fe;
+}
+
+/* ---- Safe Markdown typography (AI outputs render as HTML, never raw **) ---- */
+.md-body .md-p { margin: 0 0 0.5em; }
+.md-body .md-p:last-child { margin-bottom: 0; }
+.md-body .md-list { list-style: none; margin: 0.4em 0 0.6em; padding: 0; }
+.md-body .md-list li {
+    position: relative;
+    padding-left: 1.1em;
+    margin-bottom: 0.3em;
+}
+.md-body .md-list li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: #8b5cf6;
+    font-weight: 700;
+}
+.md-body code {
+    font-family: 'SFMono-Regular', ui-monospace, Menlo, Consolas, monospace;
+    font-size: 0.9em;
+    background: rgba(139, 92, 246, 0.16);
+    color: #c4b5fd;
+    padding: 1px 5px;
+    border-radius: 4px;
+}
+.md-body strong { font-weight: 700; }
+
+/* ---- Shared helpers ---- */
+.muted-italic { color: var(--text-secondary); font-style: italic; }
+.member-id { font-size: 0.75rem; color: var(--text-secondary); display: block; }
+.member-email { font-size: 0.85rem; color: var(--text-primary); }
+.member-phone { font-size: 0.75rem; color: var(--text-secondary); }
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 32px 16px;
+    font-size: 0.9rem;
+}
+.empty-state::first-line { font-size: 1.8rem; }
+.empty-state span { display: block; }
+.empty-state.small { padding: 20px 12px; font-size: 0.78rem; }
+
+.chart-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 120px;
+    padding: 20px;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    border: 1px dashed var(--border-light);
+    border-radius: 10px;
+}
+
+/* ---- AI briefing card: always a dark premium surface, so force light text ---- */
+.ai-snapshot-card { color: #e5e7eb; }
+.ai-report-title {
+    margin-top: 10px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #f5f3ff;
+}
+.ai-snapshot-card .weekly-bulletin-ai.md-body {
+    margin-top: 10px;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    color: #d1d5db;
+}
+.ai-exec-context {
+    margin-top: 14px;
+    font-size: 0.84rem;
+    line-height: 1.55;
+    font-style: italic;
+    color: #9ca3af;
+}
+.ai-exec-context.md-body .md-p { display: inline; }
+.ai-exec-context strong { color: #c4b5fd; font-style: normal; }
+.at-risk-heading {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--accent-gold);
+    display: block;
+    margin-bottom: 8px;
+}
+
+/* ---- Prayer request cards ---- */
+.prayer-member { color: var(--text-primary); font-size: 0.95rem; }
+.prayer-category {
+    background: rgba(99, 102, 241, 0.22);
+    color: #a5b4fc;
+    font-size: 0.75rem;
+    white-space: nowrap;
+}
+.prayer-actions {
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+.action-btn-sm.btn-approve { background: var(--success-green); color: #fff; }
+.action-btn-sm.btn-dismiss { background: var(--danger-red); color: #fff; }
+
+/* ---- Sermon repurpose kit ---- */
+.kit-title { margin: 10px 0 6px; color: var(--text-primary); }
+.kit-divider { border: 0; border-top: 1px solid var(--border-light); margin: 10px 0; }
+.kit-subhead { color: #a5b4fc; margin-bottom: 5px; font-size: 0.9rem; }
+.kit-devotional {
+    font-size: 0.85rem;
+    line-height: 1.55;
+    background: rgba(127, 127, 160, 0.08);
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    color: var(--text-primary);
+}
+.kit-devotional .md-p { margin-bottom: 0.6em; }
+.kit-list { font-size: 0.85rem; color: var(--text-primary); margin: 0 0 12px 18px; }
+.kit-list li { margin-bottom: 5px; }
+
+/* ---- Rota status ---- */
+.rota-status { font-size: 0.75rem; margin-top: 2px; }
+.rota-status.is-assigned { color: var(--success-green); }
+.rota-status.is-unassigned { color: var(--accent-gold); }
+
+/* ---- Chat quick-reply options ---- */
+.chat-options-container { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.chat-md .md-p { margin-bottom: 0.4em; }
+
+/* ---- Mobile event cards: keep the date on one line, no ugly wraps ---- */
+.mobile-event-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.mobile-event-date { font-size: 0.7rem; color: #a5b4fc; white-space: nowrap; flex-shrink: 0; }
+.mobile-event-desc { font-size: 0.75rem; color: var(--text-secondary); margin: 4px 0 8px; }
+.mobile-event-bottom { display: flex; justify-content: space-between; align-items: center; }
+.mobile-event-time { font-size: 0.7rem; color: #a5b4fc; }
+.mobile-rsvp-btn.is-rsvped {
+    background: rgba(16, 185, 129, 0.18);
+    color: #34d399;
+    cursor: default;
+}
+
+/* ---- Mobile bottom nav: fit all six labels without clipping ---- */
+.mobile-nav-bar { padding: 0 2px 5px; }
+.mobile-tab-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0 1px;
+}
+.mobile-tab-btn span:not(.icon) {
+    font-size: 0.52rem;
+    line-height: 1;
+    white-space: nowrap;
+    letter-spacing: -0.2px;
+}
+
+/* ---- Mobile-preview stage: frame the phone instead of floating in emptiness ---- */
+.mobile-simulation-layout {
+    position: relative;
+    flex-direction: column;
+    gap: 14px;
+    padding: 28px 0 40px;
+    background:
+        radial-gradient(60% 55% at 50% 30%, rgba(139, 92, 246, 0.12) 0%, transparent 70%);
+    border-radius: 24px;
+}
+.mobile-stage-caption {
+    text-align: center;
+    max-width: 340px;
+    margin: 0 auto;
+}
+.mobile-stage-caption strong {
+    display: block;
+    font-family: var(--font-header);
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+.mobile-stage-caption span {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+}
+
+/* ---- Toast notifications (replace jarring alert() dialogs) ---- */
+.toast-container {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 3000;
+    width: min(92vw, 400px);
+    pointer-events: none;
+}
+.toast {
+    pointer-events: auto;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(24, 24, 37, 0.97);
+    border: 1px solid var(--border-light);
+    color: #f3f4f6;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+    font-size: 0.85rem;
+    line-height: 1.4;
+    animation: toast-in 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.toast.leaving { animation: toast-out 0.28s ease forwards; }
+.toast-icon { font-size: 1.1rem; line-height: 1.2; }
+.toast-success { border-left: 3px solid var(--success-green); }
+.toast-info { border-left: 3px solid #6366f1; }
+.toast-error { border-left: 3px solid var(--danger-red); }
+@keyframes toast-in {
+    from { opacity: 0; transform: translateY(16px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes toast-out {
+    to { opacity: 0; transform: translateY(10px); }
+}
+
+/* ---- Light theme: repair every low-contrast surface ---- */
+body.theme-light .at-risk-list li { color: #e5e7eb; }         /* AI card stays dark */
+body.theme-light .kit-devotional { background: rgba(15, 23, 42, 0.05); }
+body.theme-light .empty-state,
+body.theme-light .chart-fallback { color: #64748b; }
+body.theme-light .simulator-badge {
+    background: #b45309;
+    border-color: #b45309;
+    color: #fff;
+}
+body.theme-light .toast { background: #ffffff; color: #0f172a; border-color: rgba(0,0,0,0.1); }
+body.theme-light .mobile-stage-caption strong { color: #0f172a; }
+
+/* Light theme: JS-generated cards use var() now, but a few base rules hardcode
+   light-on-dark text — repair the ones that render on light surfaces. */
+body.theme-light .prayer-text { color: #1e293b; }
+body.theme-light .member-name,
+body.theme-light .stats-info h4,
+body.theme-light .mobile-header h3 { color: #0f172a; }
+
+/* ---- Cyber theme: keep new helper text legible ---- */
+body.theme-cyber .empty-state,
+body.theme-cyber .chart-fallback,
+body.theme-cyber .member-phone,
+body.theme-cyber .member-id { color: #ff4fa3; }
+body.theme-cyber .member-email { color: #00f2fe; }
+
+/* ---- Respect reduced-motion preferences ---- */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+}

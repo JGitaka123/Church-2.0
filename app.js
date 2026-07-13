@@ -1,6 +1,49 @@
 // Church 2.0 Main Application Controller
 // Handles global state, CRUD operations, rendering, and Chart.js visualization
 
+// ---- Rendering helpers -------------------------------------------------------
+// esc(): escape untrusted text before it is interpolated into innerHTML. Every
+// member name, email, phone, prayer request, chat message, and sermon note is
+// user-controlled, so it MUST pass through esc() to prevent stored XSS.
+function esc(value) {
+    return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+// mdInline(): fully escape first, then apply a tiny, safe Markdown subset so the
+// AI engine's **bold**/*italic*/`code` render as HTML instead of literal asterisks.
+function mdInline(text) {
+    return esc(text)
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*([^*\n]+)\*/g, '<em>$1</em>')
+        .replace(/`([^`]+)`/g, '<code>$1</code>');
+}
+
+// renderMarkdown(): block-level rendering for multi-line AI output — paragraphs,
+// bullet lists ("- " or "• "), and line breaks. Safe: all text is escaped.
+function renderMarkdown(text) {
+    const lines = String(text == null ? '' : text).split('\n');
+    let html = '';
+    let inList = false;
+    lines.forEach((line) => {
+        const trimmed = line.trim();
+        const bullet = trimmed.match(/^[-•]\s+(.*)$/);
+        if (bullet) {
+            if (!inList) { html += '<ul class="md-list">'; inList = true; }
+            html += `<li>${mdInline(bullet[1])}</li>`;
+        } else {
+            if (inList) { html += '</ul>'; inList = false; }
+            if (trimmed.length) html += `<p class="md-p">${mdInline(trimmed)}</p>`;
+        }
+    });
+    if (inList) html += '</ul>';
+    return html;
+}
+
 // Initialize Global State
 const ChurchApp = {
     // 1. Centralized Mock Database
@@ -241,9 +284,12 @@ const ChurchApp = {
         const branchId = this.session.currentBranch;
         const activeTab = this.session.activeTab;
 
-        // Sync header displays
+        // Sync header displays. "global" is a valid selection (All Branches) that
+        // has no matching branch record, so fall back to a friendly label instead
+        // of dereferencing undefined and aborting the entire render.
         const branchObj = this.db.branches.find(b => b.id === branchId);
-        document.getElementById('active-branch-indicator').innerText = branchObj.name;
+        const branchLabel = branchObj ? branchObj.name : (branchId === 'global' ? 'All Branches' : 'Unknown Campus');
+        document.getElementById('active-branch-indicator').innerText = branchLabel;
         document.getElementById('active-role-indicator').innerText = role.toUpperCase().replace('_', ' ');
 
         // Update Branch Select styling (HQ admin can select any branch, other admins are locked)
@@ -327,14 +373,12 @@ const ChurchApp = {
         const branchId = this.session.currentBranch;
         const role = this.session.currentRole;
 
-        // Filter transactions for calculations
+        // Filter transactions for calculations. Scope to a single campus unless
+        // "All Branches (Global)" is selected, in which case aggregate everything.
         let branchTx = this.db.transactions;
         let branchMembers = this.db.members;
-        
-        if (branchId !== 'all' && role !== 'hq_admin') {
-            branchTx = this.db.transactions.filter(t => t.branchId === branchId);
-            branchMembers = this.db.members.filter(m => m.branchId === branchId);
-        } else if (branchId !== 'all' && branchId !== 'global') {
+
+        if (branchId && branchId !== 'global') {
             branchTx = this.db.transactions.filter(t => t.branchId === branchId);
             branchMembers = this.db.members.filter(m => m.branchId === branchId);
         }
@@ -365,17 +409,15 @@ const ChurchApp = {
                 <div class="ai-header-badge">
                     <span class="sparkle-icon">✨</span> AI-GENERATED MONDAY BRIEFING
                 </div>
-                <p style="margin-top: 10px; font-weight: 500; font-size: 1.1rem; color: #f3f4f6;">Weekly Ministry Health Report</p>
-                <div class="weekly-bulletin-ai">
-                    <div style="font-size: 0.95rem; color: #d1d5db; line-height: 1.6; white-space: pre-wrap;">${snapshot.bulletSummary}</div>
+                <p class="ai-report-title">Weekly Ministry Health Report</p>
+                <div class="weekly-bulletin-ai md-body">${renderMarkdown(snapshot.bulletSummary)}</div>
+                <div class="ai-exec-context md-body">
+                    <strong>Executive Context:</strong> ${renderMarkdown(snapshot.executiveSnapshot)}
                 </div>
-                <p style="margin-top: 15px; color: #9ca3af; font-size: 0.85rem; line-height: 1.5; font-style: italic;">
-                    <strong>Executive Context:</strong> ${snapshot.executiveSnapshot}
-                </p>
                 <div class="at-risk-container">
-                    <span style="font-size: 0.85rem; font-weight: bold; color: #f59e0b; display: block; margin-bottom: 8px;">⚠️ CRITICAL CARE ALERTS (At-Risk Members)</span>
+                    <span class="at-risk-heading">⚠️ CRITICAL CARE ALERTS (At-Risk Members)</span>
                     <ul class="at-risk-list">
-                        ${snapshot.atRisk.map(m => `<li>${m}</li>`).join('')}
+                        ${snapshot.atRisk.length ? snapshot.atRisk.map(m => `<li>${esc(m)}</li>`).join('') : '<li class="muted-italic">No at-risk members this week — great job! 🎉</li>'}
                     </ul>
                 </div>
             `;
@@ -386,6 +428,21 @@ const ChurchApp = {
     },
 
     renderDashboardCharts(transactions) {
+        // Chart.js is loaded from a CDN and may be unavailable (offline, blocked,
+        // or the PWA running without a network). Degrade gracefully instead of
+        // throwing "Chart is not defined" and aborting the rest of init().
+        if (typeof Chart === 'undefined') {
+            document.querySelectorAll('.chart-container-wrapper').forEach((wrap) => {
+                if (!wrap.querySelector('.chart-fallback')) {
+                    const note = document.createElement('div');
+                    note.className = 'chart-fallback';
+                    note.textContent = '📊 Charts are unavailable offline. Reconnect to view visual analytics.';
+                    wrap.appendChild(note);
+                }
+            });
+            return;
+        }
+
         // Destroy existing charts to avoid redraw issues
         if (this.charts.giving) this.charts.giving.destroy();
         if (this.charts.categories) this.charts.categories.destroy();
@@ -505,21 +562,21 @@ const ChurchApp = {
             tr.innerHTML = `
                 <td>
                     <div class="member-profile-cell">
-                        <div class="member-avatar">${m.firstName[0]}${m.lastName[0]}</div>
+                        <div class="member-avatar">${esc((m.firstName[0] || '') + (m.lastName[0] || ''))}</div>
                         <div>
-                            <span class="member-name">${m.firstName} ${m.lastName}</span>
-                            <span style="font-size: 0.75rem; color: #9ca3af; display: block;">ID: ${m.id}</span>
+                            <span class="member-name">${esc(m.firstName)} ${esc(m.lastName)}</span>
+                            <span class="member-id">ID: ${esc(m.id)}</span>
                         </div>
                     </div>
                 </td>
-                <td><span class="branch-pill badge-${m.branchId}">${m.branchName}</span></td>
+                <td><span class="branch-pill badge-${esc(m.branchId)}">${esc(m.branchName)}</span></td>
                 <td>
-                    <div style="font-size: 0.85rem; color: #e5e7eb;">${m.email}</div>
-                    <div style="font-size: 0.75rem; color: #9ca3af;">${m.phone}</div>
+                    <div class="member-email">${esc(m.email)}</div>
+                    <div class="member-phone">${esc(m.phone)}</div>
                 </td>
                 <td>
                     <div style="display: flex; gap: 4px; flex-wrap: wrap;">
-                        ${m.volunteer_skills.map(s => `<span class="skill-tag">${s}</span>`).join('')}
+                        ${(m.volunteer_skills || []).map(s => `<span class="skill-tag">${esc(s)}</span>`).join('') || '<span class="muted-italic">—</span>'}
                     </div>
                 </td>
                 <td>
@@ -555,37 +612,37 @@ const ChurchApp = {
         const donations = this.db.transactions.filter(t => t.memberId === memberId);
 
         modal.innerHTML = `
-            <div class="modal-card">
+            <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="member-modal-title">
                 <div class="modal-header">
-                    <h3>Member Profile File: ${member.firstName} ${member.lastName}</h3>
-                    <button class="modal-close" onclick="ChurchApp.closeModal('member-detail-modal')">×</button>
+                    <h3 id="member-modal-title">Member Profile: ${esc(member.firstName)} ${esc(member.lastName)}</h3>
+                    <button class="modal-close" aria-label="Close member profile" onclick="ChurchApp.closeModal('member-detail-modal')">×</button>
                 </div>
                 <div class="modal-body scroll-y">
                     <div class="member-detail-grid">
                         <div>
                             <h4>Contact Information</h4>
-                            <p><strong>Email:</strong> ${member.email}</p>
-                            <p><strong>Phone:</strong> ${member.phone}</p>
-                            <p><strong>Primary Branch:</strong> ${member.branchName}</p>
-                            <p><strong>Engagement Rating:</strong> ${member.engagement_score}%</p>
+                            <p><strong>Email:</strong> ${esc(member.email)}</p>
+                            <p><strong>Phone:</strong> ${esc(member.phone)}</p>
+                            <p><strong>Primary Branch:</strong> ${esc(member.branchName)}</p>
+                            <p><strong>Engagement Rating:</strong> ${esc(member.engagement_score)}%</p>
                         </div>
                         <div>
                             <h4>Family Connections</h4>
-                            <p><strong>Family Unit ID:</strong> ${member.familyId || 'None Linked'}</p>
-                            <p><strong>Family Role:</strong> ${member.familyRole || 'N/A'}</p>
+                            <p><strong>Family Unit ID:</strong> ${esc(member.familyId || 'None Linked')}</p>
+                            <p><strong>Family Role:</strong> ${esc(member.familyRole || 'N/A')}</p>
                             <ul class="family-linked-list">
-                                ${familyList.length > 0 ? familyList.map(f => `<li>${f.firstName} ${f.lastName} (${f.familyRole})</li>`).join('') : '<li style="color:#9ca3af; font-style:italic;">No other family members linked.</li>'}
+                                ${familyList.length > 0 ? familyList.map(f => `<li>${esc(f.firstName)} ${esc(f.lastName)} (${esc(f.familyRole)})</li>`).join('') : '<li class="muted-italic">No other family members linked.</li>'}
                             </ul>
                         </div>
                     </div>
-                    
+
                     <div class="milestones-section">
                         <h4>Spiritual Milestones</h4>
                         <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
-                            ${member.spiritualMilestones.length > 0 ? member.spiritualMilestones.map(m => `<span class="milestone-pill">✨ ${m}</span>`).join('') : '<span style="color:#9ca3af; font-style:italic;">No spiritual milestones logged.</span>'}
+                            ${member.spiritualMilestones.length > 0 ? member.spiritualMilestones.map(m => `<span class="milestone-pill">✨ ${esc(m)}</span>`).join('') : '<span class="muted-italic">No spiritual milestones logged.</span>'}
                         </div>
                         <div style="margin-top: 12px; display: flex; gap: 8px;">
-                            <input type="text" id="new-milestone-input" placeholder="e.g. Confirmed: 2026-07-11" class="form-control" style="width: auto; flex-grow: 1;">
+                            <input type="text" id="new-milestone-input" placeholder="e.g. Confirmed: 2026-07-11" class="form-control" style="width: auto; flex-grow: 1;" aria-label="New spiritual milestone">
                             <button class="btn btn-primary-gradient" onclick="ChurchApp.addSpiritualMilestone()">Add Milestone</button>
                         </div>
                     </div>
@@ -605,21 +662,21 @@ const ChurchApp = {
                             <tbody>
                                 ${donations.map(d => `
                                     <tr>
-                                        <td><a href="#" onclick="ChurchApp.viewReceipt('${d.id}'); return false;">${d.receiptNumber}</a></td>
-                                        <td>${d.date}</td>
-                                        <td>${d.category}</td>
-                                        <td style="color: #10b981; font-weight: bold;">$${d.amount.toFixed(2)}</td>
-                                        <td>${d.paymentMethod}</td>
+                                        <td><a href="#" onclick="ChurchApp.viewReceipt('${esc(d.id)}'); return false;">${esc(d.receiptNumber)}</a></td>
+                                        <td>${esc(d.date)}</td>
+                                        <td>${esc(d.category)}</td>
+                                        <td style="color: #10b981; font-weight: bold;">$${parseFloat(d.amount).toFixed(2)}</td>
+                                        <td>${esc(d.paymentMethod)}</td>
                                     </tr>
                                 `).join('')}
-                                ${donations.length === 0 ? '<tr><td colspan="5" style="text-align:center; color:#9ca3af;">No transaction history found.</td></tr>' : ''}
+                                ${donations.length === 0 ? '<tr><td colspan="5" style="text-align:center;" class="muted-italic">No transaction history found.</td></tr>' : ''}
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
         `;
-        modal.style.display = 'flex';
+        this.openModal('member-detail-modal');
     },
 
     addSpiritualMilestone() {
@@ -671,7 +728,7 @@ const ChurchApp = {
         document.getElementById('add-member-form').reset();
         
         // Notification simulation
-        alert(`Success: Member ${firstName} ${lastName} has been enrolled in ${branchObj.name}.`);
+        this.toast(`${firstName} ${lastName} enrolled in ${branchObj.name}.`);
         this.renderMemberDirectory();
     },
 
@@ -690,15 +747,15 @@ const ChurchApp = {
         filteredTx.forEach(t => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td><span style="font-family: monospace; font-weight: bold; color: #a5b4fc;">${t.receiptNumber}</span></td>
-                <td><span class="branch-pill badge-${t.branchId}">${t.branchName}</span></td>
-                <td>${t.memberName || 'Anonymous'}</td>
-                <td><span class="category-pill category-${t.category.toLowerCase().replace(' ', '')}">${t.category}</span></td>
+                <td><span style="font-family: monospace; font-weight: bold; color: #a5b4fc;">${esc(t.receiptNumber)}</span></td>
+                <td><span class="branch-pill badge-${esc(t.branchId)}">${esc(t.branchName)}</span></td>
+                <td>${esc(t.memberName || 'Anonymous')}</td>
+                <td><span class="category-pill category-${esc((t.category || '').toLowerCase().replace(' ', ''))}">${esc(t.category)}</span></td>
                 <td style="color: #10b981; font-weight: bold; text-align: right;">$${parseFloat(t.amount).toFixed(2)}</td>
-                <td>${t.date}</td>
-                <td>${t.paymentMethod}</td>
+                <td>${esc(t.date)}</td>
+                <td>${esc(t.paymentMethod)}</td>
                 <td>
-                    <button class="action-btn-sm" onclick="ChurchApp.viewReceipt('${t.id}')">Receipt</button>
+                    <button class="action-btn-sm" onclick="ChurchApp.viewReceipt('${esc(t.id)}')">Receipt</button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -723,8 +780,11 @@ const ChurchApp = {
         if (isNaN(amount) || amount <= 0) return;
 
         let memberName = 'Anonymous';
-        let branchId = this.session.currentBranch === 'all' ? 'b1' : this.session.currentBranch;
-        
+        // When "All Branches (Global)" is active there is no single campus to file
+        // an anonymous gift under, so default to the HQ campus (b1).
+        let branchId = (this.session.currentBranch === 'all' || this.session.currentBranch === 'global')
+            ? 'b1' : this.session.currentBranch;
+
         if (memberId !== 'anonymous') {
             const memberObj = this.db.members.find(m => m.id === memberId);
             if (memberObj) {
@@ -758,7 +818,7 @@ const ChurchApp = {
         // Reset defaults
         document.getElementById('tx-date-input').value = new Date().toISOString().split('T')[0];
 
-        alert(`Success: Logged $${amount} donation from ${memberName}. Receipt generated: ${newTx.receiptNumber}`);
+        this.toast(`Logged $${amount.toFixed(2)} from ${memberName}. Receipt ${newTx.receiptNumber}.`);
         
         this.renderAll();
     },
@@ -769,40 +829,40 @@ const ChurchApp = {
 
         const modal = document.getElementById('receipt-modal');
         modal.innerHTML = `
-            <div class="modal-card receipt-card">
+            <div class="modal-card receipt-card" role="dialog" aria-modal="true" aria-labelledby="receipt-modal-title">
                 <div class="receipt-seal">
                     <span>Approved<br>HQ System</span>
                 </div>
                 <div class="modal-header">
-                    <h3>STEWARDSHIP RECEIPT</h3>
-                    <button class="modal-close" onclick="ChurchApp.closeModal('receipt-modal')">×</button>
+                    <h3 id="receipt-modal-title">STEWARDSHIP RECEIPT</h3>
+                    <button class="modal-close" aria-label="Close receipt" onclick="ChurchApp.closeModal('receipt-modal')">×</button>
                 </div>
                 <div class="modal-body receipt-print-area">
                     <div class="receipt-header">
                         <h2>CHURCH 2.0 ECOSYSTEM</h2>
-                        <p>${tx.branchName}</p>
-                        <p style="font-size: 0.75rem; color:#9ca3af;">Branch Code: ${tx.branchId.toUpperCase()}</p>
+                        <p>${esc(tx.branchName)}</p>
+                        <p style="font-size: 0.75rem; color:#9ca3af;">Branch Code: ${esc((tx.branchId || '').toUpperCase())}</p>
                     </div>
                     <hr style="border: 0; border-top: 1px dashed rgba(255,255,255,0.15); margin: 15px 0;">
                     <div class="receipt-row">
                         <span>Receipt Number:</span>
-                        <strong>${tx.receiptNumber}</strong>
+                        <strong>${esc(tx.receiptNumber)}</strong>
                     </div>
                     <div class="receipt-row">
                         <span>Date Filed:</span>
-                        <strong>${tx.date}</strong>
+                        <strong>${esc(tx.date)}</strong>
                     </div>
                     <div class="receipt-row">
                         <span>Donation Contributor:</span>
-                        <strong>${tx.memberName || 'Anonymous Partner'}</strong>
+                        <strong>${esc(tx.memberName || 'Anonymous Partner')}</strong>
                     </div>
                     <div class="receipt-row">
                         <span>Giving Allocation:</span>
-                        <strong class="category-pill">${tx.category}</strong>
+                        <strong class="category-pill">${esc(tx.category)}</strong>
                     </div>
                     <div class="receipt-row">
                         <span>Payment Channel:</span>
-                        <strong>${tx.paymentMethod}</strong>
+                        <strong>${esc(tx.paymentMethod)}</strong>
                     </div>
                     <hr style="border: 0; border-top: 1px dashed rgba(255,255,255,0.15); margin: 15px 0;">
                     <div class="receipt-row total-row">
@@ -837,33 +897,43 @@ const ChurchApp = {
                 </div>
             </div>
         `;
-        modal.style.display = 'flex';
+        this.openModal('receipt-modal');
     },
 
     exportFinancialCSV(transactions) {
-        let csvContent = "data:text/csv;charset=utf-8,";
-        csvContent += "Receipt Number,Branch,Member Name,Category,Amount,Date,Payment Method\n";
-        
-        transactions.forEach(t => {
-            const row = [
+        // Escape a CSV cell: double embedded quotes, and neutralize leading
+        // =/+/-/@ so spreadsheet apps can't execute a value as a formula.
+        const csvCell = (value) => {
+            let s = String(value == null ? '' : value);
+            if (/^[=+\-@]/.test(s)) s = "'" + s;
+            return `"${s.replace(/"/g, '""')}"`;
+        };
+
+        const rows = [
+            ['Receipt Number', 'Branch', 'Member Name', 'Category', 'Amount', 'Date', 'Payment Method'],
+            ...transactions.map(t => [
                 t.receiptNumber,
                 t.branchName,
                 t.memberName || 'Anonymous',
                 t.category,
-                t.amount,
+                parseFloat(t.amount).toFixed(2),
                 t.date,
                 t.paymentMethod
-            ].map(val => `"${val}"`).join(",");
-            csvContent += row + "\n";
-        });
+            ])
+        ];
 
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `church2_financial_export_${new Date().toISOString().split('T')[0]}.csv`);
-        document.body.appendChild(link); // Required for FF
+        const csv = rows.map(r => r.map(csvCell).join(',')).join('\r\n');
+
+        // Use a Blob URL so commas/quotes survive without URI-encoding quirks.
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `church2_financial_export_${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        URL.revokeObjectURL(url);
     },
 
     // 10. Panel: Ministry & Rota Rendering
@@ -903,17 +973,17 @@ const ChurchApp = {
             div.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div>
-                        <strong style="color: #a5b4fc; font-size: 0.95rem;">${role}</strong>
-                        <p style="font-size: 0.75rem; color: #9ca3af;">Status: ${volunteerObj ? '✅ Roster Assigned' : '⚠️ UNASSIGNED'}</p>
+                        <strong style="color: #a5b4fc; font-size: 0.95rem;">${esc(role)}</strong>
+                        <p class="rota-status ${volunteerObj ? 'is-assigned' : 'is-unassigned'}">Status: ${volunteerObj ? '✅ Roster Assigned' : '⚠️ Unassigned'}</p>
                     </div>
                     <div>
                         ${volunteerObj ? `
                             <div class="volunteer-pill">
-                                <span>${volunteerObj.firstName} ${volunteerObj.lastName}</span>
-                                <button onclick="ChurchApp.removeVolunteerFromRole('${event.id}', '${volunteerObj.id}')" class="remove-vol-btn">×</button>
+                                <span>${esc(volunteerObj.firstName)} ${esc(volunteerObj.lastName)}</span>
+                                <button aria-label="Remove ${esc(volunteerObj.firstName)} ${esc(volunteerObj.lastName)} from ${esc(role)}" onclick="ChurchApp.removeVolunteerFromRole('${esc(event.id)}', '${esc(volunteerObj.id)}')" class="remove-vol-btn">×</button>
                             </div>
                         ` : `
-                            <button class="action-btn-sm" onclick="ChurchApp.showMatchAI('${event.id}', '${role}')">✨ AI Match</button>
+                            <button class="action-btn-sm" onclick="ChurchApp.showMatchAI('${esc(event.id)}', '${esc(role).replace(/'/g, "\\'")}')">✨ AI Match</button>
                         `}
                     </div>
                 </div>
@@ -943,34 +1013,34 @@ const ChurchApp = {
         
         const modal = document.getElementById('ai-matcher-modal');
         modal.innerHTML = `
-            <div class="modal-card">
+            <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="matcher-modal-title">
                 <div class="modal-header">
-                    <h3>AI Volunteer Matching System</h3>
-                    <button class="modal-close" onclick="ChurchApp.closeModal('ai-matcher-modal')">×</button>
+                    <h3 id="matcher-modal-title">AI Volunteer Matching System</h3>
+                    <button class="modal-close" aria-label="Close volunteer matcher" onclick="ChurchApp.closeModal('ai-matcher-modal')">×</button>
                 </div>
                 <div class="modal-body">
-                    <p style="font-size:0.85rem; color:#9ca3af; margin-bottom:12px;">Searching database for members with skill: <strong style="color:#6366f1;">${role}</strong> and solid engagement scoring index.</p>
+                    <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:12px;">Searching database for members with skill: <strong style="color:#8b5cf6;">${esc(role)}</strong> and solid engagement scoring index.</p>
                     <div class="matches-list">
                         ${matches.map(m => `
                             <div class="match-item">
                                 <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
                                     <div>
-                                        <strong>${m.member.firstName} ${m.member.lastName}</strong>
-                                        <p style="font-size:0.75rem; color:#9ca3af;">Branch: ${m.member.branchName} | Engagement: ${m.member.engagement_score}%</p>
+                                        <strong>${esc(m.member.firstName)} ${esc(m.member.lastName)}</strong>
+                                        <p style="font-size:0.75rem; color:var(--text-secondary);">Branch: ${esc(m.member.branchName)} | Engagement: ${esc(m.member.engagement_score)}%</p>
                                     </div>
                                     <div style="text-align:right;">
-                                        <span class="match-percentage">${m.score}% Match</span>
-                                        <button class="btn btn-primary-gradient btn-sm" style="margin-top:6px;" onclick="ChurchApp.assignVolunteerRole('${event.id}', '${m.member.id}')">Assign Role</button>
+                                        <span class="match-percentage">${esc(m.score)}% Match</span>
+                                        <button class="btn btn-primary-gradient btn-sm" style="margin-top:6px;" onclick="ChurchApp.assignVolunteerRole('${esc(event.id)}', '${esc(m.member.id)}')">Assign Role</button>
                                     </div>
                                 </div>
                             </div>
                         `).join('')}
-                        ${matches.length === 0 ? '<p style="color:#9ca3af; font-style:italic; text-align:center;">No matching volunteers found in DB.</p>' : ''}
+                        ${matches.length === 0 ? '<p class="muted-italic" style="text-align:center;">No matching volunteers found in DB.</p>' : ''}
                     </div>
                 </div>
             </div>
         `;
-        modal.style.display = 'flex';
+        this.openModal('ai-matcher-modal');
     },
 
     assignVolunteerRole(eventId, volunteerId) {
@@ -994,19 +1064,19 @@ const ChurchApp = {
             const card = document.createElement('div');
             card.className = 'prayer-request-card';
             card.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
                     <div>
-                        <strong style="color: #f3f4f6; font-size: 0.95rem;">${pr.memberName}</strong>
-                        <span class="branch-pill badge-b1" style="font-size: 0.7rem; margin-left: 8px;">${pr.branchName}</span>
+                        <strong class="prayer-member">${esc(pr.memberName)}</strong>
+                        <span class="branch-pill badge-b1" style="font-size: 0.7rem; margin-left: 8px;">${esc(pr.branchName)}</span>
                     </div>
-                    <span class="category-pill" style="background: rgba(99,102,241,0.25); color: #a5b4fc; font-size:0.75rem;">🏷️ ${pr.category}</span>
+                    <span class="category-pill prayer-category">🏷️ ${esc(pr.category)}</span>
                 </div>
-                <p class="prayer-text">"${pr.text}"</p>
-                <div style="margin-top: 10px; display:flex; justify-content:space-between; align-items:center; font-size: 0.75rem; color: #9ca3af;">
-                    <span>Routed to: <strong>${pr.route}</strong></span>
+                <p class="prayer-text">"${esc(pr.text)}"</p>
+                <div class="prayer-actions">
+                    <span>Routed to: <strong>${esc(pr.route)}</strong></span>
                     <div>
-                        <button class="action-btn-sm" style="background:#10b981; color:#fff;" onclick="ChurchApp.approvePrayer('${pr.id}')">Approve</button>
-                        <button class="action-btn-sm" style="background:#ef4444; color:#fff;" onclick="ChurchApp.deletePrayer('${pr.id}')">Dismiss</button>
+                        <button class="action-btn-sm btn-approve" onclick="ChurchApp.approvePrayer('${esc(pr.id)}')">Approve</button>
+                        <button class="action-btn-sm btn-dismiss" onclick="ChurchApp.deletePrayer('${esc(pr.id)}')">Dismiss</button>
                     </div>
                 </div>
             `;
@@ -1014,14 +1084,14 @@ const ChurchApp = {
         });
 
         if (this.db.prayerRequests.length === 0) {
-            listContainer.innerHTML = `<div style="text-align:center; color:#9ca3af; padding:20px;">No pending prayer requests.</div>`;
+            listContainer.innerHTML = `<div class="empty-state">🙏<span>Inbox zero — no pending prayer requests.</span></div>`;
         }
     },
 
     approvePrayer(prId) {
         this.db.prayerRequests = this.db.prayerRequests.filter(p => p.id !== prId);
         this.saveDB();
-        alert("Prayer request approved and routed to departmental prayer lists.");
+        this.toast('Prayer request approved and routed to the prayer team.');
         this.renderCommunications();
     },
 
@@ -1036,7 +1106,7 @@ const ChurchApp = {
         const text = document.getElementById('sermon-notes-input').value.trim();
 
         if (!text) {
-            alert("Please paste some sermon notes or transcript text first.");
+            this.toast('Please paste some sermon notes or transcript text first.', 'error');
             return;
         }
 
@@ -1046,26 +1116,24 @@ const ChurchApp = {
         resultsContainer.innerHTML = `
             <div class="repurposed-card animate-fade-in">
                 <div class="ai-header-badge">✨ AI REPURPOSED SERMON KIT</div>
-                <h4 style="margin: 10px 0 6px 0; color:#fff;">${result.title}</h4>
-                <hr style="border: 0; border-top:1px solid rgba(255,255,255,0.08); margin: 10px 0;">
-                
-                <h5 style="color:#a5b4fc; margin-bottom:5px;">3-Day Devotional Study Guide</h5>
-                <div style="font-size:0.85rem; color:#d1d5db; line-height:1.5; background:rgba(0,0,0,0.2); padding:10px; border-radius:6px; margin-bottom:12px; white-space:pre-wrap;">
-                    ${result.devotional.day1}
-                    \n\n
-                    ${result.devotional.day2}
-                    \n\n
-                    ${result.devotional.day3}
+                <h4 class="kit-title">${esc(result.title)}</h4>
+                <hr class="kit-divider">
+
+                <h5 class="kit-subhead">3-Day Devotional Study Guide</h5>
+                <div class="kit-devotional md-body">
+                    ${renderMarkdown(result.devotional.day1)}
+                    ${renderMarkdown(result.devotional.day2)}
+                    ${renderMarkdown(result.devotional.day3)}
                 </div>
 
-                <h5 style="color:#a5b4fc; margin-bottom:5px;">Social Media Highlights</h5>
-                <ul style="font-size:0.85rem; color:#d1d5db; margin-left:15px; margin-bottom:12px;">
-                    ${result.socialQuotes.map(q => `<li style="margin-bottom:5px;">${q}</li>`).join('')}
+                <h5 class="kit-subhead">Social Media Highlights</h5>
+                <ul class="kit-list">
+                    ${result.socialQuotes.map(q => `<li>${mdInline(q)}</li>`).join('')}
                 </ul>
 
-                <h5 style="color:#a5b4fc; margin-bottom:5px;">Small Group Study Questions</h5>
-                <ol style="font-size:0.85rem; color:#d1d5db; margin-left:15px;">
-                    ${result.discussionQuestions.map(q => `<li style="margin-bottom:5px;">${q}</li>`).join('')}
+                <h5 class="kit-subhead">Small Group Study Questions</h5>
+                <ol class="kit-list">
+                    ${result.discussionQuestions.map(q => `<li>${mdInline(q)}</li>`).join('')}
                 </ol>
             </div>
         `;
@@ -1122,15 +1190,16 @@ const ChurchApp = {
         this.db.events.forEach(e => {
             const div = document.createElement('div');
             div.className = 'mobile-event-card';
+            const rsvped = (this.session.rsvpedEvents || []).includes(e.id);
             div.innerHTML = `
-                <div style="display:flex; justify-content:space-between;">
-                    <strong>${e.title}</strong>
-                    <span style="font-size:0.7rem; color:#6366f1;">${e.date}</span>
+                <div class="mobile-event-top">
+                    <strong>${esc(e.title)}</strong>
+                    <span class="mobile-event-date">${esc(e.date)}</span>
                 </div>
-                <p style="font-size:0.75rem; color:#9ca3af; margin: 4px 0 8px 0;">${e.description}</p>
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-size:0.7rem; color:#a5b4fc;">⏰ ${e.time}</span>
-                    <button class="mobile-rsvp-btn" onclick="ChurchApp.handleMobileRSVP('${e.id}')">RSVP</button>
+                <p class="mobile-event-desc">${esc(e.description)}</p>
+                <div class="mobile-event-bottom">
+                    <span class="mobile-event-time">⏰ ${esc(e.time)}</span>
+                    <button class="mobile-rsvp-btn${rsvped ? ' is-rsvped' : ''}" ${rsvped ? 'disabled' : ''} onclick="ChurchApp.handleMobileRSVP('${esc(e.id)}')">${rsvped ? '✓ Going' : 'RSVP'}</button>
                 </div>
             `;
             eventsContainer.appendChild(div);
@@ -1138,7 +1207,11 @@ const ChurchApp = {
     },
 
     handleMobileRSVP(eventId) {
-        alert("You are registered! Added to 'My Events' and synchronized with device calendar.");
+        this.session.rsvpedEvents = this.session.rsvpedEvents || [];
+        if (!this.session.rsvpedEvents.includes(eventId)) {
+            this.session.rsvpedEvents.push(eventId);
+        }
+        this.renderMobileHome();
     },
 
     renderMobileSermons() {
@@ -1154,8 +1227,8 @@ const ChurchApp = {
                     <span style="font-size:1.5rem;">🎬</span>
                 </div>
                 <div style="padding:10px;">
-                    <strong style="font-size:0.85rem; color:#f3f4f6; display:block;">${s.title}</strong>
-                    <span style="font-size:0.7rem; color:#9ca3af; display:block;">By ${s.preacher} | ${s.duration}</span>
+                    <strong style="font-size:0.85rem; color:var(--text-primary); display:block;">${esc(s.title)}</strong>
+                    <span style="font-size:0.7rem; color:var(--text-secondary); display:block;">By ${esc(s.preacher)} | ${esc(s.duration)}</span>
                 </div>
             `;
             container.appendChild(card);
@@ -1170,10 +1243,10 @@ const ChurchApp = {
         playerContainer.style.display = 'block';
         playerContainer.innerHTML = `
             <div class="mobile-sermon-player" style="background: rgba(28,28,45,0.95); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); margin-bottom:12px;">
-                <video src="${sermon.mediaUrl}" controls autoplay style="width:100%; border-radius:6px; max-height:120px;"></video>
+                <video src="${encodeURI(sermon.mediaUrl)}" controls autoplay style="width:100%; border-radius:6px; max-height:120px;"></video>
                 <div style="margin-top:8px;">
-                    <strong style="font-size:0.85rem; color:#fff; display:block;">Playing: ${sermon.title}</strong>
-                    <span style="font-size:0.7rem; color:#9ca3af;">Campus: ${sermon.branchName}</span>
+                    <strong style="font-size:0.85rem; color:#fff; display:block;">Playing: ${esc(sermon.title)}</strong>
+                    <span style="font-size:0.7rem; color:#9ca3af;">Campus: ${esc(sermon.branchName)}</span>
                 </div>
             </div>
         `;
@@ -1226,8 +1299,8 @@ const ChurchApp = {
             const p = document.createElement('div');
             p.className = 'mobile-bible-verse-item';
             p.innerHTML = `
-                <strong style="font-size:0.8rem; color:#a5b4fc; display:block;">${v.ref} (${this.session.bibleVersion})</strong>
-                <p style="font-size:0.8rem; color:#d1d5db; margin-top:2px;">"${v.text}"</p>
+                <strong style="font-size:0.8rem; color:#a5b4fc; display:block;">${esc(v.ref)} (${esc(this.session.bibleVersion)})</strong>
+                <p style="font-size:0.8rem; color:var(--text-secondary); margin-top:2px;">"${esc(v.text)}"</p>
             `;
             verseContainer.appendChild(p);
         });
@@ -1300,8 +1373,8 @@ const ChurchApp = {
             <div style="background: #1c1c2d; padding:20px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); width: 85%; max-width:280px; text-align:center;">
                 <span style="font-size:3rem;">🎉</span>
                 <h4 style="color:#fff; margin-top:10px;">Giving Successful!</h4>
-                <p style="font-size:0.75rem; color:#9ca3af; margin-top:5px;">Thank you for your donation of **$${amount.toFixed(2)}** toward ${category}.</p>
-                <p style="font-size:0.7rem; color:#a5b4fc; font-weight:bold; margin-top:8px;">Receipt Generated: ${newTx.receiptNumber}</p>
+                <p style="font-size:0.75rem; color:#9ca3af; margin-top:5px;">Thank you for your donation of <strong style="color:#fff;">$${amount.toFixed(2)}</strong> toward ${esc(category)}.</p>
+                <p style="font-size:0.7rem; color:#a5b4fc; font-weight:bold; margin-top:8px;">Receipt Generated: ${esc(newTx.receiptNumber)}</p>
                 <button class="btn btn-primary-gradient btn-sm" style="margin-top:15px; width:100%;" onclick="document.getElementById('mobile-giving-success-overlay').style.display='none'">Awesome</button>
             </div>
         `;
@@ -1328,11 +1401,11 @@ const ChurchApp = {
                     div.innerHTML = `
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <div>
-                                <strong style="font-size:0.8rem; color:#fff; display:block;">${role}</strong>
-                                <span style="font-size:0.7rem; color:#9ca3af;">Event: ${e.title}</span>
-                                <span style="font-size:0.7rem; color:#a5b4fc; display:block;">Date: ${e.date}</span>
+                                <strong style="font-size:0.8rem; color:var(--text-primary); display:block;">${esc(role)}</strong>
+                                <span style="font-size:0.7rem; color:var(--text-secondary);">Event: ${esc(e.title)}</span>
+                                <span style="font-size:0.7rem; color:#a5b4fc; display:block;">Date: ${esc(e.date)}</span>
                             </div>
-                            <button class="mobile-apply-btn" onclick="ChurchApp.handleMobileServeSignup('${e.id}', '${role}')">Serve</button>
+                            <button class="mobile-apply-btn" onclick="ChurchApp.handleMobileServeSignup('${esc(e.id)}', '${esc(role).replace(/'/g, "\\'")}')">Serve</button>
                         </div>
                     `;
                     openRolesContainer.appendChild(div);
@@ -1341,13 +1414,13 @@ const ChurchApp = {
         });
 
         if (openRolesContainer.innerHTML === '') {
-            openRolesContainer.innerHTML = `<div style="text-align:center; color:#9ca3af; font-size:0.75rem; padding:20px;">All volunteer slots are fully rostered! Thank you!</div>`;
+            openRolesContainer.innerHTML = `<div class="empty-state small">✅<span>All volunteer slots are fully rostered. Thank you!</span></div>`;
         }
 
         // Render current member skills list
         const m1 = this.db.members.find(m => m.id === 'm1');
         const skillsContainer = document.getElementById('mobile-my-skills-list');
-        skillsContainer.innerHTML = m1.volunteer_skills.map(s => `<span class="skill-tag">${s}</span>`).join('');
+        skillsContainer.innerHTML = m1.volunteer_skills.map(s => `<span class="skill-tag">${esc(s)}</span>`).join('');
     },
 
     handleMobileServeSignup(eventId, role) {
@@ -1369,7 +1442,7 @@ const ChurchApp = {
             m1.engagement_score = Math.min(m1.engagement_score + 6, 100);
             this.saveDB();
 
-            alert(`Thank you for serving! You are assigned to role: ${role} for event: ${event.title}.`);
+            this.toast(`You're serving as ${role} for ${event.title}. Thank you!`);
             this.renderAll();
         }
     },
@@ -1414,7 +1487,7 @@ const ChurchApp = {
         const userDiv = document.createElement('div');
         userDiv.className = 'chat-bubble user';
         userDiv.innerHTML = `
-            <p>${text}</p>
+            <p>${esc(text)}</p>
             <span class="chat-time">${new Date().toLocaleTimeString(undefined, {hour: '2-digit', minute:'2-digit'})}</span>
         `;
         body.appendChild(userDiv);
@@ -1427,26 +1500,27 @@ const ChurchApp = {
         setTimeout(() => {
             const botResponse = window.AIEngine.getBotResponse(text);
             
-            // Parse optional buttons
+            // Parse optional quick-reply buttons and strip those lines from the
+            // spoken text so options render only as buttons (not duplicated inline).
             const options = [];
-            const lines = botResponse.split('\n');
-            lines.forEach(line => {
+            const textLines = [];
+            botResponse.split('\n').forEach(line => {
                 const trimmed = line.trim();
                 if (trimmed.startsWith('- **') && trimmed.includes('**')) {
-                    const opt = trimmed.split('**')[1];
-                    options.push(opt);
-                } else if (trimmed.startsWith('- ') && trimmed.length > 2 && !trimmed.includes('**')) {
-                    const opt = trimmed.substring(2);
-                    options.push(opt);
+                    options.push(trimmed.split('**')[1]);
+                } else if (trimmed.startsWith('- ') && trimmed.length > 2) {
+                    options.push(trimmed.substring(2));
+                } else {
+                    textLines.push(line);
                 }
             });
 
             let buttonsHtml = '';
             if (options.length > 0) {
                 buttonsHtml = `
-                    <div class="chat-options-container" style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
+                    <div class="chat-options-container">
                         ${options.map(opt => `
-                            <button class="chat-option-btn" onclick="ChurchApp.handleChatOptionClick('${opt.replace(/'/g, "\\'")}')">${opt}</button>
+                            <button class="chat-option-btn" onclick="ChurchApp.handleChatOptionClick('${esc(opt).replace(/'/g, "\\'")}')">${esc(opt)}</button>
                         `).join('')}
                     </div>
                 `;
@@ -1455,7 +1529,7 @@ const ChurchApp = {
             const botDiv = document.createElement('div');
             botDiv.className = 'chat-bubble bot animate-fade-in';
             botDiv.innerHTML = `
-                <p style="white-space:pre-wrap;">${botResponse}</p>
+                <div class="md-body chat-md">${renderMarkdown(textLines.join('\n'))}</div>
                 ${buttonsHtml}
                 <span class="chat-time">${new Date().toLocaleTimeString(undefined, {hour: '2-digit', minute:'2-digit'})}</span>
             `;
@@ -1473,9 +1547,55 @@ const ChurchApp = {
     },
 
     // UI Helpers
+    _lastFocusedBeforeModal: null,
+
+    openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
+        this._lastFocusedBeforeModal = document.activeElement;
+        modal.style.display = 'flex';
+        // Move focus into the dialog for keyboard/screen-reader users.
+        const focusTarget = modal.querySelector('.modal-close, [autofocus], button, input, a[href]');
+        if (focusTarget) focusTarget.focus();
+    },
+
     closeModal(modalId) {
         const modal = document.getElementById(modalId);
         if (modal) modal.style.display = 'none';
+        // Restore focus to whatever opened the modal.
+        if (this._lastFocusedBeforeModal && typeof this._lastFocusedBeforeModal.focus === 'function') {
+            this._lastFocusedBeforeModal.focus();
+            this._lastFocusedBeforeModal = null;
+        }
+    },
+
+    closeAnyOpenModal() {
+        ['member-detail-modal', 'ai-matcher-modal', 'receipt-modal'].forEach((id) => {
+            const modal = document.getElementById(id);
+            if (modal && modal.style.display === 'flex') this.closeModal(id);
+        });
+    },
+
+    // Non-blocking toast notification — replaces alert() for friendlier feedback.
+    toast(message, type = 'success') {
+        let container = document.getElementById('toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'toast-container';
+            container.className = 'toast-container';
+            container.setAttribute('aria-live', 'polite');
+            container.setAttribute('role', 'status');
+            document.body.appendChild(container);
+        }
+        const icon = type === 'error' ? '⚠️' : (type === 'info' ? 'ℹ️' : '✅');
+        const el = document.createElement('div');
+        el.className = `toast toast-${type}`;
+        el.innerHTML = `<span class="toast-icon">${icon}</span><span>${esc(message)}</span>`;
+        container.appendChild(el);
+        setTimeout(() => {
+            el.classList.add('leaving');
+            setTimeout(() => el.remove(), 280);
+        }, 3600);
     },
 
     // Direct submit prayer request from mobile app
@@ -1503,16 +1623,31 @@ const ChurchApp = {
         this.saveDB();
         textarea.value = '';
 
-        alert(`Prayer Request submitted! AI analyzed this request as Category: [${categoryResult.category}] and successfully routed it to the [${categoryResult.route}].`);
-        
+        this.toast(`Prayer received — categorized as “${categoryResult.category}” and routed to ${categoryResult.route}.`, 'info');
+
         this.renderAll();
     }
 };
 
 // Start application
 window.onload = () => {
-    ChurchApp.init();
-    
-    // Globally expose modal close and helper events
+    // Expose BEFORE init so inline handlers and window.ChurchApp stay valid even
+    // if init() throws (e.g. a missing dependency mid-render).
     window.ChurchApp = ChurchApp;
+
+    // Close modals on Escape and on backdrop click — expected dialog behavior.
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') ChurchApp.closeAnyOpenModal();
+    });
+    document.querySelectorAll('.modal-overlay').forEach((overlay) => {
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) ChurchApp.closeModal(overlay.id);
+        });
+    });
+
+    try {
+        ChurchApp.init();
+    } catch (err) {
+        console.error('Church 2.0 failed to initialize:', err);
+    }
 };

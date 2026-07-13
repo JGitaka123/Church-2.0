@@ -25,7 +25,10 @@ const AIEngine = {
             const normalizedUser = answerText.trim().toLowerCase();
             const normalizedCorrect = currentQ.a.toLowerCase();
 
-            let isCorrect = normalizedUser.includes(normalizedCorrect) || normalizedCorrect.includes(normalizedUser);
+            // Require a real answer: an empty string makes includes() trivially true,
+            // which would mark blank submissions correct.
+            let isCorrect = normalizedUser.length > 0 &&
+                (normalizedUser.includes(normalizedCorrect) || normalizedCorrect.includes(normalizedUser));
 
             if (!isCorrect) {
                 const matchedOpt = currentQ.options.find(opt => normalizedUser.includes(opt.toLowerCase()));
@@ -387,8 +390,12 @@ The AI Care alert system flags **${atRiskMembers.length}** members whose engagem
 
     // 5. Volunteer Matcher
     matchVolunteersForEvent(eventReqSkills, membersList) {
-        if (!eventReqSkills || eventReqSkills.length === 0) {
-            return membersList.slice(0, 3); // Fallback
+        // Normalize to a list of non-empty role strings. Return the SAME
+        // {member, score, matchedSkills} shape in every branch so callers that
+        // read m.member/m.score don't hit undefined on the fallback path.
+        const roles = (eventReqSkills || []).map(s => String(s).trim()).filter(Boolean);
+        if (roles.length === 0) {
+            return membersList.slice(0, 3).map(member => ({ member, score: 0, matchedSkills: [] }));
         }
 
         const matches = [];
@@ -398,9 +405,9 @@ The AI Care alert system flags **${atRiskMembers.length}** members whose engagem
             const matchedSkills = [];
 
             if (member.volunteer_skills && Array.isArray(member.volunteer_skills)) {
-                eventReqSkills.forEach(reqSkill => {
-                    const found = member.volunteer_skills.some(memberSkill => 
-                        memberSkill.toLowerCase().includes(reqSkill.toLowerCase()) || 
+                roles.forEach(reqSkill => {
+                    const found = member.volunteer_skills.some(memberSkill =>
+                        memberSkill.toLowerCase().includes(reqSkill.toLowerCase()) ||
                         reqSkill.toLowerCase().includes(memberSkill.toLowerCase())
                     );
                     if (found) {
