@@ -3,21 +3,27 @@
   "name": "Church 2.0 Ministry Intelligence Platform",
   "icons": [
     {
-      "src": "church_logo.png",
-      "type": "image/png",
-      "sizes": "512x512",
+      "src": "icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
       "purpose": "any"
     },
     {
-      "src": "church_logo.png",
-      "type": "image/png",
-      "sizes": "512x512",
+      "src": "icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
       "purpose": "maskable"
+    },
+    {
+      "src": "church_logo.png",
+      "type": "image/jpeg",
+      "sizes": "1024x1024",
+      "purpose": "any"
     }
   ],
   "start_url": "./index.html",
   "background_color": "#09090e",
-  "theme_color": "#6366f1",
+  "theme_color": "#09090e",
   "display": "standalone",
   "orientation": "portrait"
 }

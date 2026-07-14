@@ -148,7 +148,7 @@ const ChurchApp = {
     // hidden in the nav, so a member cannot reach an admin panel by any route.
     ROLE_TABS: {
         hq_admin: ['admin_dashboard', 'admin_directory', 'admin_financials', 'admin_attendance', 'admin_ministry', 'admin_followups', 'admin_groups', 'admin_communications', 'mobile_preview'],
-        branch_admin: ['admin_dashboard', 'admin_directory', 'admin_financials', 'admin_attendance', 'admin_followups', 'admin_groups', 'admin_communications', 'mobile_preview'],
+        branch_admin: ['admin_dashboard', 'admin_directory', 'admin_financials', 'admin_attendance', 'admin_ministry', 'admin_followups', 'admin_groups', 'admin_communications', 'mobile_preview'],
         ministry_leader: ['admin_dashboard', 'admin_attendance', 'admin_ministry', 'admin_followups', 'admin_groups', 'admin_communications', 'mobile_preview'],
         member: ['mobile_preview']
     },
@@ -183,8 +183,14 @@ const ChurchApp = {
 
     // Persistence: Save state
     saveDB() {
-        if (typeof localStorage !== 'undefined') {
+        if (typeof localStorage === 'undefined') return;
+        try {
             localStorage.setItem('church2_db', JSON.stringify(this.db));
+        } catch (e) {
+            // Most likely QuotaExceededError — surface it instead of throwing
+            // uncaught mid-action (which would abort the surrounding handler).
+            console.error('Could not persist data:', e);
+            if (this.toast) this.toast('Local storage is full — recent changes may not be saved.', 'error');
         }
     },
 
@@ -194,11 +200,17 @@ const ChurchApp = {
             const saved = localStorage.getItem('church2_db');
             if (saved) {
                 try {
-                    this.db = JSON.parse(saved);
+                    const parsed = JSON.parse(saved);
+                    // Guard against valid-but-wrong JSON (e.g. "null", an array,
+                    // a string) that would break ensureSchema/renderers.
+                    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) || !Array.isArray(parsed.members)) {
+                        throw new Error('Saved DB is not a valid database object');
+                    }
+                    this.db = parsed;
                     this.ensureSchema();
                     return;
                 } catch (e) {
-                    console.error("Error parsing saved DB:", e);
+                    console.error("Error parsing saved DB, regenerating:", e);
                 }
             }
         }
@@ -616,65 +628,37 @@ const ChurchApp = {
         document.getElementById('active-branch-indicator').innerText = branchLabel;
         document.getElementById('active-role-indicator').innerText = role.toUpperCase().replace('_', ' ');
 
-        // Update Branch Select styling (HQ admin can select any branch, other admins are locked)
+        // The "Simulated Role" preview control is a super-admin-only affordance.
+        // Hiding it for other signed-in users closes an escalation path: a member
+        // must not be able to switch themselves into an admin role.
+        const roleSimWrap = document.getElementById('role-simulator-select')?.closest('div');
+        if (roleSimWrap) {
+            const isSuperAdmin = !this.session.currentUser || this.session.currentUser.role === 'hq_admin';
+            roleSimWrap.style.display = isSuperAdmin ? '' : 'none';
+        }
+
+        // Branch scope: HQ admin roams all campuses; every other role is locked
+        // to the campus they actually administer (from their signed-in account),
+        // not a hardcoded default.
         const branchSelect = document.getElementById('global-branch-select');
         if (role === 'hq_admin') {
             branchSelect.removeAttribute('disabled');
         } else {
-            branchSelect.value = 'b1'; // For Dallas admin, restrict
-            if (role === 'branch_admin') {
-                this.session.currentBranch = 'b1'; // default Nairobi HQ for simplification
-            }
+            const homeBranch = (this.session.currentUser && this.session.currentUser.branchId) || 'b1';
+            this.session.currentBranch = homeBranch;
+            branchSelect.value = homeBranch;
             branchSelect.setAttribute('disabled', 'true');
         }
 
-        // Sidebar link visibilities based on role
-        const directoryLink = document.querySelector('.nav-link[data-tab="admin_directory"]');
-        const financialsLink = document.querySelector('.nav-link[data-tab="admin_financials"]');
-        const attendanceLink = document.querySelector('.nav-link[data-tab="admin_attendance"]');
-        const ministryLink = document.querySelector('.nav-link[data-tab="admin_ministry"]');
-        const followupsLink = document.querySelector('.nav-link[data-tab="admin_followups"]');
-        const groupsLink = document.querySelector('.nav-link[data-tab="admin_groups"]');
-        const communicationLink = document.querySelector('.nav-link[data-tab="admin_communications"]');
-        const dashboardLink = document.querySelector('.nav-link[data-tab="admin_dashboard"]');
-        const mobilePreviewLink = document.querySelector('.nav-link[data-tab="mobile_preview"]');
-
-        // Reset sidebar active state
+        // Sidebar link visibility is driven entirely by ROLE_TABS — the single
+        // source of truth — so the nav can never show a link the RBAC check at
+        // the top of renderAll would immediately bounce.
+        const allowedTabs = this.ROLE_TABS[role] || this.ROLE_TABS.member;
         document.querySelectorAll('.nav-link').forEach(link => {
-            if (link.dataset.tab === activeTab) {
-                link.classList.add('active');
-            } else {
-                link.classList.remove('active');
-            }
+            const tab = link.dataset.tab;
+            link.style.display = allowedTabs.includes(tab) ? 'flex' : 'none';
+            link.classList.toggle('active', tab === activeTab);
         });
-
-        if (role === 'member') {
-            // Hide all admin links
-            directoryLink.style.display = 'none';
-            financialsLink.style.display = 'none';
-            attendanceLink.style.display = 'none';
-            ministryLink.style.display = 'none';
-            followupsLink.style.display = 'none';
-            groupsLink.style.display = 'none';
-            communicationLink.style.display = 'none';
-            dashboardLink.style.display = 'none';
-            mobilePreviewLink.style.display = 'flex';
-        } else {
-            directoryLink.style.display = 'flex';
-            financialsLink.style.display = 'flex';
-            attendanceLink.style.display = 'flex';
-            ministryLink.style.display = 'flex';
-            followupsLink.style.display = 'flex';
-            groupsLink.style.display = 'flex';
-            communicationLink.style.display = 'flex';
-            dashboardLink.style.display = 'flex';
-            mobilePreviewLink.style.display = 'flex';
-
-            // Hide/Show branch financial options for Department/Ministry Leaders
-            if (role === 'ministry_leader') {
-                financialsLink.style.display = 'none';
-            }
-        }
 
         // Render main view panels
         const panels = ['admin_dashboard', 'admin_directory', 'admin_financials', 'admin_attendance', 'admin_ministry', 'admin_followups', 'admin_groups', 'admin_communications', 'mobile_preview'];
@@ -1211,7 +1195,13 @@ const ChurchApp = {
         const tbody = document.getElementById('member-directory-tbody');
         tbody.innerHTML = '';
 
+        // Respect the active campus scope: a campus-locked admin can only ever see
+        // their own members, regardless of the in-panel filter.
+        const scope = this.session.currentBranch;
+        const scoped = (scope && scope !== 'global') ? scope : null;
+
         const filteredMembers = this.db.members.filter(member => {
+            if (scoped && member.branchId !== scoped) return false;
             const fullName = `${member.firstName} ${member.lastName}`.toLowerCase();
             const matchesQuery = fullName.includes(query) || member.email.toLowerCase().includes(query) || member.phone.includes(query);
             const matchesBranch = (branchFilter === 'all') || (member.branchId === branchFilter);
@@ -1545,7 +1535,7 @@ const ChurchApp = {
         const method = document.getElementById('tx-method-select').value;
         const date = document.getElementById('tx-date-input').value || new Date().toISOString().split('T')[0];
 
-        if (isNaN(amount) || amount <= 0) return;
+        if (isNaN(amount) || amount <= 0) { this.toast('Enter a valid contribution amount greater than $0.', 'error'); return; }
 
         let memberName = 'Anonymous';
         // When "All Branches (Global)" is active there is no single campus to file
@@ -1707,18 +1697,35 @@ const ChurchApp = {
     // 10. Panel: Ministry & Rota Rendering
     renderMinistry() {
         const selectEvent = document.getElementById('rota-event-select');
-        const activeEventId = this.session.selectedEventId;
-        selectEvent.value = activeEventId;
+
+        // Scope events to the active campus so a campus admin only rosters their
+        // own events (and can't assign another campus's members).
+        const scope = this.session.currentBranch;
+        const events = this.db.events.filter(e => !scope || scope === 'global' || e.branchId === scope);
+
+        // Keep the selected event valid within the current scope.
+        let activeEventId = this.session.selectedEventId;
+        if (!events.some(e => e.id === activeEventId)) {
+            activeEventId = events.length ? events[0].id : null;
+            this.session.selectedEventId = activeEventId;
+        }
 
         // Sync dropdown list
         selectEvent.innerHTML = '';
-        this.db.events.forEach(e => {
+        events.forEach(e => {
             const opt = document.createElement('option');
             opt.value = e.id;
             opt.text = `${e.title} (${e.date})`;
             selectEvent.appendChild(opt);
         });
         selectEvent.value = activeEventId;
+
+        const requiredRolesEmpty = document.getElementById('rota-required-roles');
+        if (!activeEventId) {
+            if (requiredRolesEmpty) requiredRolesEmpty.innerHTML = '<p class="muted-italic">No events scheduled for this campus yet.</p>';
+            selectEvent.onchange = null;
+            return;
+        }
 
         // Render Rota details
         const event = this.db.events.find(e => e.id === activeEventId);
@@ -1751,7 +1758,7 @@ const ChurchApp = {
                                 <button aria-label="Remove ${esc(volunteerObj.firstName)} ${esc(volunteerObj.lastName)} from ${esc(role)}" onclick="ChurchApp.removeVolunteerFromRole('${esc(event.id)}', '${esc(volunteerObj.id)}')" class="remove-vol-btn">×</button>
                             </div>
                         ` : `
-                            <button class="action-btn-sm" onclick="ChurchApp.showMatchAI('${esc(event.id)}', '${esc(role).replace(/'/g, "\\'")}')">✨ AI Match</button>
+                            <button class="action-btn-sm" onclick="ChurchApp.showMatchAI('${esc(event.id)}', '${esc(role).replace(/'/g, "\\'")}')"><svg class="inline-ico" viewBox="0 0 24 24" aria-hidden="true" style="fill:currentColor;stroke:none;"><path d="M12 4l1.4 4 4 1.4-4 1.4L12 15l-1.4-4.2L6.6 9.4l4-1.4z"/></svg> AI Match</button>
                         `}
                     </div>
                 </div>
@@ -1777,7 +1784,9 @@ const ChurchApp = {
 
     showMatchAI(eventId, role) {
         const event = this.db.events.find(e => e.id === eventId);
-        const matches = window.AIEngine.matchVolunteersForEvent([role], this.db.members);
+        // Only suggest volunteers from the event's own campus.
+        const pool = event ? this.db.members.filter(m => m.branchId === event.branchId) : this.db.members;
+        const matches = window.AIEngine.matchVolunteersForEvent([role], pool);
         
         const modal = document.getElementById('ai-matcher-modal');
         modal.innerHTML = `
@@ -1828,16 +1837,24 @@ const ChurchApp = {
         const listContainer = document.getElementById('prayer-requests-list');
         listContainer.innerHTML = '';
 
-        this.db.prayerRequests.forEach(pr => {
+        // Prayer requests are sensitive pastoral content — scope them to the
+        // active campus so a campus admin never sees another campus's requests.
+        const scope = this.session.currentBranch;
+        const scopeName = (scope && scope !== 'global')
+            ? (this.db.branches.find(b => b.id === scope) || {}).name : null;
+        const prayers = this.db.prayerRequests.filter(pr => !scopeName || pr.branchName === scopeName);
+
+        prayers.forEach(pr => {
+            const branchId = (this.db.branches.find(b => b.name === pr.branchName) || {}).id || 'b1';
             const card = document.createElement('div');
             card.className = 'prayer-request-card';
             card.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
                     <div>
                         <strong class="prayer-member">${esc(pr.memberName)}</strong>
-                        <span class="branch-pill badge-b1" style="font-size: 0.7rem; margin-left: 8px;">${esc(pr.branchName)}</span>
+                        <span class="branch-pill badge-${esc(branchId)}" style="font-size: 0.7rem; margin-left: 8px;">${esc(pr.branchName)}</span>
                     </div>
-                    <span class="category-pill prayer-category">🏷️ ${esc(pr.category)}</span>
+                    <span class="category-pill prayer-category"><svg class="inline-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 13.5l-7 7a2 2 0 0 1-2.8 0l-6.2-6.2a2 2 0 0 1-.5-1.9l1.4-5.6a2 2 0 0 1 1.5-1.5l5.6-1.4a2 2 0 0 1 1.9.5l6.2 6.2a2 2 0 0 1-.1 2.9z"/><circle cx="9" cy="9" r="1.3"/></svg> ${esc(pr.category)}</span>
                 </div>
                 <p class="prayer-text">"${esc(pr.text)}"</p>
                 <div class="prayer-actions">
@@ -1851,7 +1868,7 @@ const ChurchApp = {
             listContainer.appendChild(card);
         });
 
-        if (this.db.prayerRequests.length === 0) {
+        if (prayers.length === 0) {
             listContainer.innerHTML = `<div class="empty-state">🙏<span>Inbox zero — no pending prayer requests.</span></div>`;
         }
 
@@ -2284,7 +2301,7 @@ const ChurchApp = {
         const frequency = document.getElementById('mobile-giving-frequency').value;
         const coverFees = document.getElementById('mobile-giving-cover-fees').checked;
 
-        if (isNaN(amount) || amount <= 0) return;
+        if (isNaN(amount) || amount <= 0) { this.toast('Enter a valid amount greater than $0.', 'error'); return; }
 
         let feeAdded = 0;
         if (coverFees) {
@@ -2533,11 +2550,27 @@ const ChurchApp = {
         // Move focus into the dialog for keyboard/screen-reader users.
         const focusTarget = modal.querySelector('.modal-close, [autofocus], button, input, a[href]');
         if (focusTarget) focusTarget.focus();
+
+        // Trap Tab focus within the dialog so keyboard users can't tab into the
+        // page behind the overlay.
+        this._trapHandler = (e) => {
+            if (e.key !== 'Tab') return;
+            const focusables = modal.querySelectorAll('button, input, select, textarea, a[href], [tabindex]:not([tabindex="-1"])');
+            if (!focusables.length) return;
+            const first = focusables[0];
+            const last = focusables[focusables.length - 1];
+            if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        };
+        modal.addEventListener('keydown', this._trapHandler);
     },
 
     closeModal(modalId) {
         const modal = document.getElementById(modalId);
-        if (modal) modal.style.display = 'none';
+        if (modal) {
+            modal.style.display = 'none';
+            if (this._trapHandler) { modal.removeEventListener('keydown', this._trapHandler); this._trapHandler = null; }
+        }
         // Restore focus to whatever opened the modal.
         if (this._lastFocusedBeforeModal && typeof this._lastFocusedBeforeModal.focus === 'function') {
             this._lastFocusedBeforeModal.focus();

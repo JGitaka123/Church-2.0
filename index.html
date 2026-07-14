@@ -7,6 +7,8 @@
     
     <!-- PWA configuration and mobile styling -->
     <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icon.svg">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#09090e">
@@ -31,6 +33,7 @@
             </div>
             
             <nav class="nav-menu" aria-label="Primary">
+              <ul class="nav-list">
                 <li><a href="#" class="nav-link active" data-tab="admin_dashboard"><svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.6"/><rect x="14" y="3" width="7" height="5" rx="1.6"/><rect x="14" y="12" width="7" height="9" rx="1.6"/><rect x="3" y="16" width="7" height="5" rx="1.6"/></svg> Dashboard</a></li>
                 <li><a href="#" class="nav-link" data-tab="admin_directory"><svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.4 20c0-3.3 2.5-5.3 5.6-5.3s5.6 2 5.6 5.3"/><path d="M16.2 5.3a3.2 3.2 0 0 1 0 6.1"/><path d="M17.3 15c2.3.5 4.1 2.3 4.1 5"/></svg> Member Database</a></li>
                 <li><a href="#" class="nav-link" data-tab="admin_financials"><svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.8" y="6" width="18.4" height="12.5" rx="2.4"/><path d="M2.8 10.2h18.4"/><circle cx="16.6" cy="14.3" r="1.35"/></svg> Financials</a></li>
@@ -40,6 +43,7 @@
                 <li><a href="#" class="nav-link" data-tab="admin_groups"><svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8.2" cy="9" r="3"/><circle cx="16.6" cy="10" r="2.3"/><path d="M2.6 19c0-3 2.4-4.9 5.6-4.9 1.6 0 3 .5 4 1.3"/><path d="M14.6 14.7c2.6.2 4.8 1.9 4.8 4.6"/></svg> Groups</a></li>
                 <li><a href="#" class="nav-link" data-tab="admin_communications"><svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.5A2.6 2.6 0 0 1 17.9 17H8.4l-4.4 3.2V6.6A2.6 2.6 0 0 1 6.6 4h11.3a2.6 2.6 0 0 1 2.6 2.6z"/></svg> Communications</a></li>
                 <li><a href="#" class="nav-link" data-tab="mobile_preview"><svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2.8" width="10" height="18.4" rx="2.6"/><path d="M10.6 18.4h2.8"/></svg> Mobile App Simulator</a></li>
+              </ul>
             </nav>
             
             <div style="font-size: 0.7rem; color: var(--text-secondary); text-align: center; border-top: 1px solid var(--border-light); padding-top: 15px;">
@@ -117,7 +121,7 @@
                     <div class="card-glass stats-card">
                         <div class="stats-info">
                             <h4>Active Members</h4>
-                            <div class="value" id="dash-members-total">15</div>
+                            <div class="value" id="dash-members-total">—</div>
                             <span style="font-size:0.75rem; color:var(--text-secondary);">Across campuses</span>
                         </div>
                         <div class="stats-icon tone-gold"><svg class="svg-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V10l8-5.6 8 5.6v11"/><path d="M9.4 21v-5.2h5.2V21"/><path d="M12 2.4v3.2M10.4 4h3.2"/></svg></div>
@@ -129,7 +133,7 @@
                     <div class="card-glass">
                         <h3 style="font-family: var(--font-header); font-size:1.05rem; margin-bottom:15px;">Giving Trend (Past 7 Days)</h3>
                         <div class="chart-container-wrapper">
-                            <canvas id="giving-trend-chart"></canvas>
+                            <canvas id="giving-trend-chart" role="img" aria-label="Daily giving trend over the past 7 days"></canvas>
                         </div>
                     </div>
 
@@ -142,7 +146,7 @@
                 <div class="card-glass" style="margin-top:25px;">
                     <h3 style="font-family: var(--font-header); font-size:1.05rem; margin-bottom:15px;">Fund Distribution Summary</h3>
                     <div class="chart-container-wrapper" style="height: 180px;">
-                        <canvas id="category-pie-chart"></canvas>
+                        <canvas id="category-pie-chart" role="img" aria-label="Fund distribution breakdown by category"></canvas>
                     </div>
                 </div>
             </section>
@@ -342,7 +346,7 @@
                         <h3 style="font-family: var(--font-header); font-size:1.05rem; margin-bottom:12px;">Attendance Trend</h3>
                         <span style="font-size:0.75rem; color:var(--text-secondary);">Present headcount over the last 8 services</span>
                         <div class="chart-container-wrapper" style="height:200px;">
-                            <canvas id="attendance-trend-chart"></canvas>
+                            <canvas id="attendance-trend-chart" role="img" aria-label="Present headcount over the last 8 services"></canvas>
                         </div>
                         <div id="attendance-summary" style="margin-top:14px;"></div>
                     </div>
