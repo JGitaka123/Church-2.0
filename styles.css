@@ -2058,3 +2058,29 @@ body.theme-light .auth-demo-chip { color: #0f172a; }
 .mobile-status-icons { display: inline-flex; gap: 5px; align-items: center; }
 .mobile-status-icons svg { width: 15px; height: 15px; color: #e5e7eb; }
 body.theme-light .mobile-status-icons svg { color: #0f172a; }
+
+
+/* ==========================================================================
+   Micro-interaction & finish polish (v3 design pass)
+   ========================================================================== */
+/* Smooth, premium theme cross-fade when switching interface themes */
+body { transition: background-color 0.35s ease, color 0.35s ease; }
+
+/* Tactile button press */
+.btn:active { transform: translateY(1px); }
+.btn-primary-gradient:active { transform: translateY(0); box-shadow: 0 3px 12px rgba(99, 102, 241, 0.4); }
+
+/* Nav hover finesse — icon brightens with the label */
+.nav-link:hover .nav-ico { opacity: 1; }
+
+/* Selects: clearer hover affordance + focus consistency */
+.select-custom:hover { border-color: rgba(139, 92, 246, 0.6); }
+
+/* Stat value: crisper number rendering */
+.stats-info .value { letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+
+/* Reduced-motion users get no theme cross-fade or press motion */
+@media (prefers-reduced-motion: reduce) {
+    body { transition: none; }
+    .btn:active, .btn-primary-gradient:active { transform: none; }
+}
