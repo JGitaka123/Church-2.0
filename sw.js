@@ -1,10 +1,11 @@
 // Bump CACHE_NAME on every deploy so returning visitors get the new build.
-const CACHE_NAME = 'church2-cache-v2';
+const CACHE_NAME = 'church2-cache-v3';
 const ASSETS = [
     './index.html',
     './styles.css',
     './app.js',
     './ai-engine.js',
+    './vendor/chart.umd.js',
     './manifest.json',
     './church_logo.png'
 ];
