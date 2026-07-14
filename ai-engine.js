@@ -303,8 +303,7 @@ const AIEngine = {
                 : `Latest service attendance was **${latestCount}** (first service on record).`)
             : `No attendance has been recorded yet.`;
 
-        const weeklySummaryText = `Weekly Ministry Health Report:
-• **Financials**: ${givingLine}
+        const weeklySummaryText = `• **Financials**: ${givingLine}
 • **Attendance**: ${attLine}
 • **Care Alerts**: **${atRiskMembers.length}** member(s) flagged for a 3+ service absence streak. Pastoral care outreach is recommended.`;
 

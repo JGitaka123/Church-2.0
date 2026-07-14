@@ -343,7 +343,7 @@ const ChurchApp = {
         if (step === 'mfa') {
             auth.innerHTML = `
                 <div class="auth-card">
-                    <div class="auth-brand"><span class="auth-logo">✝</span><span>Church 2.0</span></div>
+                    <div class="auth-brand"><span class="auth-logo"><svg class="svg-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M6.5 8.5h11"/></svg></span><span>Church 2.0</span></div>
                     <h2 class="auth-title">Two-factor verification</h2>
                     <p class="auth-sub">We texted a 6-digit code to the phone on file for <strong>${esc(ctx.email)}</strong>. Enter it to continue. <span class="auth-hint">(demo code: 123456)</span></p>
                     <form id="mfa-form" class="auth-form">
@@ -362,7 +362,7 @@ const ChurchApp = {
         // credentials step
         auth.innerHTML = `
             <div class="auth-card">
-                <div class="auth-brand"><span class="auth-logo">✝</span><span>Church 2.0</span></div>
+                <div class="auth-brand"><span class="auth-logo"><svg class="svg-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M6.5 8.5h11"/></svg></span><span>Church 2.0</span></div>
                 <h2 class="auth-title">Sign in to your ministry console</h2>
                 <p class="auth-sub">Secure access to your church's data.</p>
                 <form id="login-form" class="auth-form">
@@ -749,7 +749,7 @@ const ChurchApp = {
         if (aiSnapshotCard) {
             aiSnapshotCard.innerHTML = `
                 <div class="ai-header-badge">
-                    <span class="sparkle-icon">✨</span> AI-GENERATED MONDAY BRIEFING
+                    <svg class="badge-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l1.7 4.8 4.8 1.7-4.8 1.7L12 16.5l-1.7-4.8L5.5 10l4.8-1.7z"/><path d="M18.5 15.5l.7 1.9 1.9.7-1.9.7-.7 1.9-.7-1.9-1.9-.7 1.9-.7z"/></svg> AI-GENERATED MONDAY BRIEFING
                 </div>
                 <p class="ai-report-title">Weekly Ministry Health Report</p>
                 <div class="weekly-bulletin-ai md-body">${renderMarkdown(snapshot.bulletSummary)}</div>
@@ -757,7 +757,7 @@ const ChurchApp = {
                     <strong>Executive Context:</strong> ${renderMarkdown(snapshot.executiveSnapshot)}
                 </div>
                 <div class="at-risk-container">
-                    <span class="at-risk-heading">⚠️ CRITICAL CARE ALERTS (At-Risk Members)</span>
+                    <span class="at-risk-heading"><svg class="inline-ico warn-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4l9 15.5H3z"/><path d="M12 10v4M12 17.2v.1"/></svg> CRITICAL CARE ALERTS (At-Risk Members)</span>
                     <ul class="at-risk-list">
                         ${snapshot.atRisk.length ? snapshot.atRisk.map(m => `<li>${esc(m)}</li>`).join('') : '<li class="muted-italic">No at-risk members this week — great job! 🎉</li>'}
                     </ul>
@@ -778,7 +778,7 @@ const ChurchApp = {
                 if (!wrap.querySelector('.chart-fallback')) {
                     const note = document.createElement('div');
                     note.className = 'chart-fallback';
-                    note.textContent = '📊 Charts are unavailable offline. Reconnect to view visual analytics.';
+                    note.textContent = 'Charts are unavailable offline. Reconnect to view visual analytics.';
                     wrap.appendChild(note);
                 }
             });
@@ -977,7 +977,7 @@ const ChurchApp = {
             if (wrap && !wrap.querySelector('.chart-fallback')) {
                 const n = document.createElement('div');
                 n.className = 'chart-fallback';
-                n.textContent = '📊 Attendance chart is unavailable offline.';
+                n.textContent = 'Attendance chart is unavailable offline.';
                 wrap.appendChild(n);
             }
             return;
@@ -1029,7 +1029,7 @@ const ChurchApp = {
         });
         el.innerHTML = `
             <div class="attendance-summary-row">
-                <span>⚠️ At-risk (3+ absences)</span>
+                <span><svg class="inline-ico warn-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4l9 15.5H3z"/><path d="M12 10v4M12 17.2v.1"/></svg> At-risk (3+ absences)</span>
                 <strong>${atRisk.length}</strong>
             </div>
             ${atRisk.length ? `<ul class="at-risk-list" style="margin-top:8px;">
@@ -1064,7 +1064,7 @@ const ChurchApp = {
                         <strong>${esc(i.name)}</strong>
                         <span class="branch-pill badge-${esc(i.branchId)}">${esc((this.db.branches.find(b => b.id === i.branchId) || {}).name || '')}</span>
                     </div>
-                    ${i.owner ? `<div class="followup-owner">👤 ${esc(i.owner)}</div>` : ''}
+                    ${i.owner ? `<div class="followup-owner"><svg class="inline-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.4"/><path d="M5.5 20c0-3.4 2.9-5.4 6.5-5.4s6.5 2 6.5 5.4"/></svg> ${esc(i.owner)}</div>` : ''}
                     ${i.note ? `<p class="followup-note">${esc(i.note)}</p>` : ''}
                     <div class="followup-actions">
                         <button class="followup-move" ${canBack ? '' : 'disabled'} aria-label="Move ${esc(i.name)} back" onclick="ChurchApp.moveFollowUp('${esc(i.id)}', -1)">←</button>
@@ -1134,11 +1134,11 @@ const ChurchApp = {
                 return `<div class="group-card">
                     <div class="group-card-head">
                         <h4>${esc(g.name)}</h4>
-                        <span class="group-count">🫂 ${count}</span>
+                        <span class="group-count"><svg class="inline-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8.2" cy="9" r="3"/><circle cx="16.6" cy="10" r="2.3"/><path d="M2.6 19c0-3 2.4-4.9 5.6-4.9 1.6 0 3 .5 4 1.3"/><path d="M14.6 14.7c2.6.2 4.8 1.9 4.8 4.6"/></svg> ${count}</span>
                     </div>
                     <div class="group-meta">
                         <span class="branch-pill badge-${esc(g.branchId)}">${esc(campus)}</span>
-                        <span class="group-schedule">🗓️ ${esc(g.schedule || 'TBD')}</span>
+                        <span class="group-schedule"><svg class="inline-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2.4"/><path d="M3.5 9.5h17M8 3.4v3.2M16 3.4v3.2"/></svg> ${esc(g.schedule || 'TBD')}</span>
                     </div>
                     ${g.description ? `<p class="group-desc">${esc(g.description)}</p>` : ''}
                     <div class="group-roster">${roster.length ? roster.map(n => `<span class="group-member-pill">${esc(n)}</span>`).join('') : '<span class="muted-italic">No members yet</span>'}</div>
@@ -1452,7 +1452,7 @@ const ChurchApp = {
             return `<div class="card-glass campaign-card">
                 <div class="campaign-head">
                     <div>
-                        <span class="campaign-eyebrow">🏗️ Pledge Campaign</span>
+                        <span class="campaign-eyebrow"><svg class="inline-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18M5 21V8l7-4 7 4v13"/><path d="M9.5 21v-5h5v5"/></svg> Pledge Campaign</span>
                         <h4>${esc(c.name)}</h4>
                     </div>
                     <span class="campaign-pct">${pct}%</span>
@@ -1466,7 +1466,7 @@ const ChurchApp = {
         const recurring = (this.db.recurringGifts || []).filter(r => r.active && inScope(r.branchId));
         const recurringTotal = recurring.reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
         const recurringCard = `<div class="card-glass campaign-card">
-            <span class="campaign-eyebrow">🔁 Recurring Giving</span>
+            <span class="campaign-eyebrow"><svg class="inline-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9a8 8 0 0 1 13.5-3.5L20 8"/><path d="M20 4v4h-4"/><path d="M20 15a8 8 0 0 1-13.5 3.5L4 16"/><path d="M4 20v-4h4"/></svg> Recurring Giving</span>
             <h4>${recurring.length} active schedule${recurring.length === 1 ? '' : 's'}</h4>
             <div class="campaign-figures"><strong>$${recurringTotal.toFixed(2)}</strong> committed per cycle</div>
             ${recurring.length ? `<ul class="recurring-list">${recurring.slice(0, 3).map(r =>
@@ -1937,7 +1937,7 @@ const ChurchApp = {
         
         resultsContainer.innerHTML = `
             <div class="repurposed-card animate-fade-in">
-                <div class="ai-header-badge">✨ AI REPURPOSED SERMON KIT</div>
+                <div class="ai-header-badge"><svg class="badge-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l1.7 4.8 4.8 1.7-4.8 1.7L12 16.5l-1.7-4.8L5.5 10l4.8-1.7z"/><path d="M18.5 15.5l.7 1.9 1.9.7-1.9.7-.7 1.9-.7-1.9-1.9-.7 1.9-.7z"/></svg> AI REPURPOSED SERMON KIT</div>
                 <h4 class="kit-title">${esc(result.title)}</h4>
                 <hr class="kit-divider">
 
@@ -2020,7 +2020,7 @@ const ChurchApp = {
                 </div>
                 <p class="mobile-event-desc">${esc(e.description)}</p>
                 <div class="mobile-event-bottom">
-                    <span class="mobile-event-time">⏰ ${esc(e.time)}</span>
+                    <span class="mobile-event-time"><svg class="inline-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg> ${esc(e.time)}</span>
                     <button class="mobile-rsvp-btn${rsvped ? ' is-rsvped' : ''}" ${rsvped ? 'disabled' : ''} onclick="ChurchApp.handleMobileRSVP('${esc(e.id)}')">${rsvped ? '✓ Going' : 'RSVP'}</button>
                 </div>
             `;
@@ -2093,7 +2093,7 @@ const ChurchApp = {
         const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
         const v = pool[dayOfYear % pool.length];
         el.innerHTML = `
-            <span class="votd-eyebrow">✨ Verse of the Day</span>
+            <span class="votd-eyebrow"><svg class="badge-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l1.7 4.8 4.8 1.7-4.8 1.7L12 16.5l-1.7-4.8L5.5 10l4.8-1.7z"/></svg> Verse of the Day</span>
             <p class="votd-text">"${esc(v.text)}"</p>
             <span class="votd-ref">— ${esc(v.ref)}</span>`;
     },

@@ -26,20 +26,20 @@
         <!-- 1. Side Navigation Menu -->
         <aside class="sidebar">
             <div class="brand-section">
-                <img src="church_logo.png" alt="Logo" class="brand-logo" style="object-fit: cover;">
+                <div class="brand-logo" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v18M6.5 8.5h11" stroke="#fff" stroke-width="2.4" stroke-linecap="round" fill="none"/></svg></div>
                 <div class="brand-name">Church 2.0</div>
             </div>
             
-            <nav class="nav-menu">
-                <li><a href="#" class="nav-link active" data-tab="admin_dashboard"><span>📊</span> Dashboard</a></li>
-                <li><a href="#" class="nav-link" data-tab="admin_directory"><span>👥</span> Member Database</a></li>
-                <li><a href="#" class="nav-link" data-tab="admin_financials"><span>💰</span> Financials</a></li>
-                <li><a href="#" class="nav-link" data-tab="admin_attendance"><span>✅</span> Attendance</a></li>
-                <li><a href="#" class="nav-link" data-tab="admin_ministry"><span>📅</span> Ministry & Rotas</a></li>
-                <li><a href="#" class="nav-link" data-tab="admin_followups"><span>🧭</span> Follow-Ups</a></li>
-                <li><a href="#" class="nav-link" data-tab="admin_groups"><span>🫂</span> Groups</a></li>
-                <li><a href="#" class="nav-link" data-tab="admin_communications"><span>💬</span> Communications</a></li>
-                <li><a href="#" class="nav-link" data-tab="mobile_preview"><span>📱</span> Mobile App Simulator</a></li>
+            <nav class="nav-menu" aria-label="Primary">
+                <li><a href="#" class="nav-link active" data-tab="admin_dashboard"><svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.6"/><rect x="14" y="3" width="7" height="5" rx="1.6"/><rect x="14" y="12" width="7" height="9" rx="1.6"/><rect x="3" y="16" width="7" height="5" rx="1.6"/></svg> Dashboard</a></li>
+                <li><a href="#" class="nav-link" data-tab="admin_directory"><svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.4 20c0-3.3 2.5-5.3 5.6-5.3s5.6 2 5.6 5.3"/><path d="M16.2 5.3a3.2 3.2 0 0 1 0 6.1"/><path d="M17.3 15c2.3.5 4.1 2.3 4.1 5"/></svg> Member Database</a></li>
+                <li><a href="#" class="nav-link" data-tab="admin_financials"><svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.8" y="6" width="18.4" height="12.5" rx="2.4"/><path d="M2.8 10.2h18.4"/><circle cx="16.6" cy="14.3" r="1.35"/></svg> Financials</a></li>
+                <li><a href="#" class="nav-link" data-tab="admin_attendance"><svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.4 12.2l2.4 2.4 4.8-5.2"/></svg> Attendance</a></li>
+                <li><a href="#" class="nav-link" data-tab="admin_ministry"><svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2.4"/><path d="M3.5 9.5h17M8 3.4v3.2M16 3.4v3.2"/></svg> Ministry &amp; Rotas</a></li>
+                <li><a href="#" class="nav-link" data-tab="admin_followups"><svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M15.6 8.4l-2.1 5.1-5.1 2.1 2.1-5.1z"/></svg> Follow-Ups</a></li>
+                <li><a href="#" class="nav-link" data-tab="admin_groups"><svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8.2" cy="9" r="3"/><circle cx="16.6" cy="10" r="2.3"/><path d="M2.6 19c0-3 2.4-4.9 5.6-4.9 1.6 0 3 .5 4 1.3"/><path d="M14.6 14.7c2.6.2 4.8 1.9 4.8 4.6"/></svg> Groups</a></li>
+                <li><a href="#" class="nav-link" data-tab="admin_communications"><svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.5A2.6 2.6 0 0 1 17.9 17H8.4l-4.4 3.2V6.6A2.6 2.6 0 0 1 6.6 4h11.3a2.6 2.6 0 0 1 2.6 2.6z"/></svg> Communications</a></li>
+                <li><a href="#" class="nav-link" data-tab="mobile_preview"><svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2.8" width="10" height="18.4" rx="2.6"/><path d="M10.6 18.4h2.8"/></svg> Mobile App Simulator</a></li>
             </nav>
             
             <div style="font-size: 0.7rem; color: var(--text-secondary); text-align: center; border-top: 1px solid var(--border-light); padding-top: 15px;">
@@ -88,7 +88,7 @@
                     </div>
                     
                     <span class="simulator-badge" id="active-role-indicator">HQ SUPER ADMIN</span>
-                    <button id="logout-btn" class="logout-btn" aria-label="Sign out" title="Sign out">⏻</button>
+                    <button id="logout-btn" class="logout-btn" aria-label="Sign out" title="Sign out"><svg class="svg-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v8"/><path d="M7.5 7A7 7 0 1 0 16.5 7"/></svg></button>
                 </div>
             </header>
 
@@ -102,7 +102,7 @@
                             <div class="value" id="dash-giving-total">$8,450.00</div>
                             <span class="changeup" id="dash-giving-change">+5.2%</span>
                         </div>
-                        <div class="stats-icon" style="color: #10b981;">💵</div>
+                        <div class="stats-icon tone-green"><svg class="svg-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.6" y="6" width="18.8" height="12" rx="2.2"/><circle cx="12" cy="12" r="2.7"/><path d="M6.2 9.2v5.6M17.8 9.2v5.6"/></svg></div>
                     </div>
                     <!-- Stat Card 2 -->
                     <div class="card-glass stats-card">
@@ -111,7 +111,7 @@
                             <div class="value" id="dash-attendance-total">412</div>
                             <span class="changeup" id="dash-attendance-change">+3.8%</span>
                         </div>
-                        <div class="stats-icon" style="color: #6366f1;">👥</div>
+                        <div class="stats-icon tone-indigo"><svg class="svg-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8.4" cy="9" r="3"/><circle cx="16.6" cy="10" r="2.3"/><path d="M2.8 19c0-3 2.4-4.9 5.6-4.9 1.6 0 3 .5 4 1.3"/><path d="M14.6 14.7c2.6.2 4.8 1.9 4.8 4.6"/></svg></div>
                     </div>
                     <!-- Stat Card 3 -->
                     <div class="card-glass stats-card">
@@ -120,7 +120,7 @@
                             <div class="value" id="dash-members-total">15</div>
                             <span style="font-size:0.75rem; color:var(--text-secondary);">Across campuses</span>
                         </div>
-                        <div class="stats-icon" style="color: #f59e0b;">⛪</div>
+                        <div class="stats-icon tone-gold"><svg class="svg-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V10l8-5.6 8 5.6v11"/><path d="M9.4 21v-5.2h5.2V21"/><path d="M12 2.4v3.2M10.4 4h3.2"/></svg></div>
                     </div>
                 </div>
 
@@ -432,7 +432,7 @@
                 <div class="card-glass" style="margin-bottom:25px;">
                     <div class="broadcast-layout">
                         <form id="broadcast-form" class="broadcast-compose">
-                            <h3 style="font-family: var(--font-header); font-size:1.05rem; margin-bottom:4px;">📣 Broadcast Announcement</h3>
+                            <h3 style="font-family: var(--font-header); font-size:1.05rem; margin-bottom:4px; display:flex; align-items:center; gap:8px;"><svg class="svg-ico" viewBox="0 0 24 24" aria-hidden="true" style="width:20px;height:20px;color:#a5b4fc;"><path d="M3 10v4a1 1 0 0 0 1 1h3l7 4V5L7 9H4a1 1 0 0 0-1 1z"/><path d="M17.5 8.5a4 4 0 0 1 0 7"/></svg> Broadcast Announcement</h3>
                             <span style="font-size:0.75rem; color:var(--text-secondary);">Reach your congregation across email, SMS, and push</span>
                             <div style="margin-top:14px;">
                                 <label style="font-size:0.75rem; color:var(--text-secondary); display:block; margin-bottom:4px;">Title</label>
@@ -482,7 +482,7 @@
 
                     <!-- AI Sermon Repurposer Tool -->
                     <div class="card-glass">
-                        <div class="ai-header-badge">🧠 SERMON REPURPOSING ASSISTANT</div>
+                        <div class="ai-header-badge"><svg class="badge-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l1.7 4.8 4.8 1.7-4.8 1.7L12 16.5l-1.7-4.8L5.5 10l4.8-1.7z"/><path d="M18.5 15.5l.7 1.9 1.9.7-1.9.7-.7 1.9-.7-1.9-1.9-.7 1.9-.7z"/></svg> SERMON REPURPOSING ASSISTANT</div>
                         <h3 style="font-family: var(--font-header); font-size:1.05rem; margin:12px 0 8px 0;">Draft Social Kits & Devotions</h3>
                         <p style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:15px;">Input your sermon script to instantly compile social highlights, a 3-day study devotional, and cell discussion outlines.</p>
                         
@@ -518,7 +518,11 @@
                             <!-- Smartphone top bar layout -->
                             <div class="mobile-status-bar">
                                 <span>9:41</span>
-                                <span style="display:flex; gap:3px;">📶 🛜 🔋</span>
+                                <span class="mobile-status-icons">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18h2v-4H3zM8 18h2V9H8zM13 18h2V6h-2zM18 18h2V3h-2z"/></svg>
+                                    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2.5 9.5a13 13 0 0 1 19 0M5.5 13a8.5 8.5 0 0 1 13 0M8.5 16.5a4 4 0 0 1 7 0"/><circle cx="12" cy="19.5" r="0.6" fill="currentColor"/></svg>
+                                    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="8" width="17" height="9" rx="2"/><rect x="4" y="10" width="11" height="5" rx="0.5" fill="currentColor" stroke="none"/><path d="M21 11v3" stroke-linecap="round"/></svg>
+                                </span>
                             </div>
 
                             <!-- SCREEN SUBVIEW 1: HOME FEED -->
@@ -727,27 +731,27 @@
                             <!-- Smartphone Navigation Bar Footer -->
                             <div class="mobile-nav-bar">
                                 <button class="mobile-tab-btn active" onclick="ChurchApp.switchMobileView('home')" data-view="home">
-                                    <span class="icon">🏠</span>
+                                    <svg class="mtab-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 11l8.5-6.5 8.5 6.5"/><path d="M6 9.6V20h12V9.6"/></svg>
                                     <span>Home</span>
                                 </button>
                                 <button class="mobile-tab-btn" onclick="ChurchApp.switchMobileView('sermons')" data-view="sermons">
-                                    <span class="icon">🎬</span>
+                                    <svg class="mtab-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.4"/><path d="M10 9l5 3-5 3z"/></svg>
                                     <span>Sermons</span>
                                 </button>
                                 <button class="mobile-tab-btn" onclick="ChurchApp.switchMobileView('bible')" data-view="bible">
-                                    <span class="icon">📖</span>
+                                    <svg class="mtab-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.4A2.4 2.4 0 0 1 6.4 3H20v14H6.4A2.4 2.4 0 0 0 4 19.4z"/><path d="M4 5.4v14"/></svg>
                                     <span>Scripture</span>
                                 </button>
                                 <button class="mobile-tab-btn" onclick="ChurchApp.switchMobileView('give')" data-view="give">
-                                    <span class="icon">💰</span>
+                                    <svg class="mtab-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5S3.5 15.8 3.5 9.9c0-2.8 2-4.4 4.1-4.4 1.7 0 3.3 1 4.4 2.6C13.1 6.5 14.7 5.5 16.4 5.5c2.1 0 4.1 1.6 4.1 4.4 0 5.9-8.5 10.6-8.5 10.6z"/></svg>
                                     <span>Giving</span>
                                 </button>
                                 <button class="mobile-tab-btn" onclick="ChurchApp.switchMobileView('serve')" data-view="serve">
-                                    <span class="icon">🤝</span>
+                                    <svg class="mtab-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 13.5V7a1.6 1.6 0 0 1 3.2 0v4.5m0-5.2a1.6 1.6 0 0 1 3.2 0V12m0-3.8a1.6 1.6 0 0 1 3.2 0V15a5.5 5.5 0 0 1-5.5 5.5H10a5.5 5.5 0 0 1-4.6-2.5L4 16"/></svg>
                                     <span>Serve</span>
                                 </button>
                                 <button class="mobile-tab-btn" onclick="ChurchApp.switchMobileView('chat')" data-view="chat">
-                                    <span class="icon">💬</span>
+                                    <svg class="mtab-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5v-.5a7 7 0 0 1 14 0v.5"/><rect x="3.4" y="12.5" width="3.6" height="6" rx="1.6"/><rect x="17" y="12.5" width="3.6" height="6" rx="1.6"/><path d="M19 18.5a2.6 2.6 0 0 1-2.6 2.6H13.5"/></svg>
                                     <span>AI Care</span>
                                 </button>
                             </div>
