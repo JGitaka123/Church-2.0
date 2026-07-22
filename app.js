@@ -414,7 +414,7 @@ const ChurchApp = {
     initApiAuth() {
         if (Church2API.getToken()) {
             Church2API.me()
-                .then(({ user }) => { this.applyUser(user); this.showApp(); this.renderAll(); })
+                .then(({ user }) => { this.applyUser(user); this.showApp(); this.hydrateThenRender(); })
                 .catch(() => { Church2API.logout(); this.showAuthScreen('credentials'); });
         } else {
             this.showAuthScreen('credentials');
@@ -425,8 +425,68 @@ const ChurchApp = {
         // The JWT is already stored by the API client; never persist the password.
         this.applyUser(user);
         this.showApp();
-        this.renderAll();
+        this.hydrateThenRender();
         this.toast(`Welcome, ${user.name}. 👋`);
+    },
+
+    // ----- Backend data layer -------------------------------------------------
+    // In production the app is backend-backed: this.db is hydrated from Postgres
+    // on login and every mutation is mirrored to the API. In standalone demo mode
+    // (no apiBase configured) all of this is a no-op and the localStorage flow
+    // below is used unchanged.
+    apiEnabled() { return Boolean(window.Church2API && Church2API.isEnabled()); },
+
+    // Paint immediately with whatever we have, then refresh from the server.
+    // First paint is never blocked on the network; a slow/failed fetch just
+    // leaves the current data in place.
+    hydrateThenRender() {
+        this.renderAll();
+        if (!this.apiEnabled()) return;
+        this.hydrateFromApi().then(() => this.renderAll()).catch(() => {});
+    },
+
+    // Pull the shared dataset into this.db so every existing (synchronous) view
+    // reflects Postgres. Scope is enforced server-side; we request the full
+    // permitted set with 'global' and let the client's campus filter narrow it,
+    // exactly as in standalone mode. A slice is only replaced when its fetch
+    // succeeded, so a partial outage degrades gracefully. Never throws.
+    async hydrateFromApi() {
+        if (!this.apiEnabled()) return;
+        const g = 'global';
+        const grab = (p) => p.then((r) => r).catch((e) => { console.error('Hydrate failed:', e); return undefined; });
+        const [members, transactions, attendance, groups, followUps, announcements, prayerRequests, events] = await Promise.all([
+            grab(Church2API.members(g)),
+            grab(Church2API.transactions(g)),
+            grab(Church2API.attendance(g)),
+            grab(Church2API.groups(g)),
+            grab(Church2API.followups(g)),
+            grab(Church2API.announcements()),
+            grab(Church2API.prayerRequests(g)),
+            grab(Church2API.events(g)),
+        ]);
+        // Members drive most member-centric views; only replace with a non-empty
+        // set so an unseeded/misconfigured backend can't blank the whole UI.
+        if (Array.isArray(members) && members.length) this.db.members = members;
+        if (Array.isArray(transactions)) this.db.transactions = transactions;
+        if (Array.isArray(attendance)) this.db.attendance = attendance;
+        if (Array.isArray(groups)) this.db.groups = groups;
+        if (Array.isArray(followUps)) this.db.followUps = followUps;
+        if (Array.isArray(announcements)) this.db.announcements = announcements;
+        if (Array.isArray(prayerRequests)) this.db.prayerRequests = prayerRequests;
+        if (Array.isArray(events) && events.length) this.db.events = events;
+    },
+
+    // Fire an API write in the background. The local optimistic update has
+    // already rendered, so we only surface failures. `onOk` reconciles any
+    // server-assigned id back onto the optimistic record. Never throws.
+    apiWrite(promiseFactory, onOk) {
+        if (!this.apiEnabled()) return;
+        Promise.resolve().then(promiseFactory)
+            .then((r) => { if (onOk) try { onOk(r); } catch (e) { console.error(e); } })
+            .catch((e) => {
+                console.error('Sync failed:', e);
+                if (this.toast) this.toast('Saved locally, but not synced to the server.', 'error');
+            });
     },
 
     handleLogin() {
@@ -999,6 +1059,7 @@ const ChurchApp = {
             this.db.attendance.push({ id: `att_${memberId}_${serviceDate}`, memberId, branchId: member.branchId, date: serviceDate, present: true });
         }
         this.saveDB();
+        this.apiWrite(() => Church2API.setAttendance({ memberId, date: serviceDate, present: rec ? rec.present : true }));
         this.renderAttendance();
     },
 
@@ -1121,14 +1182,16 @@ const ChurchApp = {
                 const owner = document.getElementById('followup-owner').value.trim();
                 if (!name) return;
                 const targetBranch = (branchId && branchId !== 'global') ? branchId : 'b1';
-                this.db.followUps.unshift({
+                const item = {
                     id: `fu_${Date.now()}`,
                     name, owner: owner || 'Unassigned',
                     branchId: targetBranch,
                     stage: 'New Guest',
                     note: ''
-                });
+                };
+                this.db.followUps.unshift(item);
                 this.saveDB();
+                this.apiWrite(() => Church2API.createFollowup({ name, owner: item.owner, branchId: targetBranch }), (srv) => { if (srv && srv.id) item.id = srv.id; });
                 form.reset();
                 this.renderFollowUps();
                 this.toast(`${name} added to the assimilation pipeline.`);
@@ -1144,6 +1207,7 @@ const ChurchApp = {
         if (next < 0 || next >= this.FOLLOWUP_STAGES.length) return;
         item.stage = this.FOLLOWUP_STAGES[next];
         this.saveDB();
+        this.apiWrite(() => Church2API.moveFollowup(item.id, item.stage));
         this.renderFollowUps();
         if (item.stage === 'Member') this.toast(`🎉 ${item.name} is now a committed member!`);
     },
@@ -1183,15 +1247,17 @@ const ChurchApp = {
                 e.preventDefault();
                 const name = document.getElementById('group-name').value.trim();
                 if (!name) return;
-                this.db.groups.unshift({
+                const group = {
                     id: `g_${Date.now()}`,
                     name,
                     branchId: document.getElementById('group-branch').value,
                     schedule: document.getElementById('group-schedule').value.trim(),
                     description: document.getElementById('group-desc').value.trim(),
                     memberIds: []
-                });
+                };
+                this.db.groups.unshift(group);
                 this.saveDB();
+                this.apiWrite(() => Church2API.createGroup({ name, branchId: group.branchId, schedule: group.schedule, description: group.description }), (srv) => { if (srv && srv.id) group.id = srv.id; });
                 form.reset();
                 this.renderGroups();
                 this.toast(`Group "${name}" created.`);
@@ -1232,6 +1298,7 @@ const ChurchApp = {
             this.toast(`Joined ${group.name}! See you there. 🙌`);
         }
         this.saveDB();
+        this.apiWrite(() => Church2API.toggleGroupMember(group.id, 'm1'));
         this.renderMobileGroups();
     },
 
@@ -1426,8 +1493,12 @@ const ChurchApp = {
 
         this.db.members.push(newMember);
         this.saveDB();
+        this.apiWrite(
+            () => Church2API.createMember({ firstName, lastName, email, phone, volunteer_skills: skillsArray, branchId }),
+            (srv) => { if (srv && srv.id) newMember.id = srv.id; }
+        );
         document.getElementById('add-member-form').reset();
-        
+
         // Notification simulation
         this.toast(`${firstName} ${lastName} enrolled in ${branchObj.name}.`);
         this.renderMemberDirectory();
@@ -1618,6 +1689,10 @@ const ChurchApp = {
 
         this.db.transactions.unshift(newTx);
         this.saveDB();
+        this.apiWrite(
+            () => Church2API.recordTransaction({ memberId, amount, category, paymentMethod: method, date, memberName, branchId }),
+            (srv) => { if (srv && srv.id) { newTx.id = srv.id; if (srv.receiptNumber) newTx.receiptNumber = srv.receiptNumber; } }
+        );
         document.getElementById('record-tx-form').reset();
         
         // Reset defaults
@@ -1960,12 +2035,14 @@ const ChurchApp = {
                     : this.db.members.filter(m => m.branchId === audience).length;
 
                 this.db.announcements = this.db.announcements || [];
-                this.db.announcements.unshift({
+                const announcement = {
                     id: `an_${Date.now()}`,
                     title, body, audience, channels, recipients,
                     sentAt: new Date().toISOString()
-                });
+                };
+                this.db.announcements.unshift(announcement);
                 this.saveDB();
+                this.apiWrite(() => Church2API.sendAnnouncement({ title, body, audience, channels }), (srv) => { if (srv && srv.id) announcement.id = srv.id; });
                 form.reset();
                 document.querySelectorAll('.broadcast-channel').forEach(c => { c.checked = (c.value !== 'push'); });
                 this.renderBroadcasts();
@@ -1977,6 +2054,7 @@ const ChurchApp = {
     approvePrayer(prId) {
         this.db.prayerRequests = this.db.prayerRequests.filter(p => p.id !== prId);
         this.saveDB();
+        this.apiWrite(() => Church2API.dismissPrayer(prId));
         this.toast('Prayer request approved and routed to the prayer team.');
         this.renderCommunications();
     },
@@ -1984,6 +2062,7 @@ const ChurchApp = {
     deletePrayer(prId) {
         this.db.prayerRequests = this.db.prayerRequests.filter(p => p.id !== prId);
         this.saveDB();
+        this.apiWrite(() => Church2API.dismissPrayer(prId));
         this.renderCommunications();
     },
 
@@ -2402,6 +2481,10 @@ const ChurchApp = {
         // Boost engagement index
         memberObj.engagement_score = Math.min(memberObj.engagement_score + 5, 100);
         this.saveDB();
+        this.apiWrite(
+            () => Church2API.recordTransaction({ memberId: loggedInMemberId, amount, category, paymentMethod: method, date: newTx.date, branchId }),
+            (srv) => { if (srv && srv.id) { newTx.id = srv.id; if (srv.receiptNumber) newTx.receiptNumber = srv.receiptNumber; } }
+        );
 
         document.getElementById('mobile-giving-form').reset();
 
@@ -2677,6 +2760,10 @@ const ChurchApp = {
 
         this.db.prayerRequests.push(newPrayer);
         this.saveDB();
+        this.apiWrite(
+            () => Church2API.submitPrayer({ memberId: 'm1', memberName: newPrayer.memberName, branchName: newPrayer.branchName, text, category: newPrayer.category, route: newPrayer.route }),
+            (srv) => { if (srv && srv.id) newPrayer.id = srv.id; }
+        );
         textarea.value = '';
 
         this.toast(`Prayer received — categorized as “${categoryResult.category}” and routed to ${categoryResult.route}.`, 'info');
