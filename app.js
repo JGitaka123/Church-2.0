@@ -159,14 +159,20 @@ const ChurchApp = {
         this.loadTheme();
         this.setupEventHandlers();
 
-        // Auth gate: restore a saved session, else show the login screen.
-        const session = this.loadSession();
-        if (session) {
-            this.applyUser(session);
-            this.showApp();
-            this.renderAll();
+        // Auth gate. When the production API is configured, restore the session
+        // from the stored token (validated against the server); otherwise use
+        // the standalone localStorage demo session.
+        if (window.Church2API && Church2API.isEnabled()) {
+            this.initApiAuth();
         } else {
-            this.showAuthScreen('credentials');
+            const session = this.loadSession();
+            if (session) {
+                this.applyUser(session);
+                this.showApp();
+                this.renderAll();
+            } else {
+                this.showAuthScreen('credentials');
+            }
         }
 
         // Register PWA Service Worker
@@ -404,16 +410,47 @@ const ChurchApp = {
         });
     },
 
+    // Restore an API-backed session from the stored token (production mode).
+    initApiAuth() {
+        if (Church2API.getToken()) {
+            Church2API.me()
+                .then(({ user }) => { this.applyUser(user); this.showApp(); this.renderAll(); })
+                .catch(() => { Church2API.logout(); this.showAuthScreen('credentials'); });
+        } else {
+            this.showAuthScreen('credentials');
+        }
+    },
+
+    _finishApiLogin(user) {
+        // The JWT is already stored by the API client; never persist the password.
+        this.applyUser(user);
+        this.showApp();
+        this.renderAll();
+        this.toast(`Welcome, ${user.name}. 👋`);
+    },
+
     handleLogin() {
         const email = document.getElementById('login-email').value.trim().toLowerCase();
         const password = document.getElementById('login-password').value;
         const err = document.getElementById('auth-error');
+
+        // Production: authenticate against the real API.
+        if (window.Church2API && Church2API.isEnabled()) {
+            Church2API.login(email, password)
+                .then((r) => {
+                    if (r.mfaRequired) this.showAuthScreen('mfa', { email, ticket: r.ticket });
+                    else if (r.token) { Church2API.completePasswordLogin(r); this._finishApiLogin(r.user); }
+                })
+                .catch((e) => { if (err) err.textContent = e.message || 'Sign in failed.'; });
+            return;
+        }
+
+        // Demo: match a local account.
         const user = this.DEMO_USERS.find(u => u.email === email && u.password === password);
         if (!user) {
             if (err) err.textContent = 'Invalid email or password. Try a demo account below.';
             return;
         }
-        // Proceed to MFA step.
         this.showAuthScreen('mfa', { email: user.email });
     },
 
@@ -424,7 +461,16 @@ const ChurchApp = {
             if (err) err.textContent = 'Enter the 6-digit code.';
             return;
         }
-        // Mock verification accepts the demo code.
+
+        // Production: verify the code with the API and receive the access token.
+        if (window.Church2API && Church2API.isEnabled()) {
+            Church2API.verifyMfa(ctx.ticket, code)
+                .then((r) => this._finishApiLogin(r.user))
+                .catch((e) => { if (err) err.textContent = e.message || 'Incorrect code.'; });
+            return;
+        }
+
+        // Demo verification accepts the demo code.
         if (code !== '123456') {
             if (err) err.textContent = 'Incorrect code. (demo code: 123456)';
             return;
@@ -439,6 +485,7 @@ const ChurchApp = {
 
     logout() {
         if (typeof localStorage !== 'undefined') localStorage.removeItem('church2_session');
+        if (window.Church2API && Church2API.isEnabled()) Church2API.logout();
         this.session.currentUser = null;
         this.showAuthScreen('credentials');
     },

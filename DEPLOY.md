@@ -1,0 +1,119 @@
+# Church 2.0 — Production Deployment Runbook
+
+This deploys the platform across your two resources:
+
+- **Vercel** → the static frontend (repo root: `index.html`, `app.js`, `styles.css`, `js/`, `vendor/`, `icon.svg`, `manifest.json`, `sw.js`).
+- **Contabo VPS** → the API (`server/`) + PostgreSQL + nginx (TLS), via Docker Compose in `deploy/`.
+
+```
+Browser ──► Vercel (static SPA) ──HTTPS──► Contabo nginx ──► API container ──► Postgres
+```
+
+The frontend also runs **standalone** (localStorage demo) when no API is configured — so a Vercel deploy works immediately, and you "light up" the backend by pointing it at your API URL.
+
+> Architecture note: the API enforces auth + RBAC + campus scoping **server-side** (a branch admin cannot read another campus even by tampering with requests). Secrets come only from environment variables; nothing sensitive is committed.
+
+---
+
+## Prerequisites
+
+- A domain you control, with two DNS records:
+  - `app.yourchurch.org` (or an apex) → managed by Vercel (frontend)
+  - `api.yourchurch.org` → **A record → your Contabo VPS IP** (backend)
+- Contabo VPS (Ubuntu 22.04/24.04) with Docker + Docker Compose installed:
+  ```bash
+  curl -fsSL https://get.docker.com | sh
+  ```
+- The Vercel CLI locally (`npm i -g vercel`) or the Vercel dashboard.
+
+---
+
+## Part A — Backend on Contabo
+
+1. **Copy the repo to the VPS** (git clone, or scp the `server/` and `deploy/` folders).
+
+2. **Configure secrets**:
+   ```bash
+   cd deploy
+   cp .env.example .env
+   # Edit .env:
+   #   PGPASSWORD   — a strong DB password
+   #   JWT_SECRET   — openssl rand -hex 48
+   #   CORS_ORIGINS — your Vercel URL, e.g. https://app.yourchurch.org
+   ```
+
+3. **Point nginx at your API domain**: edit `deploy/nginx/conf.d/church2-api.conf` and replace every `api.yourchurch.org` with your real API subdomain.
+
+4. **Obtain the TLS certificate** (one-time). First bring up nginx on port 80 so certbot can answer the ACME challenge:
+   ```bash
+   mkdir -p certbot/www certbot/conf
+   docker compose up -d nginx
+   docker compose run --rm certbot certonly --webroot -w /var/www/certbot \
+     -d api.yourchurch.org --email you@yourchurch.org --agree-tos --no-eff-email
+   docker compose restart nginx
+   ```
+
+5. **Start the stack**:
+   ```bash
+   docker compose up -d --build
+   ```
+   The API container runs migrations automatically on start.
+
+6. **Seed the initial data** (first time only — creates the demo login accounts and sample data):
+   ```bash
+   docker compose exec api node src/db/seed.js
+   ```
+   > For a real launch, create your own admin instead of seeding demo data, and set a strong `SEED_PASSWORD` or change passwords immediately after.
+
+7. **Verify**:
+   ```bash
+   curl https://api.yourchurch.org/api/health          # {"status":"ok","db":"up"}
+   ```
+
+Certbot auto-renews certificates every 12h; nginx picks up renewed certs on reload.
+
+---
+
+## Part B — Frontend on Vercel
+
+1. From the repo root:
+   ```bash
+   vercel            # first run: link the project
+   vercel --prod     # deploy to production
+   ```
+   (Or import the GitHub repo in the Vercel dashboard — `vercel.json` and `.vercelignore` are already configured to publish the root as a static site and exclude `server/`/`deploy/`.)
+
+2. **Connect the frontend to the API.** Set the API base URL in `js/config.js`:
+   ```js
+   window.CHURCH2_CONFIG = { apiBase: "https://api.yourchurch.org" };
+   ```
+   Commit + redeploy. (For a quick test without editing the file, open the app and run
+   `localStorage.setItem('church2_api_base','https://api.yourchurch.org')` in the console, then reload.)
+
+3. **Lock CORS down**: ensure `CORS_ORIGINS` in the Contabo `.env` is exactly your Vercel production URL, then `docker compose up -d` to apply.
+
+---
+
+## Verify the whole path
+
+Open the Vercel URL and sign in (`admin@church2.org` / seeded password, MFA code `123456`).
+You should see real data served from Postgres on Contabo. A wrong password is rejected by the server; a branch admin only ever sees their own campus.
+
+---
+
+## Security checklist before real launch
+
+- [ ] Replace the seeded demo accounts with real staff accounts; rotate all passwords.
+- [ ] Swap the mock MFA (`MFA_DEMO_CODE`) for real TOTP (the `/auth/mfa` step is structured for this).
+- [ ] Strong, unique `JWT_SECRET` and `PGPASSWORD` (never commit `.env`).
+- [ ] `CORS_ORIGINS` restricted to your exact frontend origin (no `*`).
+- [ ] Enable automated Postgres backups (e.g. `pg_dump` cron to Contabo object storage).
+- [ ] Add real payment processing (Stripe/Tithe.ly) for live giving — currently receipts are recorded, not charged.
+
+---
+
+## What's wired vs. remaining
+
+**Done & verified:** real auth (bcrypt + JWT + MFA step), RBAC + server-side campus scoping, and REST endpoints for members, transactions/giving, attendance, dashboard summary, groups, follow-ups, announcements, prayer requests, and events — all consumed by the frontend's `js/api.js` client (auth flow is wired end-to-end).
+
+**Remaining increment:** point each admin view's data reads/writes at `js/api.js` (the client already exposes every endpoint) so the whole UI is backend-backed rather than localStorage in production; add live payments. The app runs today either standalone (demo) or against the API for auth + data access.
