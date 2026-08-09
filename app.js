@@ -1,4 +1,4 @@
-// Church 2.0 Main Application Controller
+// Maximum Miracle Centre — main application controller
 // Handles global state, CRUD operations, rendering, and Chart.js visualization
 
 // ---- Rendering helpers -------------------------------------------------------
@@ -49,42 +49,54 @@ const ChurchApp = {
     // 1. Centralized Mock Database
     db: {
         branches: [
-            { id: 'b1', name: 'Nairobi HQ', location: 'HQ Center, Community Rd, Nairobi', code: 'NBO' },
-            { id: 'b2', name: 'Dallas Branch', location: 'Plano Rd, Dallas, TX', code: 'DAL' },
-            { id: 'b3', name: 'London Branch', location: 'Hyde Park Corner, London', code: 'LDN' }
+            { id: 'b1', name: 'Nairobi CBD', location: 'Embassy Cinema, Latema Road, off Tom Mboya Street, Nairobi', code: 'NRB' },
+            { id: 'b2', name: 'Kawangware', location: 'Kawangware, Nairobi', code: 'KWG' },
+            { id: 'b3', name: 'Nakuru', location: 'Langa Langa, Kanu Street, Nakuru', code: 'NKR' }
         ],
         members: [
-            { id: 'm1', branchId: 'b1', branchName: 'Nairobi HQ', firstName: 'John', lastName: 'Kamau', email: 'john.kamau@church2.org', phone: '+254712345678', familyId: 'fam_kamau', familyRole: 'Husband', spiritualMilestones: ['Baptized: 2018-04-12', 'Member: 2019-01-01'], volunteer_skills: ['Worship Vocals', 'Keyboard', 'Guitar'], engagement_score: 95 },
-            { id: 'm2', branchId: 'b1', branchName: 'Nairobi HQ', firstName: 'Mary', lastName: 'Kamau', email: 'mary.kamau@church2.org', phone: '+254722345678', familyId: 'fam_kamau', familyRole: 'Wife', spiritualMilestones: ['Baptized: 2019-06-20'], volunteer_skills: ['Childcare', 'Greeting'], engagement_score: 88 },
-            { id: 'm3', branchId: 'b1', branchName: 'Nairobi HQ', firstName: 'David', lastName: 'Onyango', email: 'david.onyango@email.com', phone: '+254733333333', familyId: 'fam_onyango', familyRole: 'Single', spiritualMilestones: ['Member: 2021-03-10'], volunteer_skills: ['Ushering', 'Security', 'First Aid'], engagement_score: 75 },
-            { id: 'm4', branchId: 'b1', branchName: 'Nairobi HQ', firstName: 'Grace', lastName: 'Mwangi', email: 'grace.m@email.com', phone: '+254744444444', familyId: 'fam_mwangi', familyRole: 'Single', spiritualMilestones: ['Baptized: 2022-11-05'], volunteer_skills: ['Ushering', 'Greeting'], engagement_score: 62 },
-            { id: 'm5', branchId: 'b2', branchName: 'Dallas Branch', firstName: 'Robert', lastName: 'Smith', email: 'robert.smith@email.com', phone: '+12145550100', familyId: 'fam_smith', familyRole: 'Husband', spiritualMilestones: ['Member: 2015-05-24'], volunteer_skills: ['Sound Engineering', 'Video Editing'], engagement_score: 92 },
-            { id: 'm6', branchId: 'b2', branchName: 'Dallas Branch', firstName: 'Sarah', lastName: 'Smith', email: 'sarah.smith@email.com', phone: '+12145550101', familyId: 'fam_smith', familyRole: 'Wife', spiritualMilestones: ['Member: 2015-05-24'], volunteer_skills: ['Worship Vocals', 'Public Speaking'], engagement_score: 78 },
-            { id: 'm7', branchId: 'b2', branchName: 'Dallas Branch', firstName: 'Emily', lastName: 'Watson', email: 'emily.w@email.com', phone: '+12145550222', familyId: 'fam_watson', familyRole: 'Single', spiritualMilestones: ['Baptized: 2024-02-14'], volunteer_skills: ['Greeting', 'Social Media'], engagement_score: 41 }, // Flagged at risk
-            { id: 'm8', branchId: 'b3', branchName: 'London Branch', firstName: 'Michael', lastName: 'Patel', email: 'michael.patel@email.com', phone: '+442079460192', familyId: 'fam_patel', familyRole: 'Single', spiritualMilestones: ['Member: 2023-09-12'], volunteer_skills: ['Graphics', 'Video Editing', 'Website Support'], engagement_score: 84 },
-            { id: 'm9', branchId: 'b3', branchName: 'London Branch', firstName: 'Jane', lastName: 'Adair', email: 'jane.adair@email.com', phone: '+442079460234', familyId: 'fam_adair', familyRole: 'Single', spiritualMilestones: [], volunteer_skills: ['Greeting', 'First Aid'], engagement_score: 35 }, // Flagged at risk
-            { id: 'm10', branchId: 'b1', branchName: 'Nairobi HQ', firstName: 'Kennedy', lastName: 'Otieno', email: 'kennedy.o@email.com', phone: '+254755555555', familyId: 'fam_otieno', familyRole: 'Husband', spiritualMilestones: ['Baptized: 2010-08-15'], volunteer_skills: ['Youth Mentorship', 'Security'], engagement_score: 30 } // Flagged at risk
+            { id: 'm1', branchId: 'b1', branchName: 'Nairobi CBD', firstName: 'John', lastName: 'Kamau', email: 'john.kamau@maximummiracle.org', phone: '+254712345678', familyId: 'fam_kamau', familyRole: 'Husband', spiritualMilestones: ['Baptized: 2018-04-12', 'Member: 2019-01-01'], volunteer_skills: ['Worship Vocals', 'Keyboard', 'Guitar'], engagement_score: 95 },
+            { id: 'm2', branchId: 'b1', branchName: 'Nairobi CBD', firstName: 'Mary', lastName: 'Kamau', email: 'mary.kamau@maximummiracle.org', phone: '+254722345678', familyId: 'fam_kamau', familyRole: 'Wife', spiritualMilestones: ['Baptized: 2019-06-20'], volunteer_skills: ['Childcare', 'Greeting'], engagement_score: 88 },
+            { id: 'm3', branchId: 'b1', branchName: 'Nairobi CBD', firstName: 'David', lastName: 'Onyango', email: 'david.onyango@email.com', phone: '+254733333333', familyId: 'fam_onyango', familyRole: 'Single', spiritualMilestones: ['Member: 2021-03-10'], volunteer_skills: ['Ushering', 'Security', 'First Aid'], engagement_score: 75 },
+            { id: 'm4', branchId: 'b1', branchName: 'Nairobi CBD', firstName: 'Grace', lastName: 'Mwangi', email: 'grace.m@email.com', phone: '+254744444444', familyId: 'fam_mwangi', familyRole: 'Single', spiritualMilestones: ['Baptized: 2022-11-05'], volunteer_skills: ['Ushering', 'Greeting'], engagement_score: 62 },
+            { id: 'm5', branchId: 'b2', branchName: 'Kawangware', firstName: 'Samuel', lastName: 'Kariuki', email: 'samuel.kariuki@email.com', phone: '+254701223344', familyId: 'fam_kariuki', familyRole: 'Husband', spiritualMilestones: ['Member: 2015-05-24'], volunteer_skills: ['Sound Engineering', 'Video Editing'], engagement_score: 92 },
+            { id: 'm6', branchId: 'b2', branchName: 'Kawangware', firstName: 'Esther', lastName: 'Kariuki', email: 'esther.kariuki@email.com', phone: '+254701223355', familyId: 'fam_kariuki', familyRole: 'Wife', spiritualMilestones: ['Member: 2015-05-24'], volunteer_skills: ['Worship Vocals', 'Public Speaking'], engagement_score: 78 },
+            { id: 'm7', branchId: 'b2', branchName: 'Kawangware', firstName: 'Faith', lastName: 'Wanjiku', email: 'faith.wanjiku@email.com', phone: '+254702334455', familyId: 'fam_wanjiku', familyRole: 'Single', spiritualMilestones: ['Baptized: 2024-02-14'], volunteer_skills: ['Greeting', 'Social Media'], engagement_score: 41 }, // Flagged at risk
+            { id: 'm8', branchId: 'b3', branchName: 'Nakuru', firstName: 'Peter', lastName: 'Kiprono', email: 'peter.kiprono@email.com', phone: '+254703445566', familyId: 'fam_kiprono', familyRole: 'Single', spiritualMilestones: ['Member: 2023-09-12'], volunteer_skills: ['Graphics', 'Video Editing', 'Website Support'], engagement_score: 84 },
+            { id: 'm9', branchId: 'b3', branchName: 'Nakuru', firstName: 'Alice', lastName: 'Chebet', email: 'alice.chebet@email.com', phone: '+254704556677', familyId: 'fam_chebet', familyRole: 'Single', spiritualMilestones: [], volunteer_skills: ['Greeting', 'First Aid'], engagement_score: 35 }, // Flagged at risk
+            { id: 'm10', branchId: 'b1', branchName: 'Nairobi CBD', firstName: 'Kennedy', lastName: 'Otieno', email: 'kennedy.o@email.com', phone: '+254755555555', familyId: 'fam_otieno', familyRole: 'Husband', spiritualMilestones: ['Baptized: 2010-08-15'], volunteer_skills: ['Youth Mentorship', 'Security'], engagement_score: 30 } // Flagged at risk
         ],
         transactions: [],
         attendance: [],
-        recurringGifts: [],
+        // A few standing orders so the recurring-giving panel demonstrates the
+        // feature out of the box. Members here are from the handcrafted core.
+        recurringGifts: [
+            { id: 'rec_seed_1', memberId: 'm1', memberName: 'John Kamau', branchId: 'b1', branchName: 'Nairobi CBD', amount: 5000, category: 'Tithe', frequency: 'monthly', method: 'M-Pesa', nextDate: '2026-08-01', active: true },
+            { id: 'rec_seed_2', memberId: 'm2', memberName: 'Mary Kamau', branchId: 'b1', branchName: 'Nairobi CBD', amount: 1500, category: 'Offering', frequency: 'weekly', method: 'M-Pesa', nextDate: '2026-07-20', active: true },
+            { id: 'rec_seed_3', memberId: 'm5', memberName: 'Samuel Kariuki', branchId: 'b2', branchName: 'Kawangware', amount: 3000, category: 'Tithe', frequency: 'monthly', method: 'Bank Transfer', nextDate: '2026-08-05', active: true },
+            { id: 'rec_seed_4', memberId: 'm8', memberName: 'Peter Kiprono', branchId: 'b3', branchName: 'Nakuru', amount: 2000, category: 'Project Donation', frequency: 'monthly', method: 'M-Pesa', nextDate: '2026-08-03', active: true }
+        ],
+        // One campaign per fund category — `raised` is summed from matching
+        // transactions, so two campaigns sharing a category would double-count.
+        // `raisedOffset` carries the funds banked before this app's transaction
+        // window; without it a months-long capital appeal reads as ~0%.
         campaigns: [
-            { id: 'camp1', name: 'Youth Center Renovation', goal: 8000, fundCategory: 'Project Donation', branchId: 'b1' }
+            { id: 'camp1', name: "Children's Home Support Fund", goal: 1500000, raisedOffset: 940000, fundCategory: 'Project Donation', branchId: 'b1' },
+            { id: 'camp2', name: 'NURU TV Broadcast Equipment', goal: 850000, raisedOffset: 410000, fundCategory: 'Pledge', branchId: 'b1' }
         ],
         followUps: [
-            { id: 'fu1', name: 'Peter Njoroge', branchId: 'b1', stage: 'New Guest', owner: 'Pastor Joseph', note: 'Visited Sunday service, filled connect card.' },
-            { id: 'fu2', name: 'Linda Achieng', branchId: 'b1', stage: 'Contacted', owner: 'Grace Mwangi', note: 'Called; interested in a small group.' },
-            { id: 'fu3', name: 'Tom Baker', branchId: 'b2', stage: 'Connected', owner: 'Robert Smith', note: 'Joined the Tuesday home group.' },
-            { id: 'fu4', name: 'Aisha Khan', branchId: 'b3', stage: 'New Guest', owner: 'Michael Patel', note: 'First-time guest at London campus.' }
+            { id: 'fu1', name: 'Peter Njoroge', branchId: 'b1', stage: 'New Guest', owner: 'Pastor Joseph', note: 'First-time guest at 2nd Service, filled a connect card.' },
+            { id: 'fu2', name: 'Linda Achieng', branchId: 'b1', stage: 'Contacted', owner: 'Grace Mwangi', note: 'Called; interested in joining a home fellowship.' },
+            { id: 'fu3', name: 'Brian Mutua', branchId: 'b2', stage: 'Connected', owner: 'Samuel Kariuki', note: 'Joined the Tuesday Kawangware home fellowship.' },
+            { id: 'fu4', name: 'Janet Cherono', branchId: 'b3', stage: 'New Guest', owner: 'Peter Kiprono', note: 'Walked in at the Nakuru campus after watching NURU TV.' }
         ],
         groups: [
-            { id: 'g1', name: 'Young Adults Life Group', branchId: 'b1', schedule: 'Tue 7:00 PM', description: "20s–30s community, study & fun.", memberIds: ['m1', 'm3'] },
-            { id: 'g2', name: 'Marriage & Family', branchId: 'b1', schedule: 'Wed 6:30 PM', description: 'For couples growing together in faith.', memberIds: ['m2'] },
-            { id: 'g3', name: "Men's Morning Prayer", branchId: 'b2', schedule: 'Sat 6:00 AM', description: 'Prayer, accountability & breakfast.', memberIds: ['m5'] },
-            { id: 'g4', name: 'Women of Grace', branchId: 'b3', schedule: 'Thu 10:00 AM', description: 'Bible study & fellowship.', memberIds: ['m8'] }
+            { id: 'g1', name: 'Young Adults Fellowship', branchId: 'b1', schedule: 'Tue 6:30 PM', description: '20s–30s community — Bible study, mentorship and fellowship.', memberIds: ['m1', 'm3'] },
+            { id: 'g2', name: 'Family Life & Marriage', branchId: 'b1', schedule: 'Wed 5:30 PM', description: 'For couples growing together in faith.', memberIds: ['m2'] },
+            { id: 'g3', name: "Men's Morning Prayer", branchId: 'b2', schedule: 'Sat 6:00 AM', description: 'Prayer, accountability and breakfast.', memberIds: ['m5'] },
+            { id: 'g4', name: 'Women of Grace', branchId: 'b3', schedule: 'Thu 10:00 AM', description: 'Bible study and fellowship.', memberIds: ['m8'] }
         ],
         announcements: [
-            { id: 'an1', title: 'Baptism Sunday — sign up now', body: 'We are holding a baptism service on the last Sunday of the month. Speak to a pastor or reply to register.', audience: 'all', channels: ['email', 'push'], recipients: 10, sentAt: '2026-07-06T09:00:00Z' }
+            { id: 'an1', title: 'Baptism Sunday — register now', body: 'Maximum Miracle Centre is holding a baptism service on the last Sunday of the month at the Nairobi CBD campus. Speak to a pastor or reply to register.', audience: 'all', channels: ['sms', 'push'], recipients: 10, sentAt: '2026-07-06T09:00:00Z' }
         ],
         readingPlans: [
             { id: 'rp1', title: '7 Days of Peace', emoji: '🕊️', days: [
@@ -107,16 +119,16 @@ const ChurchApp = {
         readingState: {},
         events: [
             { id: 'e1', branchId: 'b1', title: 'Youth Praise Night', description: 'An evening of worship, drama, and networking for young adults.', date: '2026-07-19', time: '18:00', rolesRequired: ['Worship Vocals', 'Keyboard', 'Guitar', 'Sound Engineering', 'Greeting'], volunteersSignedUp: ['m1'] },
-            { id: 'e2', branchId: 'b2', title: 'Dallas Community Charity Drive', description: 'Providing food, clothing, and shelter assistance to local families.', date: '2026-07-25', time: '09:00', rolesRequired: ['Greeting', 'First Aid', 'Security'], volunteersSignedUp: ['m6'] },
-            { id: 'e3', branchId: 'b1', title: 'HQ Sunday Worship Service', description: 'Main Sunday gathering at the HQ Center.', date: '2026-07-12', time: '10:30', rolesRequired: ['Ushering', 'Greeting', 'Sound Engineering', 'Worship Vocals', 'Security'], volunteersSignedUp: ['m3', 'm4'] }
+            { id: 'e2', branchId: 'b2', title: 'Kawangware Community Outreach', description: 'Food, clothing and medical support for families around the Kawangware campus.', date: '2026-07-25', time: '09:00', rolesRequired: ['Greeting', 'First Aid', 'Security'], volunteersSignedUp: ['m6'] },
+            { id: 'e3', branchId: 'b1', title: 'Sunday 2nd Service — Nairobi CBD', description: 'Main Sunday gathering at Embassy Cinema, Latema Road.', date: '2026-07-12', time: '10:00', rolesRequired: ['Ushering', 'Greeting', 'Sound Engineering', 'Worship Vocals', 'Security'], volunteersSignedUp: ['m3', 'm4'] }
         ],
         sermons: [
-            { id: 's1', title: 'Walking by Faith, Not by Sight', preacher: 'Senior Pastor Joseph', date: '2026-07-05', branchName: 'Nairobi HQ', thumbnail: 'sermon_faith', duration: '42:15', mediaUrl: 'https://www.w3schools.com/html/mov_bbb.mp4' },
-            { id: 's2', title: 'The Heart of a Faithful Steward', preacher: 'Pastor Robert Smith', date: '2026-06-28', branchName: 'Dallas Branch', thumbnail: 'sermon_steward', duration: '38:40', mediaUrl: 'https://www.w3schools.com/html/movie.mp4' }
+            { id: 's1', title: 'Walking by Faith, Not by Sight', preacher: 'Bishop Joseph Mwangi', date: '2026-07-05', branchName: 'Nairobi CBD', thumbnail: 'sermon_faith', duration: '42:15', mediaUrl: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+            { id: 's2', title: 'The Heart of a Faithful Steward', preacher: 'Pastor Samuel Kariuki', date: '2026-06-28', branchName: 'Kawangware', thumbnail: 'sermon_steward', duration: '38:40', mediaUrl: 'https://www.w3schools.com/html/movie.mp4' }
         ],
         prayerRequests: [
-            { id: 'pr1', memberId: 'm1', memberName: 'John Kamau', branchName: 'Nairobi HQ', text: 'Praying for my family as we plan to travel upcountry this week.', category: 'Family', route: 'Family Life & Marriage Ministry', status: 'Approved', timestamp: '2026-07-10T14:30:00Z' },
-            { id: 'pr2', memberId: 'm7', memberName: 'Emily Watson', branchName: 'Dallas Branch', text: 'I am recovering from knee surgery and still in moderate pain.', category: 'Healing', route: 'Hospital & Home Care Ministry', status: 'Assigned', timestamp: '2026-07-11T09:15:00Z' }
+            { id: 'pr1', memberId: 'm1', memberName: 'John Kamau', branchName: 'Nairobi CBD', text: 'Praying for my family as we plan to travel upcountry this week.', category: 'Family', route: 'Family Life & Marriage Ministry', status: 'Approved', timestamp: '2026-07-10T14:30:00Z' },
+            { id: 'pr2', memberId: 'm7', memberName: 'Faith Wanjiku', branchName: 'Kawangware', text: 'I am recovering from knee surgery and still in moderate pain.', category: 'Healing', route: 'Hospital & Home Care Ministry', status: 'Assigned', timestamp: '2026-07-11T09:15:00Z' }
         ]
     },
 
@@ -138,10 +150,10 @@ const ChurchApp = {
     // Demo accounts for the mock auth gate. In a real deployment these live in
     // a backend identity store; here they map a login to a role for RBAC.
     DEMO_USERS: [
-        { email: 'admin@church2.org', password: 'grace', name: 'HQ Administrator', role: 'hq_admin', branchId: 'b1' },
-        { email: 'dallas@church2.org', password: 'grace', name: 'Dallas Campus Admin', role: 'branch_admin', branchId: 'b2' },
-        { email: 'worship@church2.org', password: 'grace', name: 'Worship Leader', role: 'ministry_leader', branchId: 'b1' },
-        { email: 'john@church2.org', password: 'grace', name: 'John Kamau', role: 'member', branchId: 'b1' }
+        { email: 'admin@maximummiracle.org', password: 'grace', name: 'HQ Administrator', role: 'hq_admin', branchId: 'b1' },
+        { email: 'kawangware@maximummiracle.org', password: 'grace', name: 'Kawangware Campus Admin', role: 'branch_admin', branchId: 'b2' },
+        { email: 'worship@maximummiracle.org', password: 'grace', name: 'Worship Leader', role: 'ministry_leader', branchId: 'b1' },
+        { email: 'john@maximummiracle.org', password: 'grace', name: 'John Kamau', role: 'member', branchId: 'b1' }
     ],
 
     // RBAC: which tabs each role may access. Enforced in renderAll — not just
@@ -200,8 +212,17 @@ const ChurchApp = {
         }
     },
 
+    // Bump whenever the seeded demo dataset itself changes shape or content
+    // (campuses, people, currency). A saved DB stamped with an older version is
+    // discarded and re-seeded so returning demo visitors don't keep stale data.
+    // In API mode this is moot — the server's data replaces it on hydrate.
+    SEED_VERSION: 3,
+
     // Persistence: Load state
     loadDB() {
+        // Snapshot the pristine seed before a saved DB overwrites it, so
+        // ensureSchema can backfill from one source of truth.
+        const seed = this.db;
         if (typeof localStorage !== 'undefined') {
             const saved = localStorage.getItem('church2_db');
             if (saved) {
@@ -212,78 +233,46 @@ const ChurchApp = {
                     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) || !Array.isArray(parsed.members)) {
                         throw new Error('Saved DB is not a valid database object');
                     }
+                    if (parsed.__seedVersion !== this.SEED_VERSION) {
+                        throw new Error('Saved DB predates the current seed');
+                    }
                     this.db = parsed;
-                    this.ensureSchema();
+                    this.ensureSchema(seed);
                     return;
                 } catch (e) {
                     console.error("Error parsing saved DB, regenerating:", e);
+                    this.db = seed;
                 }
             }
         }
         // Fallback: generate and save
+        this.db.__seedVersion = this.SEED_VERSION;
+        this.generateCongregation();
         this.generateInitialTransactions();
         this.generateInitialAttendance();
         this.saveDB();
     },
 
     // Backfill collections added in later versions onto an older saved DB so
-    // renderers never hit undefined. Attendance was added in v2.
-    ensureSchema() {
+    // renderers never hit undefined. Attendance was added in v2. `seed` is the
+    // pristine dataset from the class literal.
+    ensureSchema(seed) {
+        seed = seed || {};
         let changed = false;
+        if (this.db.__seedVersion !== this.SEED_VERSION) { this.db.__seedVersion = this.SEED_VERSION; changed = true; }
         if (!Array.isArray(this.db.transactions)) { this.db.transactions = []; changed = true; }
         if (!Array.isArray(this.db.events)) { this.db.events = []; changed = true; }
         if (!Array.isArray(this.db.sermons)) { this.db.sermons = []; changed = true; }
         if (!Array.isArray(this.db.prayerRequests)) { this.db.prayerRequests = []; changed = true; }
         if (!Array.isArray(this.db.recurringGifts)) { this.db.recurringGifts = []; changed = true; }
-        if (!Array.isArray(this.db.campaigns)) {
-            this.db.campaigns = [{ id: 'camp1', name: 'Youth Center Renovation', goal: 8000, fundCategory: 'Project Donation', branchId: 'b1' }];
-            changed = true;
-        }
-        if (!Array.isArray(this.db.followUps)) {
-            this.db.followUps = [
-                { id: 'fu1', name: 'Peter Njoroge', branchId: 'b1', stage: 'New Guest', owner: 'Pastor Joseph', note: 'Visited Sunday service, filled connect card.' },
-                { id: 'fu2', name: 'Linda Achieng', branchId: 'b1', stage: 'Contacted', owner: 'Grace Mwangi', note: 'Called; interested in a small group.' },
-                { id: 'fu3', name: 'Tom Baker', branchId: 'b2', stage: 'Connected', owner: 'Robert Smith', note: 'Joined the Tuesday home group.' },
-                { id: 'fu4', name: 'Aisha Khan', branchId: 'b3', stage: 'New Guest', owner: 'Michael Patel', note: 'First-time guest at London campus.' }
-            ];
-            changed = true;
-        }
-        if (!Array.isArray(this.db.groups)) {
-            this.db.groups = [
-                { id: 'g1', name: 'Young Adults Life Group', branchId: 'b1', schedule: 'Tue 7:00 PM', description: "20s–30s community, study & fun.", memberIds: ['m1', 'm3'] },
-                { id: 'g2', name: 'Marriage & Family', branchId: 'b1', schedule: 'Wed 6:30 PM', description: 'For couples growing together in faith.', memberIds: ['m2'] },
-                { id: 'g3', name: "Men's Morning Prayer", branchId: 'b2', schedule: 'Sat 6:00 AM', description: 'Prayer, accountability & breakfast.', memberIds: ['m5'] },
-                { id: 'g4', name: 'Women of Grace', branchId: 'b3', schedule: 'Thu 10:00 AM', description: 'Bible study & fellowship.', memberIds: ['m8'] }
-            ];
-            changed = true;
-        }
-        if (!Array.isArray(this.db.announcements)) {
-            this.db.announcements = [
-                { id: 'an1', title: 'Baptism Sunday — sign up now', body: 'We are holding a baptism service on the last Sunday of the month. Speak to a pastor or reply to register.', audience: 'all', channels: ['email', 'push'], recipients: 10, sentAt: '2026-07-06T09:00:00Z' }
-            ];
-            changed = true;
-        }
-        if (!Array.isArray(this.db.readingPlans)) {
-            this.db.readingPlans = [
-                { id: 'rp1', title: '7 Days of Peace', emoji: '🕊️', days: [
-                    { ref: 'John 14:27', text: 'Peace I leave with you; my peace I give to you.' },
-                    { ref: 'Philippians 4:6-7', text: 'Do not be anxious about anything, but in everything by prayer... present your requests to God.' },
-                    { ref: 'Isaiah 26:3', text: 'You keep him in perfect peace whose mind is stayed on you.' },
-                    { ref: 'Psalm 4:8', text: 'In peace I will both lie down and sleep; for you alone, O Lord, make me dwell in safety.' },
-                    { ref: 'Matthew 11:28', text: 'Come to me, all who labor and are heavy laden, and I will give you rest.' },
-                    { ref: 'Colossians 3:15', text: 'Let the peace of Christ rule in your hearts.' },
-                    { ref: 'Romans 15:13', text: 'May the God of hope fill you with all joy and peace in believing.' }
-                ]},
-                { id: 'rp2', title: 'Foundations of Faith', emoji: '🌱', days: [
-                    { ref: 'Hebrews 11:1', text: 'Now faith is the assurance of things hoped for, the conviction of things not seen.' },
-                    { ref: 'Ephesians 2:8', text: 'For by grace you have been saved through faith.' },
-                    { ref: 'Romans 10:17', text: 'So faith comes from hearing, and hearing through the word of Christ.' },
-                    { ref: 'James 2:17', text: 'So also faith by itself, if it does not have works, is dead.' },
-                    { ref: 'Mark 11:24', text: 'Whatever you ask in prayer, believe that you have received it, and it will be yours.' }
-                ]}
-            ];
-            changed = true;
-        }
+        // Backfill the rest straight from the pristine seed — one source of
+        // truth, so rebranding the dataset never has to be done twice.
+        ['branches', 'campaigns', 'followUps', 'groups', 'announcements', 'readingPlans'].forEach((key) => {
+            if (!Array.isArray(this.db[key])) {
+                this.db[key] = JSON.parse(JSON.stringify(seed[key] || []));
+                changed = true;
+            }
+        });
         if (!this.db.readingState || typeof this.db.readingState !== 'object' || Array.isArray(this.db.readingState)) {
             this.db.readingState = {};
             changed = true;
@@ -311,7 +300,14 @@ const ChurchApp = {
     // Theme: Load state
     loadTheme() {
         if (typeof localStorage !== 'undefined') {
-            const savedTheme = localStorage.getItem('church2_theme') || 'dark';
+            let savedTheme = localStorage.getItem('church2_theme') || 'dark';
+            // The old neon theme was retired in favour of the on-brand
+            // Midnight theme; migrate anyone still holding the old value so
+            // they don't land on a class that no longer has styles.
+            if (savedTheme === 'cyber') {
+                savedTheme = 'midnight';
+                localStorage.setItem('church2_theme', savedTheme);
+            }
             document.body.className = savedTheme === 'dark' ? '' : 'theme-' + savedTheme;
             const themeSelect = document.getElementById('interface-theme-select');
             if (themeSelect) themeSelect.value = savedTheme;
@@ -361,7 +357,7 @@ const ChurchApp = {
         if (step === 'mfa') {
             auth.innerHTML = `
                 <div class="auth-card">
-                    <div class="auth-brand"><span class="auth-logo"><svg class="svg-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M6.5 8.5h11"/></svg></span><span>Church 2.0</span></div>
+                    <div class="auth-brand"><span class="auth-logo"><svg class="svg-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v15M7.5 9.2h9"/><path d="M5.6 19.4c1.7-2.2 3.8-3.3 6.4-3.3s4.7 1.1 6.4 3.3" opacity="0.85"/></svg></span><span>Maximum Miracle Centre</span></div>
                     <h2 class="auth-title">Two-factor verification</h2>
                     <p class="auth-sub">We texted a 6-digit code to the phone on file for <strong>${esc(ctx.email)}</strong>. Enter it to continue. <span class="auth-hint">(demo code: 123456)</span></p>
                     <form id="mfa-form" class="auth-form">
@@ -380,12 +376,12 @@ const ChurchApp = {
         // credentials step
         auth.innerHTML = `
             <div class="auth-card">
-                <div class="auth-brand"><span class="auth-logo"><svg class="svg-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M6.5 8.5h11"/></svg></span><span>Church 2.0</span></div>
+                <div class="auth-brand"><span class="auth-logo"><svg class="svg-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v15M7.5 9.2h9"/><path d="M5.6 19.4c1.7-2.2 3.8-3.3 6.4-3.3s4.7 1.1 6.4 3.3" opacity="0.85"/></svg></span><span>Maximum Miracle Centre</span></div>
                 <h2 class="auth-title">Sign in to your ministry console</h2>
                 <p class="auth-sub">Secure access to your church's data.</p>
                 <form id="login-form" class="auth-form">
                     <label class="auth-label" for="login-email">Email</label>
-                    <input type="email" id="login-email" class="auth-input" placeholder="you@church2.org" autocomplete="username" required>
+                    <input type="email" id="login-email" class="auth-input" placeholder="you@maximummiracle.org" autocomplete="username" required>
                     <label class="auth-label" for="login-password">Password</label>
                     <input type="password" id="login-password" class="auth-input" placeholder="••••••••" autocomplete="current-password" required>
                     <p id="auth-error" class="auth-error" role="alert"></p>
@@ -394,10 +390,10 @@ const ChurchApp = {
                 <div class="auth-demo">
                     <span>Demo accounts (password <code>grace</code>):</span>
                     <div class="auth-demo-chips">
-                        <button type="button" class="auth-demo-chip" data-email="admin@church2.org">HQ Admin</button>
-                        <button type="button" class="auth-demo-chip" data-email="dallas@church2.org">Branch Admin</button>
-                        <button type="button" class="auth-demo-chip" data-email="worship@church2.org">Ministry Leader</button>
-                        <button type="button" class="auth-demo-chip" data-email="john@church2.org">Member</button>
+                        <button type="button" class="auth-demo-chip" data-email="admin@maximummiracle.org">HQ Admin</button>
+                        <button type="button" class="auth-demo-chip" data-email="kawangware@maximummiracle.org">Campus Admin</button>
+                        <button type="button" class="auth-demo-chip" data-email="worship@maximummiracle.org">Ministry Leader</button>
+                        <button type="button" class="auth-demo-chip" data-email="john@maximummiracle.org">Member</button>
                     </div>
                 </div>
             </div>`;
@@ -551,17 +547,93 @@ const ChurchApp = {
     },
 
     // Helper: Generate historical transactions over the last 14 days
+    // Ten members makes every chart and average look like a toy. A real MMC
+    // campus roll runs into the hundreds, so we grow the handcrafted core (m1–m10,
+    // referenced by groups, events and prayer requests) into a congregation of a
+    // believable size. Names are drawn from common Kenyan given/family names.
+    generateCongregation() {
+        const FIRST = ['Alice', 'Benard', 'Brenda', 'Caleb', 'Carolyne', 'Collins', 'Cynthia', 'Daniel',
+            'Dennis', 'Dorcas', 'Edwin', 'Elizabeth', 'Emmanuel', 'Eunice', 'Evans', 'Gladys', 'Griffin',
+            'Hellen', 'Ian', 'Irene', 'Isaac', 'Jackline', 'James', 'Joan', 'Joseph', 'Josphat', 'Judy',
+            'Kevin', 'Lilian', 'Lucy', 'Martin', 'Mercy', 'Moses', 'Naomi', 'Nelson', 'Nancy', 'Patrick',
+            'Pauline', 'Purity', 'Rose', 'Ruth', 'Silas', 'Sharon', 'Stephen', 'Susan', 'Timothy',
+            'Valentine', 'Victor', 'Winnie', 'Zachary'];
+        const LAST = ['Achieng', 'Barasa', 'Cheruiyot', 'Chepkoech', 'Gitonga', 'Kimani', 'Kiplagat',
+            'Kirui', 'Koech', 'Langat', 'Maina', 'Makau', 'Mbugua', 'Mburu', 'Mutiso', 'Muthoni',
+            'Mwende', 'Nyakundi', 'Njuguna', 'Nyambura', 'Obara', 'Ochieng', 'Odhiambo', 'Okoth',
+            'Omondi', 'Ondiek', 'Owuor', 'Rotich', 'Sang', 'Wafula', 'Waweru', 'Wekesa'];
+        const SKILLS = ['Ushering', 'Greeting', 'Worship Vocals', 'Keyboard', 'Guitar', 'Drums',
+            'Sound Engineering', 'Video Editing', 'Graphics', 'Childcare', 'Youth Mentorship',
+            'Intercession', 'First Aid', 'Security', 'Social Media', 'Hospitality', 'Public Speaking'];
+        const ROLES = ['Single', 'Husband', 'Wife'];
+
+        // Weighted so the CBD mother church carries most of the roll.
+        const spread = [
+            { branchId: 'b1', count: 78 },
+            { branchId: 'b2', count: 41 },
+            { branchId: 'b3', count: 27 }
+        ];
+        const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+        let n = this.db.members.length;
+
+        spread.forEach(({ branchId, count }) => {
+            const branch = this.db.branches.find(b => b.id === branchId);
+            for (let i = 0; i < count; i++) {
+                n += 1;
+                const firstName = pick(FIRST);
+                const lastName = pick(LAST);
+                const skills = [...new Set([pick(SKILLS), pick(SKILLS)])];
+                // Engagement clusters high — most of a congregation is engaged —
+                // with a genuine tail so the at-risk analytics have real subjects.
+                const roll = Math.random();
+                const engagement = roll < 0.12 ? 20 + Math.floor(Math.random() * 25)
+                    : roll < 0.35 ? 45 + Math.floor(Math.random() * 25)
+                    : 70 + Math.floor(Math.random() * 30);
+                this.db.members.push({
+                    id: `m${n}`,
+                    branchId,
+                    branchName: branch ? branch.name : '',
+                    firstName,
+                    lastName,
+                    email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}${n}@email.com`,
+                    phone: `+2547${String(10000000 + Math.floor(Math.random() * 89999999))}`,
+                    familyId: `fam_${lastName.toLowerCase()}_${n}`,
+                    familyRole: pick(ROLES),
+                    spiritualMilestones: Math.random() < 0.6
+                        ? [`Member: ${2012 + Math.floor(Math.random() * 13)}-0${1 + Math.floor(Math.random() * 9)}-1${Math.floor(Math.random() * 9)}`]
+                        : [],
+                    volunteer_skills: skills,
+                    engagement_score: engagement
+                });
+            }
+        });
+    },
+
     generateInitialTransactions() {
-        const categories = ['Tithe', 'Offering', 'Pledge', 'Project Donation'];
-        const methods = ['Mobile Money', 'Credit Card', 'Bank Transfer'];
+        // Amount bands are in Kenyan Shillings and differ by category — a tithe
+        // is a far larger cheque than a Sunday offering, and flattening them
+        // would make the giving analytics meaningless.
+        const bands = {
+            'Tithe': [2000, 25000],
+            'Offering': [100, 2000],
+            'Pledge': [1000, 15000],
+            'Project Donation': [500, 10000]
+        };
+        const categories = Object.keys(bands);
+        // Weighted to reflect Kenyan giving: M-Pesa carries the clear majority.
+        const methods = ['M-Pesa', 'M-Pesa', 'M-Pesa', 'M-Pesa', 'Bank Transfer', 'Cash', 'Card'];
         const now = new Date();
 
-        // Generate ~40 historical transactions
-        for (let i = 0; i < 40; i++) {
+        // Roughly one gift per member over the fortnight, so the giving totals
+        // stay proportional to the size of the congregation.
+        const txCount = Math.max(40, Math.round(this.db.members.length * 1.4));
+        for (let i = 0; i < txCount; i++) {
             const memberIndex = Math.floor(Math.random() * this.db.members.length);
             const member = this.db.members[memberIndex];
-            const amount = Math.floor(Math.random() * 450) + 50;
             const category = categories[Math.floor(Math.random() * categories.length)];
+            const [lo, hi] = bands[category];
+            // Round to the nearest 50 shillings — real giving lands on round numbers.
+            const amount = Math.round((Math.random() * (hi - lo) + lo) / 50) * 50;
             const method = methods[Math.floor(Math.random() * methods.length)];
             
             // Random date in the last 14 days
@@ -628,6 +700,10 @@ const ChurchApp = {
                 if (typeof localStorage !== 'undefined') {
                     localStorage.setItem('church2_theme', theme);
                 }
+                // Chart.js paints to a canvas, so it can't inherit the new CSS
+                // tokens — repaint or the axis labels keep the old theme's
+                // contrast (grey-on-white in Daylight).
+                this.renderAll();
             });
         }
 
@@ -713,7 +789,58 @@ const ChurchApp = {
     },
 
     // 6. Master Render Coordinator
+    // Live theme tokens for canvas-drawn charts, which can't inherit CSS.
+    chartTheme() {
+        const css = getComputedStyle(document.body);
+        const read = (name, fallback) => (css.getPropertyValue(name) || '').trim() || fallback;
+        const light = document.body.classList.contains('theme-light');
+        return {
+            tick: read('--text-secondary', '#9ca3af'),
+            grid: light ? 'rgba(15, 23, 42, 0.08)' : 'rgba(255,255,255,0.05)',
+            surface: light ? '#ffffff' : '#0b1220',
+            legend: read('--text-primary', '#f3f4f6')
+        };
+    },
+
+    // Fill every campus <select> from db.branches so the campus list lives in
+    // exactly one place. Selects keep any leading "all"/"global" option and
+    // their current value where it is still valid.
+    populateCampusSelects() {
+        document.querySelectorAll('select[data-campus-select]').forEach((sel) => {
+            const previous = sel.value;
+            const keep = [...sel.options].filter(o => o.value === 'all' || o.value === 'global');
+            sel.innerHTML = '';
+            keep.forEach(o => sel.appendChild(o));
+            this.db.branches.forEach((b) => {
+                const opt = document.createElement('option');
+                opt.value = b.id;
+                opt.textContent = b.name;
+                sel.appendChild(opt);
+            });
+            if (previous && [...sel.options].some(o => o.value === previous)) sel.value = previous;
+        });
+
+        // Member pickers list the people actually on the books, scoped to the
+        // campus in view so a branch admin can't record giving for another campus.
+        const scope = this.session.currentBranch;
+        const inScope = this.db.members.filter(m => scope === 'global' || m.branchId === scope);
+        document.querySelectorAll('select[data-member-select]').forEach((sel) => {
+            const previous = sel.value;
+            const keep = [...sel.options].filter(o => o.value === 'anonymous');
+            sel.innerHTML = '';
+            keep.forEach(o => sel.appendChild(o));
+            inScope.forEach((m) => {
+                const opt = document.createElement('option');
+                opt.value = m.id;
+                opt.textContent = `${m.firstName} ${m.lastName}`;
+                sel.appendChild(opt);
+            });
+            if (previous && [...sel.options].some(o => o.value === previous)) sel.value = previous;
+        });
+    },
+
     renderAll() {
+        this.populateCampusSelects();
         const role = this.session.currentRole;
         const branchId = this.session.currentBranch;
 
@@ -825,7 +952,7 @@ const ChurchApp = {
         );
 
         // Update dashboard counters
-        document.getElementById('dash-giving-total').innerText = `$${snapshot.thisWeekGiving.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        document.getElementById('dash-giving-total').innerText = money(snapshot.thisWeekGiving);
         document.getElementById('dash-giving-change').innerText = snapshot.givingDiffPercent;
         document.getElementById('dash-giving-change').className = snapshot.givingDiffPercent.startsWith('-') ? 'changedown' : 'changeup';
 
@@ -834,6 +961,13 @@ const ChurchApp = {
         document.getElementById('dash-attendance-change').className = snapshot.attendanceDiffPercent.startsWith('-') ? 'changedown' : 'changeup';
 
         document.getElementById('dash-members-total').innerText = branchMembers.length;
+        // Label the scope honestly — "Across campuses" is wrong when a single
+        // campus is selected, and the count would look like a church-wide total.
+        const scopeLabel = document.getElementById('dash-members-scope');
+        if (scopeLabel) {
+            const b = this.db.branches.find(x => x.id === this.session.currentBranch);
+            scopeLabel.innerText = b ? `At ${b.name}` : 'Across all campuses';
+        }
 
         // Render AI Ministry Health Executive Briefing card
         const aiSnapshotCard = document.getElementById('ai-snapshot-content');
@@ -899,19 +1033,20 @@ const ChurchApp = {
                 amounts.push(daySum);
             }
 
+            const ct = this.chartTheme();
             this.charts.giving = new Chart(ctxGiving, {
                 type: 'line',
                 data: {
                     labels: dateLabels,
                     datasets: [{
-                        label: 'Daily Giving ($)',
+                        label: `Daily Giving (${MMC_BRAND.currency.symbol})`,
                         data: amounts,
-                        borderColor: '#6366f1',
-                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        borderColor: MMC_BRAND.palette.royalLight,
+                        backgroundColor: 'rgba(59, 130, 246, 0.14)',
                         fill: true,
                         tension: 0.4,
                         borderWidth: 3,
-                        pointBackgroundColor: '#8b5cf6',
+                        pointBackgroundColor: MMC_BRAND.palette.gold,
                         pointBorderColor: '#fff',
                         pointRadius: 4
                     }]
@@ -924,12 +1059,15 @@ const ChurchApp = {
                     },
                     scales: {
                         y: {
-                            grid: { color: 'rgba(255,255,255,0.05)' },
-                            ticks: { color: '#9ca3af' }
+                            // Anchor at zero: a floating baseline visually
+                            // exaggerates ordinary week-to-week variation.
+                            beginAtZero: true,
+                            grid: { color: ct.grid },
+                            ticks: { color: ct.tick, callback: (v) => MMC_BRAND.moneyShort(v) }
                         },
                         x: {
                             grid: { display: false },
-                            ticks: { color: '#9ca3af' }
+                            ticks: { color: ct.tick }
                         }
                     }
                 }
@@ -946,19 +1084,22 @@ const ChurchApp = {
                     .reduce((sum, t) => sum + parseFloat(t.amount), 0)
             );
 
+            const ctc = this.chartTheme();
             this.charts.categories = new Chart(ctxCategories, {
                 type: 'doughnut',
                 data: {
                     labels: categories,
                     datasets: [{
                         data: categorySums,
+                        // Royal-and-gold brand ramp rather than a generic
+                        // rainbow, so the chart reads as MMC at a glance.
                         backgroundColor: [
-                            'rgba(99, 102, 241, 0.85)',  // Tithe
-                            'rgba(16, 185, 129, 0.85)', // Offering
-                            'rgba(245, 158, 11, 0.85)',  // Pledge
-                            'rgba(6, 182, 212, 0.85)'   // Project
+                            'rgba(29, 78, 216, 0.90)',   // Tithe — royal
+                            'rgba(240, 180, 41, 0.90)',  // Offering — gold
+                            'rgba(96, 165, 250, 0.90)',  // Pledge — light royal
+                            'rgba(200, 137, 15, 0.90)'   // Project — deep gold
                         ],
-                        borderColor: 'rgba(28, 28, 45, 1)',
+                        borderColor: ctc.surface,
                         borderWidth: 2
                     }]
                 },
@@ -968,7 +1109,7 @@ const ChurchApp = {
                     plugins: {
                         legend: {
                             position: 'right',
-                            labels: { color: '#f3f4f6', font: { size: 11 } }
+                            labels: { color: ctc.legend, font: { size: 11 } }
                         }
                     }
                 }
@@ -1082,6 +1223,7 @@ const ChurchApp = {
         const counts = dates.map(d => attendance.filter(a => a.date === d && a.present).length);
         const labels = dates.map(d => new Date(d + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' }));
 
+        const cta = this.chartTheme();
         this.charts.attendance = new Chart(ctx, {
             type: 'bar',
             data: {
@@ -1100,8 +1242,8 @@ const ChurchApp = {
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: {
-                    y: { beginAtZero: true, ticks: { color: '#9ca3af', precision: 0 }, grid: { color: 'rgba(255,255,255,0.05)' } },
-                    x: { ticks: { color: '#9ca3af' }, grid: { display: false } }
+                    y: { beginAtZero: true, ticks: { color: cta.tick, precision: 0 }, grid: { color: cta.grid } },
+                    x: { ticks: { color: cta.tick }, grid: { display: false } }
                 }
             }
         });
@@ -1433,7 +1575,7 @@ const ChurchApp = {
                                         <td><a href="#" onclick="ChurchApp.viewReceipt('${esc(d.id)}'); return false;">${esc(d.receiptNumber)}</a></td>
                                         <td>${esc(d.date)}</td>
                                         <td>${esc(d.category)}</td>
-                                        <td style="color: #10b981; font-weight: bold;">$${parseFloat(d.amount).toFixed(2)}</td>
+                                        <td style="color: #10b981; font-weight: bold;">${money(parseFloat(d.amount))}</td>
                                         <td>${esc(d.paymentMethod)}</td>
                                     </tr>
                                 `).join('')}
@@ -1519,11 +1661,11 @@ const ChurchApp = {
         filteredTx.forEach(t => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td><span style="font-family: monospace; font-weight: bold; color: #a5b4fc;">${esc(t.receiptNumber)}</span></td>
+                <td><span class="receipt-no" style="font-family: monospace; font-weight: bold; color: #93c5fd;">${esc(t.receiptNumber)}</span></td>
                 <td><span class="branch-pill badge-${esc(t.branchId)}">${esc(t.branchName)}</span></td>
                 <td>${esc(t.memberName || 'Anonymous')}</td>
                 <td><span class="category-pill category-${esc((t.category || '').toLowerCase().replace(' ', ''))}">${esc(t.category)}</span></td>
-                <td style="color: #10b981; font-weight: bold; text-align: right;">$${parseFloat(t.amount).toFixed(2)}</td>
+                <td class="amount-cell" style="color: #10b981; font-weight: bold; text-align: right;">${money(parseFloat(t.amount))}</td>
                 <td>${esc(t.date)}</td>
                 <td>${esc(t.paymentMethod)}</td>
                 <td>
@@ -1552,11 +1694,11 @@ const ChurchApp = {
         // Pledge campaigns: raised = sum of matching-fund transactions in scope
         const campaigns = (this.db.campaigns || []).filter(c => inScope(c.branchId) || (branchId === 'global'));
         const campaignCards = campaigns.map(c => {
-            const raised = this.db.transactions
+            const raised = (parseFloat(c.raisedOffset) || 0) + this.db.transactions
                 .filter(t => t.category === c.fundCategory && inScope(t.branchId))
                 .reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
             const pct = c.goal ? Math.min(100, Math.round((raised / c.goal) * 100)) : 0;
-            const money = (n) => `$${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+            const money = (n) => window.money(n, { decimals: 0 });
             return `<div class="card-glass campaign-card">
                 <div class="campaign-head">
                     <div>
@@ -1576,9 +1718,9 @@ const ChurchApp = {
         const recurringCard = `<div class="card-glass campaign-card">
             <span class="campaign-eyebrow"><svg class="inline-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9a8 8 0 0 1 13.5-3.5L20 8"/><path d="M20 4v4h-4"/><path d="M20 15a8 8 0 0 1-13.5 3.5L4 16"/><path d="M4 20v-4h4"/></svg> Recurring Giving</span>
             <h4>${recurring.length} active schedule${recurring.length === 1 ? '' : 's'}</h4>
-            <div class="campaign-figures"><strong>$${recurringTotal.toFixed(2)}</strong> committed per cycle</div>
+            <div class="campaign-figures"><strong>${window.money(recurringTotal)}</strong> committed per cycle</div>
             ${recurring.length ? `<ul class="recurring-list">${recurring.slice(0, 3).map(r =>
-                `<li>${esc(r.memberName)} — $${parseFloat(r.amount).toFixed(2)} ${esc(r.frequency)} (${esc(r.category)})</li>`).join('')}</ul>` : ''}
+                `<li>${esc(r.memberName)} — ${window.money(parseFloat(r.amount))} ${esc(r.frequency)} (${esc(r.category)})</li>`).join('')}</ul>` : ''}
         </div>`;
 
         el.innerHTML = campaignCards + recurringCard;
@@ -1593,7 +1735,7 @@ const ChurchApp = {
             .filter(t => t.memberId === memberId && new Date(t.date).getFullYear() === year)
             .sort((a, b) => new Date(a.date) - new Date(b.date));
         const total = gifts.reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
-        const money = (n) => `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        const money = (n) => window.money(n);
 
         const byFund = {};
         gifts.forEach(t => { byFund[t.category] = (byFund[t.category] || 0) + (parseFloat(t.amount) || 0); });
@@ -1607,7 +1749,7 @@ const ChurchApp = {
                 </div>
                 <div class="modal-body receipt-print-area scroll-y">
                     <div class="receipt-header">
-                        <h2>CHURCH 2.0 ECOSYSTEM</h2>
+                        <h2>${esc(MMC_BRAND.name.toUpperCase())}</h2>
                         <p>${esc(member.branchName)}</p>
                     </div>
                     <p style="margin-top:10px;"><strong>${esc(member.firstName)} ${esc(member.lastName)}</strong><br>
@@ -1634,7 +1776,7 @@ const ChurchApp = {
                         <span style="font-size:1.05rem;">TOTAL ${year} CONTRIBUTIONS</span>
                         <strong style="color:#10b981; font-size:1.35rem;">${money(total)}</strong>
                     </div>
-                    <p style="font-size:0.7rem; color:var(--text-secondary); margin-top:14px;">Church 2.0 is a registered place of worship. Retain this statement for your tax records.</p>
+                    <p style="font-size:0.7rem; color:var(--text-secondary); margin-top:14px;">${esc(MMC_BRAND.name)} is a registered place of worship. Retain this statement for your records.</p>
                 </div>
                 <div style="display:flex; gap:8px; margin-top:15px; justify-content:flex-end;">
                     <button class="btn btn-secondary" onclick="window.print()">Print / Save PDF</button>
@@ -1653,7 +1795,7 @@ const ChurchApp = {
         const method = document.getElementById('tx-method-select').value;
         const date = document.getElementById('tx-date-input').value || new Date().toISOString().split('T')[0];
 
-        if (isNaN(amount) || amount <= 0) { this.toast('Enter a valid contribution amount greater than $0.', 'error'); return; }
+        if (isNaN(amount) || amount <= 0) { this.toast('Enter a valid contribution amount greater than Ksh 0.', 'error'); return; }
 
         let memberName = 'Anonymous';
         // When "All Branches (Global)" is active there is no single campus to file
@@ -1698,7 +1840,7 @@ const ChurchApp = {
         // Reset defaults
         document.getElementById('tx-date-input').value = new Date().toISOString().split('T')[0];
 
-        this.toast(`Logged $${amount.toFixed(2)} from ${memberName}. Receipt ${newTx.receiptNumber}.`);
+        this.toast(`Logged ${money(amount)} from ${memberName}. Receipt ${newTx.receiptNumber}.`);
         
         this.renderAll();
     },
@@ -1719,7 +1861,7 @@ const ChurchApp = {
                 </div>
                 <div class="modal-body receipt-print-area">
                     <div class="receipt-header">
-                        <h2>CHURCH 2.0 ECOSYSTEM</h2>
+                        <h2>${esc(MMC_BRAND.name.toUpperCase())}</h2>
                         <p>${esc(tx.branchName)}</p>
                         <p style="font-size: 0.75rem; color:#9ca3af;">Branch Code: ${esc((tx.branchId || '').toUpperCase())}</p>
                     </div>
@@ -1747,7 +1889,7 @@ const ChurchApp = {
                     <hr style="border: 0; border-top: 1px dashed rgba(255,255,255,0.15); margin: 15px 0;">
                     <div class="receipt-row total-row">
                         <span style="font-size: 1.1rem;">TOTAL AMOUNT RECEIVED:</span>
-                        <strong style="color: #10b981; font-size: 1.4rem;">$${parseFloat(tx.amount).toFixed(2)}</strong>
+                        <strong style="color: #10b981; font-size: 1.4rem;">${money(parseFloat(tx.amount))}</strong>
                     </div>
                     
                     <div class="simulated-barcode">
@@ -1768,7 +1910,7 @@ const ChurchApp = {
 
                     <div class="receipt-footer">
                         <p>Thank you for your generous stewardship.</p>
-                        <p style="font-size:0.7rem; color:#9ca3af; margin-top:8px;">Signed Electronically by Church 2.0 HQ Admin System</p>
+                        <p style="font-size:0.7rem; color:#9ca3af; margin-top:8px;">Signed electronically by the ${esc(MMC_BRAND.shortName)} HQ admin system</p>
                     </div>
                 </div>
                 <div style="display: flex; gap: 8px; margin-top: 15px; justify-content: flex-end;">
@@ -1870,7 +2012,7 @@ const ChurchApp = {
             div.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div>
-                        <strong style="color: #a5b4fc; font-size: 0.95rem;">${esc(role)}</strong>
+                        <strong style="color: #93c5fd; font-size: 0.95rem;">${esc(role)}</strong>
                         <p class="rota-status ${volunteerObj ? 'is-assigned' : 'is-unassigned'}">Status: ${volunteerObj ? '✅ Roster Assigned' : '⚠️ Unassigned'}</p>
                     </div>
                     <div>
@@ -1918,7 +2060,7 @@ const ChurchApp = {
                     <button class="modal-close" aria-label="Close volunteer matcher" onclick="ChurchApp.closeModal('ai-matcher-modal')">×</button>
                 </div>
                 <div class="modal-body">
-                    <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:12px;">Searching database for members with skill: <strong style="color:#8b5cf6;">${esc(role)}</strong> and solid engagement scoring index.</p>
+                    <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:12px;">Searching database for members with skill: <strong style="color:#60a5fa;">${esc(role)}</strong> and solid engagement scoring index.</p>
                     <div class="matches-list">
                         ${matches.map(m => `
                             <div class="match-item">
@@ -2113,7 +2255,10 @@ const ChurchApp = {
         subviews.forEach(sv => {
             const el = document.getElementById(sv);
             if (el) {
-                el.style.display = (sv === `mobile-${view}`) ? 'block' : 'none';
+                // 'flex', not 'block': .mobile-app-body is a flex column and a
+                // block override collapses children that rely on flex sizing
+                // (the chat transcript would shrink to its content).
+                el.style.display = (sv === `mobile-${view}`) ? 'flex' : 'none';
             }
         });
 
@@ -2358,7 +2503,7 @@ const ChurchApp = {
             const p = document.createElement('div');
             p.className = 'mobile-bible-verse-item';
             p.innerHTML = `
-                <strong style="font-size:0.8rem; color:#a5b4fc; display:block;">${esc(v.ref)} (${esc(this.session.bibleVersion)})</strong>
+                <strong style="font-size:0.8rem; color:#93c5fd; display:block;">${esc(v.ref)} (${esc(this.session.bibleVersion)})</strong>
                 <p style="font-size:0.8rem; color:var(--text-secondary); margin-top:2px;">"${esc(v.text)}"</p>
             `;
             verseContainer.appendChild(p);
@@ -2379,8 +2524,16 @@ const ChurchApp = {
     },
 
     // Processing fee model used for the "cover the fees" option (card rate).
-    givingFee(amount) {
-        return Math.round((amount * 0.029 + 0.30) * 100) / 100;
+    /**
+     * Transaction charge for the "cover the charge" option, in shillings.
+     * M-Pesa paybill charges are borne by the payer under Safaricom's tariff,
+     * so only card carries a percentage fee the church would otherwise absorb.
+     */
+    givingFee(amount, method) {
+        const m = method || (window.MMC_BRAND && MMC_BRAND.giving.defaultMethod) || 'M-Pesa';
+        if (m !== 'Card') return 0;
+        const f = (window.MMC_BRAND && MMC_BRAND.giving.fees) || { cardPercent: 0.029, cardFlat: 30 };
+        return Math.round(amount * f.cardPercent + f.cardFlat);
     },
 
     renderMobileGive() {
@@ -2397,10 +2550,32 @@ const ChurchApp = {
         const amountInput = document.getElementById('mobile-giving-amount');
         const feeLabel = document.getElementById('give-fees-amount');
         const coverFees = document.getElementById('mobile-giving-cover-fees');
+        const methodSel = document.getElementById('mobile-giving-method');
+        const feesRow = document.getElementById('cover-fees-row');
+        const mpesaHint = document.getElementById('mpesa-hint');
+
+        // Surface the paybill details from the brand config rather than
+        // hardcoding them in markup.
+        const brand = window.MMC_BRAND;
+        if (brand) {
+            const pb = document.getElementById('mpesa-paybill');
+            const acc = document.getElementById('mpesa-account');
+            if (pb) pb.textContent = brand.giving.mpesa.paybill;
+            if (acc) acc.textContent = brand.giving.mpesa.accountName;
+        }
+
         const updateFee = () => {
             const amt = parseFloat(amountInput.value) || 0;
-            if (feeLabel) feeLabel.textContent = `$${this.givingFee(amt).toFixed(2)}`;
+            const method = methodSel ? methodSel.value : 'M-Pesa';
+            const fee = this.givingFee(amt, method);
+            if (feeLabel) feeLabel.textContent = money(fee);
+            // Only card carries a charge the church would absorb, so the
+            // cover-the-charge option is meaningless for the other rails.
+            if (feesRow) feesRow.style.display = fee > 0 ? '' : 'none';
+            if (fee === 0 && coverFees) coverFees.checked = false;
+            if (mpesaHint) mpesaHint.style.display = method === 'M-Pesa' ? '' : 'none';
         };
+        if (methodSel) methodSel.onchange = updateFee;
 
         // Quick-amount chips
         document.querySelectorAll('#mobile-give .give-chip').forEach(chip => {
@@ -2427,12 +2602,12 @@ const ChurchApp = {
         const frequency = document.getElementById('mobile-giving-frequency').value;
         const coverFees = document.getElementById('mobile-giving-cover-fees').checked;
 
-        if (isNaN(amount) || amount <= 0) { this.toast('Enter a valid amount greater than $0.', 'error'); return; }
+        if (isNaN(amount) || amount <= 0) { this.toast('Enter a valid amount greater than Ksh 0.', 'error'); return; }
 
         let feeAdded = 0;
         if (coverFees) {
-            feeAdded = this.givingFee(amount);
-            amount = Math.round((amount + feeAdded) * 100) / 100;
+            feeAdded = this.givingFee(amount, method);
+            amount = Math.round(amount + feeAdded);
         }
 
         const branchObj = this.db.branches.find(b => b.id === branchId);
@@ -2495,8 +2670,8 @@ const ChurchApp = {
             <div style="background: #1c1c2d; padding:20px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); width: 85%; max-width:280px; text-align:center;">
                 <span style="font-size:3rem;">🎉</span>
                 <h4 style="color:#fff; margin-top:10px;">Giving Successful!</h4>
-                <p style="font-size:0.75rem; color:#9ca3af; margin-top:5px;">Thank you for your donation of <strong style="color:#fff;">$${amount.toFixed(2)}</strong> toward ${esc(category)}.${feeAdded ? ` <span style="color:#9ca3af;">(includes $${feeAdded.toFixed(2)} fees)</span>` : ''}</p>
-                <p style="font-size:0.7rem; color:#a5b4fc; font-weight:bold; margin-top:8px;">Receipt Generated: ${esc(newTx.receiptNumber)}</p>
+                <p style="font-size:0.75rem; color:#9ca3af; margin-top:5px;">Thank you for your donation of <strong style="color:#fff;">${money(amount)}</strong> toward ${esc(category)}.${feeAdded ? ` <span style="color:#9ca3af;">(includes ${money(feeAdded)} transaction charge)</span>` : ''}</p>
+                <p style="font-size:0.7rem; color:#93c5fd; font-weight:bold; margin-top:8px;">Receipt Generated: ${esc(newTx.receiptNumber)}</p>
                 ${recurringNote}
                 <button class="btn btn-primary-gradient btn-sm" style="margin-top:15px; width:100%;" onclick="document.getElementById('mobile-giving-success-overlay').style.display='none'">Awesome</button>
             </div>
@@ -2522,13 +2697,13 @@ const ChurchApp = {
                     const div = document.createElement('div');
                     div.className = 'mobile-serve-item-card';
                     div.innerHTML = `
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <div>
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
+                            <div style="min-width:0;">
                                 <strong style="font-size:0.8rem; color:var(--text-primary); display:block;">${esc(role)}</strong>
-                                <span style="font-size:0.7rem; color:var(--text-secondary);">Event: ${esc(e.title)}</span>
-                                <span style="font-size:0.7rem; color:#a5b4fc; display:block;">Date: ${esc(e.date)}</span>
+                                <span style="font-size:0.7rem; color:var(--text-secondary); display:block;">Event: ${esc(e.title)}</span>
+                                <span style="font-size:0.7rem; color:var(--accent-gold); display:block;">Date: ${esc(e.date)}</span>
                             </div>
-                            <button class="mobile-apply-btn" onclick="ChurchApp.handleMobileServeSignup('${esc(e.id)}', '${esc(role).replace(/'/g, "\\'")}')">Serve</button>
+                            <button class="mobile-apply-btn" style="flex:0 0 auto;" onclick="ChurchApp.handleMobileServeSignup('${esc(e.id)}', '${esc(role).replace(/'/g, "\\'")}')">Serve</button>
                         </div>
                     `;
                     openRolesContainer.appendChild(div);
@@ -2588,7 +2763,9 @@ const ChurchApp = {
 
     renderMobileChat() {
         const body = document.getElementById('mobile-chat-body');
-        if (body.innerHTML.trim() === '') {
+        // Check for a rendered bubble, not for empty innerHTML — the markup ships
+        // with an HTML comment placeholder, which is never the empty string.
+        if (!body.querySelector('.chat-bubble')) {
             // Seed welcome message
             body.innerHTML = `
                 <div class="chat-bubble bot">
@@ -2750,7 +2927,10 @@ const ChurchApp = {
             id: `pr_${Date.now()}`,
             memberId: 'm1',
             memberName: 'John Kamau',
-            branchName: 'Nairobi HQ',
+            // Derive the campus from the member record rather than hardcoding
+            // one, so the prayer routes to the right campus after a rebrand.
+            branchName: (this.db.members.find(m => m.id === 'm1') || {}).branchName
+                || (this.db.branches[0] && this.db.branches[0].name) || 'Main Campus',
             text: text,
             category: categoryResult.category,
             route: categoryResult.route,

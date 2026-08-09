@@ -53,7 +53,7 @@ erDiagram
 
 1. **Branch**
    - `id` (UUID): Unique branch identifier
-   - `name` (String): Branch name (e.g., "Nairobi HQ", "Dallas Branch")
+   - `name` (String): Branch name (e.g., "Nairobi CBD", "Kawangware")
    - `location` (String): Address details
    - `created_at` (Timestamp)
 
@@ -158,7 +158,7 @@ The system compiles a Monday executive report:
 - **[v2] Classification accuracy**: Keyword matching MUST respect word boundaries so substrings do not cause misrouting (e.g. "parent" must not match the financial keyword "rent").
 
 #### 5.4 Ask‑Your‑Data (natural language) **[v2]**
-- A query box that turns plain‑English questions ("members who haven't given this year", "at‑risk members in Dallas") into real filters over the local database and returns a result set. Mirrors Planning Center's AI list builder and Pushpay's AI People/Giving search.
+- A query box that turns plain‑English questions ("members who haven't given this year", "at‑risk members in Nakuru") into real filters over the local database and returns a result set. Mirrors Planning Center's AI list builder and Pushpay's AI People/Giving search.
 
 ---
 

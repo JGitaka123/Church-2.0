@@ -118,9 +118,13 @@ CREATE TABLE IF NOT EXISTS campaigns (
   id            TEXT PRIMARY KEY,
   name          TEXT NOT NULL,
   goal          NUMERIC(12,2) NOT NULL DEFAULT 0,
+  -- Funds banked before this system's transaction history begins. Added to the
+  -- summed transactions so a months-long appeal shows its true progress.
+  raised_offset NUMERIC(12,2) NOT NULL DEFAULT 0,
   fund_category TEXT,
   branch_id     TEXT REFERENCES branches(id) ON DELETE CASCADE
 );
+ALTER TABLE campaigns ADD COLUMN IF NOT EXISTS raised_offset NUMERIC(12,2) NOT NULL DEFAULT 0;
 
 CREATE TABLE IF NOT EXISTS recurring_gifts (
   id          TEXT PRIMARY KEY,

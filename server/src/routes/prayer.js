@@ -25,7 +25,7 @@ router.post('/', wrap(async (req, res) => {
   const { rows } = await query(
     `INSERT INTO prayer_requests (id,member_id,member_name,branch_name,text,category,route,status)
      VALUES ($1,$2,$3,$4,$5,$6,$7,'Assigned') RETURNING *`,
-    [genId('pr'), memberId || null, memberName || 'Member', branchName || 'Nairobi HQ', text, category || 'General', route || 'Pastoral Care Team']
+    [genId('pr'), memberId || null, memberName || 'Member', branchName || 'Nairobi CBD', text, category || 'General', route || 'Pastoral Care Team']
   );
   res.status(201).json(mapPrayer(rows[0]));
 }));

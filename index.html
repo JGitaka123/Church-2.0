@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Church 2.0 - Unified Multi-Branch Management Ecosystem</title>
+    <title>Maximum Miracle Centre — Ministry Console</title>
     
     <!-- PWA configuration and mobile styling -->
     <link rel="manifest" href="manifest.json">
@@ -11,7 +11,7 @@
     <link rel="apple-touch-icon" href="icon.svg">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#09090e">
+    <meta name="theme-color" content="#0b1220">
     
     <!-- Fonts and Styling links -->
     <link rel="stylesheet" href="styles.css">
@@ -28,8 +28,11 @@
         <!-- 1. Side Navigation Menu -->
         <aside class="sidebar">
             <div class="brand-section">
-                <div class="brand-logo" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v18M6.5 8.5h11" stroke="#fff" stroke-width="2.4" stroke-linecap="round" fill="none"/></svg></div>
-                <div class="brand-name">Church 2.0</div>
+                <div class="brand-logo" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 4v15M7.5 9.2h9" stroke="var(--mmc-gold)" stroke-width="2.6" stroke-linecap="round" fill="none"/><path d="M5.6 19.4c1.7-2.2 3.8-3.3 6.4-3.3s4.7 1.1 6.4 3.3" stroke="#fff" stroke-width="1.9" stroke-linecap="round" fill="none" opacity="0.9"/></svg></div>
+                <div class="brand-text">
+                    <div class="brand-name">Maximum Miracle</div>
+                    <div class="brand-sub">Centre &middot; Ministry Console</div>
+                </div>
             </div>
             
             <nav class="nav-menu" aria-label="Primary">
@@ -47,7 +50,7 @@
             </nav>
             
             <div style="font-size: 0.7rem; color: var(--text-secondary); text-align: center; border-top: 1px solid var(--border-light); padding-top: 15px;">
-                Church 2.0 OS v1.0.0
+                Maximum Miracle Centre &middot; Church 2.0 OS v1.1
             </div>
         </aside>
 
@@ -57,7 +60,7 @@
             <!-- Global header dashboard bar -->
             <header class="global-header">
                 <div style="display:flex; flex-direction:column;">
-                    <h2 id="active-branch-indicator" style="font-family: var(--font-header); font-weight:700; font-size:1.2rem; color:var(--text-primary);">Nairobi HQ</h2>
+                    <h2 id="active-branch-indicator" style="font-family: var(--font-header); font-weight:700; font-size:1.2rem; color:var(--text-primary);">Nairobi CBD</h2>
                     <span style="font-size:0.75rem; color:var(--text-secondary);">Currently Administered Campus</span>
                 </div>
                 
@@ -74,20 +77,17 @@
 
                     <div style="text-align: right; display:flex; flex-direction:column;">
                         <span style="font-size:0.7rem; color:var(--text-secondary); text-transform:uppercase; font-weight:bold;">Campus Target</span>
-                        <select id="global-branch-select" class="select-custom">
+                        <select id="global-branch-select" data-campus-select class="select-custom">
                             <option value="global">All Branches (Global)</option>
-                            <option value="b1">Nairobi HQ</option>
-                            <option value="b2">Dallas Branch</option>
-                            <option value="b3">London Branch</option>
                         </select>
                     </div>
 
                     <div style="text-align: right; display:flex; flex-direction:column;">
                         <span style="font-size:0.7rem; color:var(--text-secondary); text-transform:uppercase; font-weight:bold;">Interface Theme</span>
                         <select id="interface-theme-select" class="select-custom">
-                            <option value="dark">Deep Space Dark</option>
-                            <option value="light">Glassmorphism Light</option>
-                            <option value="cyber">Cyber Neon</option>
+                            <option value="dark">Sanctuary Dark</option>
+                            <option value="light">Daylight</option>
+                            <option value="midnight">Midnight Navy</option>
                         </select>
                     </div>
                     
@@ -103,7 +103,7 @@
                     <div class="card-glass stats-card">
                         <div class="stats-info">
                             <h4>This Week Giving</h4>
-                            <div class="value" id="dash-giving-total">$8,450.00</div>
+                            <div class="value" id="dash-giving-total">Ksh 0</div>
                             <span class="changeup" id="dash-giving-change">+5.2%</span>
                         </div>
                         <div class="stats-icon tone-green"><svg class="svg-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.6" y="6" width="18.8" height="12" rx="2.2"/><circle cx="12" cy="12" r="2.7"/><path d="M6.2 9.2v5.6M17.8 9.2v5.6"/></svg></div>
@@ -122,7 +122,7 @@
                         <div class="stats-info">
                             <h4>Active Members</h4>
                             <div class="value" id="dash-members-total">—</div>
-                            <span style="font-size:0.75rem; color:var(--text-secondary);">Across campuses</span>
+                            <span id="dash-members-scope" style="font-size:0.75rem; color:var(--text-secondary);">Across campuses</span>
                         </div>
                         <div class="stats-icon tone-gold"><svg class="svg-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V10l8-5.6 8 5.6v11"/><path d="M9.4 21v-5.2h5.2V21"/><path d="M12 2.4v3.2M10.4 4h3.2"/></svg></div>
                     </div>
@@ -130,7 +130,7 @@
 
                 <div class="grid-dashboard">
                     <!-- Chart Panel -->
-                    <div class="card-glass">
+                    <div class="card-glass chart-panel">
                         <h3 style="font-family: var(--font-header); font-size:1.05rem; margin-bottom:15px;">Giving Trend (Past 7 Days)</h3>
                         <div class="chart-container-wrapper">
                             <canvas id="giving-trend-chart" role="img" aria-label="Daily giving trend over the past 7 days"></canvas>
@@ -161,11 +161,8 @@
                             <h3 style="font-family: var(--font-header); font-size:1.05rem;">Membership Roll</h3>
                             <div style="display:flex; gap: 8px;">
                                 <input type="text" id="member-search-input" placeholder="Search by name, email, or phone..." class="form-control" style="max-width:240px;">
-                                <select id="member-branch-filter" class="select-custom">
+                                <select id="member-branch-filter" data-campus-select class="select-custom">
                                     <option value="all">All Campuses</option>
-                                    <option value="b1">Nairobi HQ</option>
-                                    <option value="b2">Dallas Branch</option>
-                                    <option value="b3">London Branch</option>
                                 </select>
                             </div>
                         </div>
@@ -211,10 +208,7 @@
                             </div>
                             <div>
                                 <label style="font-size:0.75rem; color:var(--text-secondary); display:block; margin-bottom:4px;">Campus Assignment</label>
-                                <select id="member-branch-select" class="select-custom" style="width: 100%;">
-                                    <option value="b1">Nairobi HQ</option>
-                                    <option value="b2">Dallas Branch</option>
-                                    <option value="b3">London Branch</option>
+                                <select id="member-branch-select" data-campus-select class="select-custom" style="width: 100%;">
                                 </select>
                             </div>
                             <div>
@@ -267,13 +261,8 @@
                         <form id="record-tx-form" style="display:flex; flex-direction:column; gap:12px;">
                             <div>
                                 <label style="font-size:0.75rem; color:var(--text-secondary); display:block; margin-bottom:4px;">Member Contributor</label>
-                                <select id="tx-member-select" class="select-custom" style="width:100%;">
+                                <select id="tx-member-select" data-member-select class="select-custom" style="width:100%;">
                                     <option value="anonymous">Anonymous Giver</option>
-                                    <option value="m1">John Kamau</option>
-                                    <option value="m2">Mary Kamau</option>
-                                    <option value="m3">David Onyango</option>
-                                    <option value="m5">Robert Smith</option>
-                                    <option value="m8">Michael Patel</option>
                                 </select>
                             </div>
                             <div>
@@ -286,16 +275,16 @@
                                 </select>
                             </div>
                             <div>
-                                <label style="font-size:0.75rem; color:var(--text-secondary); display:block; margin-bottom:4px;">Contribution Amount ($)</label>
-                                <input type="number" step="0.01" min="1" id="tx-amount-input" class="form-control" required placeholder="0.00">
+                                <label style="font-size:0.75rem; color:var(--text-secondary); display:block; margin-bottom:4px;">Contribution Amount (Ksh)</label>
+                                <input type="number" step="10" min="10" id="tx-amount-input" class="form-control" required placeholder="0">
                             </div>
                             <div>
                                 <label style="font-size:0.75rem; color:var(--text-secondary); display:block; margin-bottom:4px;">Payment Method</label>
                                 <select id="tx-method-select" class="select-custom" style="width:100%;">
-                                    <option value="Bank Transfer">Bank Direct Deposit</option>
-                                    <option value="Mobile Money">Mobile Money (M-Pesa/Airtel)</option>
-                                    <option value="Credit Card">Credit Card</option>
-                                    <option value="Cash">Cash Ledger</option>
+                                    <option value="M-Pesa">M-Pesa</option>
+                                    <option value="Bank Transfer">Bank Transfer</option>
+                                    <option value="Cash">Cash</option>
+                                    <option value="Card">Card</option>
                                 </select>
                             </div>
                             <div>
@@ -414,10 +403,7 @@
                             </div>
                             <div>
                                 <label style="font-size:0.75rem; color:var(--text-secondary); display:block; margin-bottom:4px;">Campus</label>
-                                <select id="group-branch" class="select-custom" style="width:100%;">
-                                    <option value="b1">Nairobi HQ</option>
-                                    <option value="b2">Dallas Branch</option>
-                                    <option value="b3">London Branch</option>
+                                <select id="group-branch" data-campus-select class="select-custom" style="width:100%;">
                                 </select>
                             </div>
                             <div>
@@ -436,7 +422,7 @@
                 <div class="card-glass" style="margin-bottom:25px;">
                     <div class="broadcast-layout">
                         <form id="broadcast-form" class="broadcast-compose">
-                            <h3 style="font-family: var(--font-header); font-size:1.05rem; margin-bottom:4px; display:flex; align-items:center; gap:8px;"><svg class="svg-ico" viewBox="0 0 24 24" aria-hidden="true" style="width:20px;height:20px;color:#a5b4fc;"><path d="M3 10v4a1 1 0 0 0 1 1h3l7 4V5L7 9H4a1 1 0 0 0-1 1z"/><path d="M17.5 8.5a4 4 0 0 1 0 7"/></svg> Broadcast Announcement</h3>
+                            <h3 style="font-family: var(--font-header); font-size:1.05rem; margin-bottom:4px; display:flex; align-items:center; gap:8px;"><svg class="svg-ico" viewBox="0 0 24 24" aria-hidden="true" style="width:20px;height:20px;color:#93c5fd;"><path d="M3 10v4a1 1 0 0 0 1 1h3l7 4V5L7 9H4a1 1 0 0 0-1 1z"/><path d="M17.5 8.5a4 4 0 0 1 0 7"/></svg> Broadcast Announcement</h3>
                             <span style="font-size:0.75rem; color:var(--text-secondary);">Reach your congregation across email, SMS, and push</span>
                             <div style="margin-top:14px;">
                                 <label style="font-size:0.75rem; color:var(--text-secondary); display:block; margin-bottom:4px;">Title</label>
@@ -449,11 +435,8 @@
                             <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:12px;">
                                 <div style="flex:1; min-width:160px;">
                                     <label style="font-size:0.75rem; color:var(--text-secondary); display:block; margin-bottom:4px;">Audience</label>
-                                    <select id="broadcast-audience" class="select-custom" style="width:100%;">
+                                    <select id="broadcast-audience" data-campus-select class="select-custom" style="width:100%;">
                                         <option value="all">All Campuses</option>
-                                        <option value="b1">Nairobi HQ</option>
-                                        <option value="b2">Dallas Branch</option>
-                                        <option value="b3">London Branch</option>
                                     </select>
                                 </div>
                                 <div>
@@ -537,7 +520,7 @@
                                 </div>
 
                                 <div class="mobile-devotional-hero">
-                                    <span style="font-size:0.6rem; font-weight:bold; color:#a5b4fc; display:block; text-transform:uppercase;">Daily Devotional</span>
+                                    <span style="font-size:0.6rem; font-weight:bold; color:#93c5fd; display:block; text-transform:uppercase;">Daily Devotional</span>
                                     <strong style="font-size:0.85rem; color:#fff; display:block; margin-top:4px;">Reflecting on True Trust</strong>
                                     <p style="font-size:0.75rem; color:#d1d5db; margin-top:4px; line-height:1.4;">"For where your treasure is, there will your heart be also." — Luke 12:34. Stewardship begins when we open our hands in faith.</p>
                                 </div>
@@ -661,20 +644,21 @@
                                         </select>
                                     </div>
                                     <div>
-                                        <label style="font-size:0.65rem; color:var(--text-secondary); display:block; margin-bottom:3px;">Amount ($)</label>
+                                        <label style="font-size:0.65rem; color:var(--text-secondary); display:block; margin-bottom:3px;">Amount (Ksh)</label>
                                         <div class="give-quick-chips" role="group" aria-label="Quick amounts">
-                                            <button type="button" class="give-chip" data-amount="25">$25</button>
-                                            <button type="button" class="give-chip" data-amount="50">$50</button>
-                                            <button type="button" class="give-chip" data-amount="100">$100</button>
-                                            <button type="button" class="give-chip" data-amount="250">$250</button>
+                                            <button type="button" class="give-chip" data-amount="200">200</button>
+                                            <button type="button" class="give-chip" data-amount="500">500</button>
+                                            <button type="button" class="give-chip" data-amount="1000">1,000</button>
+                                            <button type="button" class="give-chip" data-amount="5000">5,000</button>
                                         </div>
-                                        <input type="number" step="0.01" min="1" id="mobile-giving-amount" class="form-control" style="font-size:0.75rem; padding:6px 10px;" required placeholder="0.00">
+                                        <input type="number" step="10" min="10" id="mobile-giving-amount" class="form-control" style="font-size:0.75rem; padding:6px 10px;" required placeholder="0">
                                     </div>
                                     <div>
                                         <label style="font-size:0.65rem; color:var(--text-secondary); display:block; margin-bottom:3px;">Payment Gateway</label>
                                         <select id="mobile-giving-method" class="select-custom" style="width:100%; font-size:0.75rem; padding:6px;">
-                                            <option value="Mobile Money">Mobile Money (M-Pesa SIM)</option>
-                                            <option value="Credit Card">Credit Card Processing</option>
+                                            <option value="M-Pesa">M-Pesa</option>
+                                            <option value="Card">Card</option>
+                                            <option value="Bank Transfer">Bank Transfer</option>
                                         </select>
                                     </div>
                                     <div>
@@ -685,9 +669,13 @@
                                             <option value="monthly">Repeat monthly</option>
                                         </select>
                                     </div>
-                                    <label class="give-fees-row">
+                                    <div id="mpesa-hint" class="mpesa-hint">
+                                        <span class="mpesa-badge">M-PESA</span>
+                                        <span>You'll get an STK prompt on your phone to confirm. Paybill <strong id="mpesa-paybill">—</strong>, account <strong id="mpesa-account">—</strong>.</span>
+                                    </div>
+                                    <label class="give-fees-row" id="cover-fees-row">
                                         <input type="checkbox" id="mobile-giving-cover-fees">
-                                        <span>Add <span id="give-fees-amount">$0.00</span> to cover processing fees</span>
+                                        <span>Add <span id="give-fees-amount">Ksh 0</span> to cover the card charge</span>
                                     </label>
                                     <button type="submit" class="mobile-rsvp-btn" style="padding:10px; font-size:0.75rem; margin-top:5px; border-radius:6px; font-weight:bold;">Process Stewardship Gift</button>
                                 </form>
@@ -722,9 +710,7 @@
                                     <span style="font-size:0.65rem; color:var(--text-secondary);">Available 24/7 for queries</span>
                                 </div>
                                 <div class="mobile-chat-container">
-                                    <div class="chat-messages-area" id="mobile-chat-body">
-                                        <!-- Bubbles -->
-                                    </div>
+                                    <div class="chat-messages-area" id="mobile-chat-body"></div>
                                     <div class="chat-input-row">
                                         <input type="text" id="mobile-chat-input" class="form-control" style="font-size:0.75rem; padding:8px;" placeholder="Ask about services, giving, small groups...">
                                         <button class="mobile-rsvp-btn" id="mobile-chat-send-btn">Send</button>
@@ -780,6 +766,8 @@
     <div id="receipt-modal" class="modal-overlay"></div>
 
     <!-- JS Core Engine Scripts -->
+    <!-- Brand config first: defines window.MMC_BRAND and window.money(). -->
+    <script src="js/brand.js"></script>
     <script src="js/config.js"></script>
     <script src="js/api.js"></script>
     <script src="ai-engine.js"></script>

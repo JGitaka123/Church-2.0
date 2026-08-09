@@ -1,6 +1,6 @@
 {
-  "short_name": "Church 2.0",
-  "name": "Church 2.0 Ministry Intelligence Platform",
+  "short_name": "MMC",
+  "name": "Maximum Miracle Centre — Ministry Console",
   "icons": [
     {
       "src": "icon.svg",
@@ -13,17 +13,12 @@
       "type": "image/svg+xml",
       "sizes": "any",
       "purpose": "maskable"
-    },
-    {
-      "src": "church_logo.png",
-      "type": "image/jpeg",
-      "sizes": "1024x1024",
-      "purpose": "any"
     }
   ],
   "start_url": "./index.html",
-  "background_color": "#09090e",
-  "theme_color": "#09090e",
+  "background_color": "#0b1220",
+  "theme_color": "#0b1220",
   "display": "standalone",
-  "orientation": "portrait"
+  "orientation": "portrait",
+  "description": "Membership, giving, attendance and discipleship for Maximum Miracle Centre."
 }

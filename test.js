@@ -24,11 +24,11 @@ console.log("=== STARTING CHURCH 2.0 UNIT TEST RUNNER ===\n");
 console.log("Test Group 1: Chatbot Response Engine");
 try {
     const serviceResponse = AIEngine.getBotResponse("When are the Sunday service schedules held?");
-    assert(serviceResponse.includes("First Service") && serviceResponse.includes("10:30 AM"), 
+    assert(serviceResponse.includes("1st Service") && serviceResponse.includes("10:00 AM"), 
         "Chatbot maps service time keywords correctly.");
 
     const givingResponse = AIEngine.getBotResponse("How can I tithe or make an offering?");
-    assert(givingResponse.includes("securely tithe") && givingResponse.includes("Giving"), 
+    assert(givingResponse.includes("M-Pesa") && givingResponse.includes("Giving"), 
         "Chatbot maps giving keywords correctly.");
 
     const graceResponse = AIEngine.getBotResponse("What does the church believe about salvation and grace?");
@@ -36,7 +36,7 @@ try {
         "Chatbot maps theological keywords (grace) correctly.");
 
     const fallbackResponse = AIEngine.getBotResponse("Random unrelated message here");
-    assert(fallbackResponse.includes("unrelated") || fallbackResponse.includes("Office") || fallbackResponse.includes("Pastoral"), 
+    assert(fallbackResponse.includes("church office") || fallbackResponse.includes("prayer request"), 
         "Chatbot responds with standard office details on fallbacks.");
 } catch (e) {
     failedTestsCount++;

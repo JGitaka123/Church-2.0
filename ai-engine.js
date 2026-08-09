@@ -1,4 +1,4 @@
-// Church 2.0 AI Engine - Client-Side Ministry Intelligence Simulation
+// Maximum Miracle Centre — Client-Side Ministry Intelligence Simulation
 // Designed to mimic advanced Natural Language Processing and Analytics
 
 const AIEngine = {
@@ -137,11 +137,11 @@ const AIEngine = {
     chatbotResponses: [
         {
             keywords: ['service', 'time', 'worship', 'schedule', 'when'],
-            response: "Sunday services are held at: \n- **First Service**: 8:00 AM - 9:30 AM\n- **Second Service (HQ)**: 10:30 AM - 12:00 PM\n- **Youth & Young Adults**: 2:00 PM - 4:00 PM\n- **Midweek Prayer**: Wednesdays at 6:30 PM (online & in-person)."
+            response: "Our weekly services are: \n- **1st Service**: 7:00 AM - 9:30 AM\n- **2nd Service**: 10:00 AM - 12:30 PM\n- **Youth & Young Adults**: Sundays 2:00 PM\n- **Midweek Service**: Wednesdays at 5:30 PM (in person and on NURU TV)."
         },
         {
             keywords: ['give', 'giving', 'tithe', 'offering', 'pledge', 'money', 'donate', 'payment'],
-            response: "You can securely tithe, give offerings, or contribute to specific projects in the **Giving** tab here in the app! Simply select your branch, enter the amount, select the fund, and confirm. A digital receipt will be automatically generated and saved to your profile history."
+            response: "You can tithe, give an offering, or support a project from the **Giving** tab in the app. M-Pesa is the fastest way — choose your campus and fund, enter the amount in shillings, and confirm the STK prompt on your phone. A digital receipt is saved to your giving history straight away."
         },
         {
             keywords: ['volunteer', 'serve', 'ushers', 'choir', 'worship', 'tech', 'sign up'],
@@ -149,7 +149,7 @@ const AIEngine = {
         },
         {
             keywords: ['location', 'branch', 'branches', 'where', 'address'],
-            response: "We are 'One Church, Multiple Locations'. Currently active branches:\n1. **Nairobi HQ**: Main Campus, Community Center road.\n2. **Dallas Branch**: Plano Rd, Dallas, TX.\n3. **London Branch**: Hyde Park Corner, London.\nSelect your branch in your profile to stay updated with local events."
+            response: "Maximum Miracle Centre is one church meeting in several places:\n1. **Nairobi CBD**: Embassy Cinema, Latema Road, off Tom Mboya Street.\n2. **Kawangware**: Kawangware, Nairobi.\n3. **Nakuru**: Langa Langa, Kanu Street.\nSelect your campus in your profile to stay updated with local events."
         },
         {
             keywords: ['prayer', 'pray', 'request', 'pastor', 'help'],
@@ -157,7 +157,7 @@ const AIEngine = {
         },
         {
             keywords: ['group', 'small group', 'cell', 'fellowship', 'community'],
-            response: "Small groups meet weekly on Tuesdays and Thursdays across different neighborhoods and online. Tap **Connect** on the home feed to find a group that fits your location or demographic (e.g., Men's fellowship, Couples, Campus group)."
+            response: "Home fellowships meet through the week across Nairobi and Nakuru. Tap **Connect** on the home feed to find a group near you — Young Adults, Family Life & Marriage, Men's Morning Prayer or Women of Grace."
         },
         {
             keywords: ['hello', 'hi', 'hey', 'greetings'],
@@ -210,7 +210,7 @@ const AIEngine = {
                 return item.response;
             }
         }
-        return "Thank you for reaching out. I'm not fully sure about that detail, but you can check our digital bulletin or contact the Church Office directly at info@church2.org. Would you like to submit a prayer request instead?";
+        return "Thank you for reaching out. I'm not fully sure about that detail, but you can check the digital bulletin or contact the church office at info@maximummiracle.org. Would you like to submit a prayer request instead?";
     },
 
     // 2. Weekly Ministry Health Snapshot Compiler
@@ -291,7 +291,12 @@ const AIEngine = {
             ? Math.round((thisWeekGiverIds.size / members.length) * 100) : 0;
         const topFund = Object.keys(fundTotals).sort((a, b) => fundTotals[b] - fundTotals[a])[0] || null;
 
-        const money = (n) => `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        // Use the app-wide currency formatter so the briefing reads in the same
+        // currency as every other figure on screen; fall back only if brand.js
+        // hasn't loaded (e.g. this module under a bare Node test runner).
+        const money = (n) => (typeof window !== 'undefined' && window.money)
+            ? window.money(n)
+            : `Ksh ${Math.round(n).toLocaleString('en-KE')}`;
 
         // ---- Natural-language summaries (real numbers only) ----
         const givingLine = giving.hasBaseline
@@ -351,7 +356,7 @@ const AIEngine = {
                 day3: `**Day 3: Living with Open Hands**\n*Read*: Proverbs 11:25\n*Reflection*: A generous soul will prosper. Generosity isn't a transaction; it's a transformation of our character. How can you show unexpected generosity to a neighbor or coworker today?`
             },
             socialQuotes: [
-                `"${mainPoint}" — Preached at Church 2.0`,
+                `"${mainPoint}" — Preached at Maximum Miracle Centre`,
                 `"Generosity isn't about the size of our bank accounts, it's about the state of our hearts."`,
                 `"${subPoint} Open hands let God fill us with grace."`
             ],

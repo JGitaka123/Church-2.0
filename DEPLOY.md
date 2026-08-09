@@ -1,4 +1,4 @@
-# Church 2.0 — Production Deployment Runbook
+# Maximum Miracle Centre — Production Deployment Runbook
 
 This deploys the platform across your two resources:
 
@@ -96,7 +96,7 @@ Certbot auto-renews certificates every 12h; nginx picks up renewed certs on relo
 
 ## Verify the whole path
 
-Open the Vercel URL and sign in (`admin@church2.org` / seeded password, MFA code `123456`).
+Open the Vercel URL and sign in (`admin@maximummiracle.org` / seeded password, MFA code `123456`).
 You should see real data served from Postgres on Contabo. A wrong password is rejected by the server; a branch admin only ever sees their own campus.
 
 ---
@@ -116,4 +116,24 @@ You should see real data served from Postgres on Contabo. A wrong password is re
 
 **Done & verified:** real auth (bcrypt + JWT + MFA step), RBAC + server-side campus scoping, and REST endpoints for members, transactions/giving, attendance, dashboard summary, groups, follow-ups, announcements, prayer requests, and events. When an `apiBase` is configured the whole UI is **backend-backed**: on login the app hydrates `this.db` from Postgres (so every view renders shared, real data), and every mutation — recording a gift, marking attendance, enrolling a member, moving a follow-up, creating/joining a group, sending a broadcast, submitting/dismissing a prayer request — is mirrored to the API and persisted. Writes are optimistic (the UI updates instantly) and reconcile the server-assigned id; a failed sync surfaces a toast rather than silently dropping. With no `apiBase` set the same code runs standalone against localStorage (demo mode). All paths were verified end-to-end against a live Postgres, including that a branch admin cannot read or write outside their own campus even by tampering with `?branch=`.
 
-**Remaining increment:** add live payment processing (Stripe/Tithe.ly) so giving is charged, not just recorded. A few client-only conveniences without server endpoints yet — recurring-gift schedules, scripture reading streaks, and event volunteer sign-ups — remain local until matching endpoints are added; everything else is backend-backed.
+**Remaining increment:** add live payment processing so giving is charged, not just recorded. For this client that means an **M-Pesa Daraja** integration (STK push + C2B confirmation callback) against the church's own paybill, with a card fallback. A few client-only conveniences without server endpoints yet — recurring-gift schedules, scripture reading streaks, and event volunteer sign-ups — remain local until matching endpoints are added; everything else is backend-backed.
+
+---
+
+## Client configuration (Maximum Miracle Centre)
+
+Everything client-specific lives in **two places**, by design:
+
+| What | Where |
+|---|---|
+| Church name, tagline, website, currency, campuses, ministries, service times, M-Pesa paybill, card fee rates | `js/brand.js` |
+| Brand palette (`--mmc-royal`, `--mmc-royal-light`, `--mmc-gold`, `--mmc-gold-deep`) | top of `styles.css` `:root` |
+
+To rebrand for another church, change those two files — no other file hardcodes the client's identity, colours or currency. The palette hex values are mirrored in `js/brand.js` under `palette` so charts (canvas-drawn, can't read CSS) stay in sync.
+
+### Before go-live, confirm with the church
+
+- [ ] **M-Pesa paybill / account number.** `js/brand.js` ships `paybill: '891300'` with `shortCodeConfirmed: false` — a placeholder. Replace it with the church's real short code and flip the flag.
+- [ ] **Exact brand hex codes** and a vector logo, if the church's designer has them. The current royal-and-gold palette was set from public brand material.
+- [ ] **Campus addresses and service times** in `js/brand.js` (`campuses`, `services`).
+- [ ] **Real staff accounts** — the seeded `@maximummiracle.org` demo logins are for the demo only.
