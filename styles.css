@@ -1722,6 +1722,17 @@ body.theme-light .attendance-toggle { background: rgba(15, 23, 42, 0.18); }
     padding: 8px 10px;
 }
 .mpesa-hint strong { color: var(--text-primary); }
+
+/* Paybill not yet confirmed by the church: warn rather than reassure. The
+   green "you're all set" treatment would be actively misleading here. */
+.mpesa-hint.is-unconfirmed {
+    background: rgba(240, 180, 41, 0.10);
+    border-color: rgba(240, 180, 41, 0.40);
+}
+.mpesa-hint.is-unconfirmed .mpesa-badge {
+    background: var(--mmc-gold);
+    color: #2a1c00;
+}
 .mpesa-badge {
     flex-shrink: 0;
     font-size: 0.55rem;

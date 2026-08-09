@@ -131,9 +131,26 @@ Everything client-specific lives in **two places**, by design:
 
 To rebrand for another church, change those two files — no other file hardcodes the client's identity, colours or currency. The palette hex values are mirrored in `js/brand.js` under `palette` so charts (canvas-drawn, can't read CSS) stay in sync.
 
+### Live demo
+
+The frontend deploys to Vercel automatically from `main` via
+`.github/workflows/vercel.yml`, which needs one repository secret,
+`VERCEL_TOKEN`. Project: **mmc-ministry-console**.
+
+    https://mmc-ministry-console.vercel.app
+
+Sign in with `admin@maximummiracle.org` / the seeded password, MFA code
+`123456`. With no `apiBase` configured the deploy runs in standalone demo mode
+against localStorage — no backend required.
+
+> **New Vercel projects ship with Deployment Protection on**, which puts a
+> Vercel login in front of the URL. Before sending the link to the church, turn
+> it off under Project → Settings → Deployment Protection, or the recipient
+> will hit an auth wall instead of the app.
+
 ### Before go-live, confirm with the church
 
-- [ ] **M-Pesa paybill / account number.** `js/brand.js` ships `paybill: '891300'` with `shortCodeConfirmed: false` — a placeholder. Replace it with the church's real short code and flip the flag.
+- [ ] **M-Pesa paybill / account number.** `js/brand.js` ships `paybill: '891300'` with `shortCodeConfirmed: false` — a placeholder. Replace it with the church's real short code and flip the flag. **Until that flag is `true` the giving screen deliberately shows no number at all**, just a "not live yet, give in person or by bank transfer" notice — a plausible-but-wrong paybill is how a member's tithe reaches a stranger's account.
 - [ ] **Exact brand hex codes** and a vector logo, if the church's designer has them. The current royal-and-gold palette was set from public brand material.
 - [ ] **Campus addresses and service times** in `js/brand.js` (`campuses`, `services`).
 - [ ] **Real staff accounts** — the seeded `@maximummiracle.org` demo logins are for the demo only.

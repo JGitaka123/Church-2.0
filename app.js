@@ -2571,14 +2571,25 @@ const ChurchApp = {
         const feesRow = document.getElementById('cover-fees-row');
         const mpesaHint = document.getElementById('mpesa-hint');
 
-        // Surface the paybill details from the brand config rather than
-        // hardcoding them in markup.
+        // Surface the paybill from the brand config rather than hardcoding it.
+        // Until the church confirms its live short code, show NO number at all:
+        // a plausible-looking but wrong paybill is how a member's tithe ends up
+        // in a stranger's account. `shortCodeConfirmed` gates this.
         const brand = window.MMC_BRAND;
-        if (brand) {
-            const pb = document.getElementById('mpesa-paybill');
-            const acc = document.getElementById('mpesa-account');
-            if (pb) pb.textContent = brand.giving.mpesa.paybill;
-            if (acc) acc.textContent = brand.giving.mpesa.accountName;
+        const hintText = document.getElementById('mpesa-hint-text');
+        if (brand && hintText) {
+            const mpesa = brand.giving.mpesa;
+            if (mpesa.shortCodeConfirmed) {
+                hintText.innerHTML = `You'll get an STK prompt on your phone to confirm. `
+                    + `Paybill <strong>${esc(mpesa.paybill)}</strong>, `
+                    + `account <strong>${esc(mpesa.accountName)}</strong>.`;
+                mpesaHint.classList.remove('is-unconfirmed');
+            } else {
+                hintText.textContent =
+                    'M-Pesa giving is not live yet — the church\u2019s paybill is still being '
+                    + 'confirmed. Please give in person or by bank transfer for now.';
+                mpesaHint.classList.add('is-unconfirmed');
+            }
         }
 
         const updateFee = () => {
