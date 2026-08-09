@@ -18,7 +18,7 @@ Authorization: Bearer <access_token>
 * **Request Payload**:
 ```json
 {
-  "email": "admin@church2.org",
+  "email": "admin@maximummiracle.org",
   "password": "securepassword123"
 }
 ```
@@ -45,15 +45,15 @@ Authorization: Bearer <access_token>
 [
   {
     "id": "b1111111-1111-1111-1111-111111111111",
-    "name": "Nairobi HQ",
+    "name": "Nairobi CBD",
     "location": "HQ Center, Nairobi",
     "member_count": 1240,
     "created_at": "2024-01-15T08:00:00Z"
   },
   {
     "id": "b2222222-2222-2222-2222-222222222222",
-    "name": "Dallas Branch",
-    "location": "Plano Rd, Dallas TX",
+    "name": "Kawangware",
+    "location": "Kawangware, Nairobi",
     "member_count": 450,
     "created_at": "2024-06-10T10:30:00Z"
   }
@@ -65,7 +65,7 @@ Authorization: Bearer <access_token>
 * **Request Payload**:
 ```json
 {
-  "name": "London Branch",
+  "name": "Nakuru",
   "location": "Hyde Park Corner, London"
 }
 ```
@@ -135,7 +135,7 @@ Authorization: Bearer <access_token>
 {
   "transaction_id": "t8888888-8888-8888-8888-888888888888",
   "receipt_number": "REC-2026-10294",
-  "receipt_url": "https://api.church2.org/receipts/REC-2026-10294.pdf",
+  "receipt_url": "https://api.maximummiracle.org/receipts/REC-2026-10294.pdf",
   "status": "Success"
 }
 ```

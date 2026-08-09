@@ -24,11 +24,11 @@ console.log("=== STARTING CHURCH 2.0 UNIT TEST RUNNER ===\n");
 console.log("Test Group 1: Chatbot Response Engine");
 try {
     const serviceResponse = AIEngine.getBotResponse("When are the Sunday service schedules held?");
-    assert(serviceResponse.includes("First Service") && serviceResponse.includes("10:30 AM"), 
+    assert(serviceResponse.includes("1st Service") && serviceResponse.includes("10:00 AM"), 
         "Chatbot maps service time keywords correctly.");
 
     const givingResponse = AIEngine.getBotResponse("How can I tithe or make an offering?");
-    assert(givingResponse.includes("securely tithe") && givingResponse.includes("Giving"), 
+    assert(givingResponse.includes("M-Pesa") && givingResponse.includes("Giving"), 
         "Chatbot maps giving keywords correctly.");
 
     const graceResponse = AIEngine.getBotResponse("What does the church believe about salvation and grace?");
@@ -36,7 +36,7 @@ try {
         "Chatbot maps theological keywords (grace) correctly.");
 
     const fallbackResponse = AIEngine.getBotResponse("Random unrelated message here");
-    assert(fallbackResponse.includes("unrelated") || fallbackResponse.includes("Office") || fallbackResponse.includes("Pastoral"), 
+    assert(fallbackResponse.includes("church office") || fallbackResponse.includes("prayer request"), 
         "Chatbot responds with standard office details on fallbacks.");
 } catch (e) {
     failedTestsCount++;
@@ -61,17 +61,31 @@ try {
     const tenDaysAgo = new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     
     const mockTransactions = [
-        { id: 't1', amount: 1000, category: 'Tithe', date: twoDaysAgo },
-        { id: 't2', amount: 500, category: 'Offering', date: twoDaysAgo },
-        { id: 't3', amount: 800, category: 'Tithe', date: tenDaysAgo }
+        { id: 't1', amount: 1000, category: 'Tithe', date: twoDaysAgo, memberId: 'm1' },
+        { id: 't2', amount: 500, category: 'Offering', date: twoDaysAgo, memberId: 'm1' },
+        { id: 't3', amount: 800, category: 'Tithe', date: tenDaysAgo, memberId: 'm2' }
     ];
     const mockEvents = [];
 
-    const report = AIEngine.generateWeeklySnapshot(mockBranches, mockMembers, mockTransactions, mockEvents);
+    // Attendance is now the source of truth for at-risk: Jane (m2) missed the last
+    // 3 services; John (m1) attended. Build 3 recent service dates.
+    const svc = (d) => new Date(now.getTime() - d * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const mockAttendance = [
+        { memberId: 'm1', branchId: 'b1', date: svc(21), present: true },
+        { memberId: 'm1', branchId: 'b1', date: svc(14), present: true },
+        { memberId: 'm1', branchId: 'b1', date: svc(7), present: true },
+        { memberId: 'm2', branchId: 'b1', date: svc(21), present: false },
+        { memberId: 'm2', branchId: 'b1', date: svc(14), present: false },
+        { memberId: 'm2', branchId: 'b1', date: svc(7), present: false }
+    ];
+
+    const report = AIEngine.generateWeeklySnapshot(mockBranches, mockMembers, mockTransactions, mockEvents, mockAttendance);
 
     assert(report.thisWeekGiving === 1500, "Weekly snapshot aggregates this week's giving amounts correctly.");
-    assert(report.atRisk.some(m => m.includes("Jane Adair")), "At-risk tracker correctly flags members with engagement scores below 45%.");
+    assert(report.atRisk.some(m => m.includes("Jane Adair")), "At-risk tracker flags members with a 3+ service absence streak.");
+    assert(!report.atRisk.some(m => m.includes("John Kamau")), "At-risk tracker does NOT flag consistently-present members.");
     assert(report.bulletSummary.includes("Giving is at"), "Snapshot compiles a structured bulleted summary text block.");
+    assert(report.avgAttendance === 1, "Average attendance is derived from real records, not randomized.");
 } catch (e) {
     failedTestsCount++;
     console.error("  ❌ FAIL: Snapshot calculations crashed with error:", e);
@@ -114,8 +128,13 @@ try {
 
     // Family test
     const familyResult = AIEngine.categorizePrayerRequest("Pray for counseling for our marriage. My husband and I are struggling to connect.");
-    assert(familyResult.category === "Family" && familyResult.route.includes("Family Life"), 
+    assert(familyResult.category === "Family" && familyResult.route.includes("Family Life"),
         "Routes marriage and husband requests to Family Life Care.");
+
+    // Word-boundary regression: "parent" must NOT match the financial keyword "rent".
+    const parentResult = AIEngine.categorizePrayerRequest("Please pray for my parents as they travel.");
+    assert(!parentResult.tags.includes("rent"),
+        "Word-boundary matching: 'parent' does not trigger the 'rent' financial keyword.");
 } catch (e) {
     failedTestsCount++;
     console.error("  ❌ FAIL: Prayer routing crashed with error:", e);
