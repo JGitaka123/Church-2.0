@@ -25,6 +25,10 @@ on:
 permissions:
   contents: read
 
+env:
+  # Vercel project name. Must be lowercase; letters, digits, '.', '_', '-'.
+  PROJECT: mmc-ministry-console
+
 concurrency:
   group: vercel-${{ github.ref }}
   cancel-in-progress: true
@@ -73,7 +77,14 @@ jobs:
           else
             TARGET=""
           fi
-          URL=$(npx --yes vercel@latest deploy $TARGET --yes --token "$VERCEL_TOKEN")
+          # Link explicitly. Left to itself the CLI derives the project name
+          # from the checkout directory ("Church-2.0"), which Vercel rejects —
+          # project names must be lowercase.
+          npx --yes vercel@latest link --yes \
+            --project "$PROJECT" --token "$VERCEL_TOKEN"
+          # The CLI writes progress to stderr and the deployment URL to stdout,
+          # so the last stdout line is the URL.
+          URL=$(npx --yes vercel@latest deploy $TARGET --yes --token "$VERCEL_TOKEN" | tail -n 1)
           echo "url=$URL" >> "$GITHUB_OUTPUT"
           echo "Deployed to $URL"
 
