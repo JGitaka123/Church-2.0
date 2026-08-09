@@ -92,8 +92,11 @@ const ChurchApp = {
         groups: [
             { id: 'g1', name: 'Young Adults Fellowship', branchId: 'b1', schedule: 'Tue 6:30 PM', description: '20s–30s community — Bible study, mentorship and fellowship.', memberIds: ['m1', 'm3'] },
             { id: 'g2', name: 'Family Life & Marriage', branchId: 'b1', schedule: 'Wed 5:30 PM', description: 'For couples growing together in faith.', memberIds: ['m2'] },
-            { id: 'g3', name: "Men's Morning Prayer", branchId: 'b2', schedule: 'Sat 6:00 AM', description: 'Prayer, accountability and breakfast.', memberIds: ['m5'] },
-            { id: 'g4', name: 'Women of Grace', branchId: 'b3', schedule: 'Thu 10:00 AM', description: 'Bible study and fellowship.', memberIds: ['m8'] }
+            { id: 'g3', name: 'Intercessors Fellowship', branchId: 'b1', schedule: 'Fri 6:00 AM', description: 'Corporate prayer for the church, the city and the nation.', memberIds: [] },
+            { id: 'g4', name: "Men's Morning Prayer", branchId: 'b2', schedule: 'Sat 6:00 AM', description: 'Prayer, accountability and breakfast.', memberIds: ['m5'] },
+            { id: 'g5', name: 'Kawangware Home Fellowship', branchId: 'b2', schedule: 'Tue 6:00 PM', description: 'Midweek fellowship in homes around the campus.', memberIds: [] },
+            { id: 'g6', name: 'Women of Grace', branchId: 'b3', schedule: 'Thu 10:00 AM', description: 'Bible study and fellowship.', memberIds: ['m8'] },
+            { id: 'g7', name: 'Nakuru Youth Fellowship', branchId: 'b3', schedule: 'Sat 4:00 PM', description: 'Teens and young adults — worship, mentorship and sport.', memberIds: [] }
         ],
         announcements: [
             { id: 'an1', title: 'Baptism Sunday — register now', body: 'Maximum Miracle Centre is holding a baptism service on the last Sunday of the month at the Nairobi CBD campus. Speak to a pastor or reply to register.', audience: 'all', channels: ['sms', 'push'], recipients: 10, sentAt: '2026-07-06T09:00:00Z' }
@@ -216,7 +219,7 @@ const ChurchApp = {
     // (campuses, people, currency). A saved DB stamped with an older version is
     // discarded and re-seeded so returning demo visitors don't keep stale data.
     // In API mode this is moot — the server's data replaces it on hydrate.
-    SEED_VERSION: 3,
+    SEED_VERSION: 4,
 
     // Persistence: Load state
     loadDB() {
@@ -606,6 +609,20 @@ const ChurchApp = {
                     engagement_score: engagement
                 });
             }
+        });
+
+        // Enrol roughly half of each campus into that campus's groups. Groups
+        // seeded with two or three named members look empty next to an 83-person
+        // campus roll, which misreads as "nobody uses this feature".
+        this.db.branches.forEach((branch) => {
+            const groups = this.db.groups.filter(g => g.branchId === branch.id);
+            if (!groups.length) return;
+            const pool = this.db.members.filter(m => m.branchId === branch.id);
+            pool.forEach((m, i) => {
+                if (Math.random() > 0.5) return;
+                const g = groups[i % groups.length];
+                if (!g.memberIds.includes(m.id)) g.memberIds.push(m.id);
+            });
         });
     },
 

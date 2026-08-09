@@ -224,7 +224,10 @@ body {
 
 .grid-dashboard {
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    /* minmax(0, …) on the main column lets a wide table shrink or scroll
+       instead of pushing the side panel below its usable width; the side
+       column keeps a floor so its form controls never collapse. */
+    grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
     gap: 25px;
     margin-top: 25px;
 }
@@ -1288,6 +1291,32 @@ body.theme-midnight .mobile-tab-btn:focus-visible {
 
 /* ---- Shared helpers ---- */
 .muted-italic { color: var(--text-secondary); font-style: italic; }
+/* Directory row identity: avatar chip beside the name, not stacked above it.
+   These three had no rules at all, so the initials rendered as bare text and
+   every name cell wrapped onto three lines. */
+.member-profile-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.member-avatar {
+    flex: 0 0 auto;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: var(--primary-gradient);
+    color: #fff;
+    font-family: var(--font-header);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    user-select: none;
+}
+
+.member-name { display: block; font-weight: 600; white-space: nowrap; }
 .member-id { font-size: 0.75rem; color: var(--text-secondary); display: block; }
 .member-email { font-size: 0.85rem; color: var(--text-primary); }
 .member-phone { font-size: 0.75rem; color: var(--text-secondary); }

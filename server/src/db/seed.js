@@ -45,9 +45,28 @@ const EVENTS = [
 const GROUPS = [
   { id: 'g1', branch_id: 'b1', name: 'Young Adults Fellowship', schedule: 'Tue 6:30 PM', description: '20s–30s community — Bible study, mentorship and fellowship.', member_ids: ['m1', 'm3'] },
   { id: 'g2', branch_id: 'b1', name: 'Family Life & Marriage', schedule: 'Wed 5:30 PM', description: 'For couples growing together in faith.', member_ids: ['m2'] },
-  { id: 'g3', branch_id: 'b2', name: "Men's Morning Prayer", schedule: 'Sat 6:00 AM', description: 'Prayer, accountability and breakfast.', member_ids: ['m5'] },
-  { id: 'g4', branch_id: 'b3', name: 'Women of Grace', schedule: 'Thu 10:00 AM', description: 'Bible study and fellowship.', member_ids: ['m8'] },
+  { id: 'g3', branch_id: 'b1', name: 'Intercessors Fellowship', schedule: 'Fri 6:00 AM', description: 'Corporate prayer for the church, the city and the nation.', member_ids: [] },
+  { id: 'g4', branch_id: 'b2', name: "Men's Morning Prayer", schedule: 'Sat 6:00 AM', description: 'Prayer, accountability and breakfast.', member_ids: ['m5'] },
+  { id: 'g5', branch_id: 'b2', name: 'Kawangware Home Fellowship', schedule: 'Tue 6:00 PM', description: 'Midweek fellowship in homes around the campus.', member_ids: [] },
+  { id: 'g6', branch_id: 'b3', name: 'Women of Grace', schedule: 'Thu 10:00 AM', description: 'Bible study and fellowship.', member_ids: ['m8'] },
+  { id: 'g7', branch_id: 'b3', name: 'Nakuru Youth Fellowship', schedule: 'Sat 4:00 PM', description: 'Teens and young adults — worship, mentorship and sport.', member_ids: [] },
 ];
+
+// Enrol roughly half of each campus into that campus's groups — groups holding
+// two or three named members read as unused next to an 83-person campus roll.
+function enrolGroups(groups, roster) {
+  for (const g of groups) {
+    const pool = roster.filter((m) => m.branch_id === g.branch_id);
+    const peers = groups.filter((x) => x.branch_id === g.branch_id);
+    const slot = peers.indexOf(g);
+    pool.forEach((m, i) => {
+      if (Math.random() > 0.5) return;
+      if (i % peers.length !== slot) return;
+      if (!g.member_ids.includes(m.id)) g.member_ids.push(m.id);
+    });
+  }
+  return groups;
+}
 
 const FOLLOWUPS = [
   { id: 'fu1', branch_id: 'b1', name: 'Peter Njoroge', stage: 'New Guest', owner: 'Pastor Joseph', note: 'First-time guest at 2nd Service, filled a connect card.' },
@@ -141,6 +160,7 @@ async function seed() {
   const hash = await bcrypt.hash(password, config.bcryptRounds);
 
   const roster = generateCongregation(MEMBERS);
+  const groups = enrolGroups(GROUPS, roster);
 
   await withTransaction(async (c) => {
     await c.query(`TRUNCATE branches, users, members, transactions, attendance, events, groups, followups, announcements, prayer_requests, campaigns, recurring_gifts RESTART IDENTITY CASCADE`);
@@ -197,7 +217,7 @@ async function seed() {
     for (const e of EVENTS) {
       await c.query('INSERT INTO events (id,branch_id,title,description,date,time,roles_required,volunteers_signed_up) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)', [e.id, e.branch_id, e.title, e.description, e.date, e.time, e.roles_required, e.volunteers_signed_up]);
     }
-    for (const g of GROUPS) {
+    for (const g of groups) {
       await c.query('INSERT INTO groups (id,branch_id,name,schedule,description,member_ids) VALUES ($1,$2,$3,$4,$5,$6)', [g.id, g.branch_id, g.name, g.schedule, g.description, g.member_ids]);
     }
     for (const f of FOLLOWUPS) {
