@@ -717,10 +717,12 @@ const ChurchApp = {
                 if (typeof localStorage !== 'undefined') {
                     localStorage.setItem('church2_theme', theme);
                 }
-                // Chart.js paints to a canvas, so it can't inherit the new CSS
-                // tokens — repaint or the axis labels keep the old theme's
-                // contrast (grey-on-white in Daylight).
-                this.renderAll();
+                // Chart.js paints to a canvas and can't inherit the new CSS
+                // tokens, so the charts need recolouring. Do it in place rather
+                // than via renderAll(): a full re-render destroys and rebuilds
+                // every chart, and the rebuild animates up from zero, so the
+                // canvas is visibly blank for a beat on every theme switch.
+                this.applyChartTheme();
             });
         }
 
@@ -819,6 +821,37 @@ const ChurchApp = {
         };
     },
 
+    // Recolour the live charts for the current theme without rebuilding them.
+    // `update('none')` skips the entry animation, so there is no blank frame.
+    applyChartTheme() {
+        const ct = this.chartTheme();
+
+        const giving = this.charts.giving;
+        if (giving) {
+            const sc = giving.options.scales;
+            sc.y.ticks.color = ct.tick;
+            sc.y.grid.color = ct.grid;
+            sc.x.ticks.color = ct.tick;
+            giving.update('none');
+        }
+
+        const categories = this.charts.categories;
+        if (categories) {
+            categories.data.datasets[0].borderColor = ct.surface;
+            categories.options.plugins.legend.labels.color = ct.legend;
+            categories.update('none');
+        }
+
+        const attendance = this.charts.attendance;
+        if (attendance) {
+            const sc = attendance.options.scales;
+            sc.y.ticks.color = ct.tick;
+            sc.y.grid.color = ct.grid;
+            sc.x.ticks.color = ct.tick;
+            attendance.update('none');
+        }
+    },
+
     // Fill every campus <select> from db.branches so the campus list lives in
     // exactly one place. Selects keep any leading "all"/"global" option and
     // their current value where it is still valid.
@@ -894,6 +927,13 @@ const ChurchApp = {
         const branchSelect = document.getElementById('global-branch-select');
         if (role === 'hq_admin') {
             branchSelect.removeAttribute('disabled');
+            // Keep the control showing the scope actually in force. The options
+            // are rebuilt from the database on every render, which resets the
+            // element to its first option ("All Branches") — so without this the
+            // selector claimed a global view while the data was one campus.
+            if (branchSelect.value !== this.session.currentBranch) {
+                branchSelect.value = this.session.currentBranch;
+            }
         } else {
             const homeBranch = (this.session.currentUser && this.session.currentUser.branchId) || 'b1';
             this.session.currentBranch = homeBranch;
@@ -2980,8 +3020,14 @@ const ChurchApp = {
     }
 };
 
-// Start application
-window.onload = () => {
+// Start application.
+//
+// DOMContentLoaded, not window.onload: `load` waits for every subresource, so a
+// slow webfont request held the whole app hostage — the console booted ~13s
+// late even after the stylesheet was moved off the render path. Chart.js is
+// loaded with `defer`, which guarantees it has executed by DOMContentLoaded, so
+// nothing this needs is still outstanding at this point.
+const bootChurchApp = () => {
     // Expose BEFORE init so inline handlers and window.ChurchApp stay valid even
     // if init() throws (e.g. a missing dependency mid-render).
     window.ChurchApp = ChurchApp;
@@ -3002,3 +3048,10 @@ window.onload = () => {
         console.error('Church 2.0 failed to initialize:', err);
     }
 };
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootChurchApp, { once: true });
+} else {
+    // Script parsed after the document was already ready — boot immediately.
+    bootChurchApp();
+}

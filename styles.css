@@ -1,7 +1,12 @@
 /* Maximum Miracle Centre — Central Stylesheet */
 /* Premium Night Mode, Glassmorphism, and Simulated Smartphone Frames */
 
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+/* Webfonts are loaded from index.html with a non-blocking <link>, NOT with an
+   @import here. A CSS @import is render-blocking: the browser paints nothing
+   until the font request resolves, so a slow or unreachable fonts.googleapis.com
+   left the whole app blank (measured: 12.7s to first paint versus 73ms once the
+   request was out of the critical path). The system stack in --font-header /
+   --font-body carries the page until the webfonts arrive. */
 
 /* ---------------------------------------------------------------------------
    MMC BRAND PALETTE — single swap point.
@@ -1492,7 +1497,11 @@ body.theme-midnight .mobile-tab-btn:focus-visible {
     pointer-events: none;
 }
 .toast {
-    pointer-events: auto;
+    /* Toasts carry no controls — only an icon and a line of text — so they must
+       not intercept pointer events. With `auto` the notification sat over the
+       bottom-centre of the viewport for its whole life and swallowed clicks on
+       whatever was under it, most visibly the mobile app's bottom tab bar. */
+    pointer-events: none;
     display: flex;
     align-items: flex-start;
     gap: 10px;

@@ -13,7 +13,20 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0b1220">
     
-    <!-- Fonts and Styling links -->
+    <!-- Fonts: loaded off the critical path. `media="print"` means the browser
+         fetches without blocking render, then the onload handler promotes it to
+         all media. The page paints immediately in the system fallback stack and
+         swaps to Outfit / Plus Jakarta Sans when they arrive. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" media="print" onload="this.media='all'; this.onload=null;"
+          href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap">
+    <noscript>
+        <link rel="stylesheet"
+              href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap">
+    </noscript>
+
+    <!-- Styling -->
     <link rel="stylesheet" href="styles.css">
     
     <!-- Chart.js (vendored locally so analytics render offline, no CDN dependency) -->
