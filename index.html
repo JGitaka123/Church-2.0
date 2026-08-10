@@ -69,7 +69,16 @@
 
         <!-- 2. Main Workspace -->
         <main class="main-workspace">
-            
+
+            <!-- Sample-data notice. Shown only in standalone demo mode (no API
+                 configured) so a client previewing the console is never left
+                 wondering whether these are their real members and giving. -->
+            <div id="demo-banner" class="demo-banner" role="status" hidden>
+                <span class="demo-banner-tag">Preview</span>
+                <span class="demo-banner-text"></span>
+                <button type="button" class="demo-banner-close" aria-label="Hide this notice">&times;</button>
+            </div>
+
             <!-- Global header dashboard bar -->
             <header class="global-header">
                 <div style="display:flex; flex-direction:column;">

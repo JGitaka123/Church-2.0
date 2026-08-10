@@ -348,6 +348,7 @@ const ChurchApp = {
         const app = document.getElementById('app-container');
         if (auth) auth.style.display = 'none';
         if (app) app.style.display = 'flex';
+        this.renderDemoBanner();
     },
 
     showAuthScreen(step, ctx) {
@@ -390,6 +391,9 @@ const ChurchApp = {
                     <p id="auth-error" class="auth-error" role="alert"></p>
                     <button type="submit" class="auth-btn">Continue</button>
                 </form>
+                ${this.apiEnabled() ? '' : `<p class="auth-demo-notice"><strong>Preview with sample data.</strong>
+                    Nothing here is ${esc((window.MMC_BRAND && MMC_BRAND.name) || 'the church')}'s real
+                    membership or giving. Sign in with any account below to look around.</p>`}
                 <div class="auth-demo">
                     <span>Demo accounts (password <code>grace</code>):</span>
                     <div class="auth-demo-chips">
@@ -434,6 +438,29 @@ const ChurchApp = {
     // (no apiBase configured) all of this is a no-op and the localStorage flow
     // below is used unchanged.
     apiEnabled() { return Boolean(window.Church2API && Church2API.isEnabled()); },
+
+    // Standalone mode means every name, gift and attendance mark on screen is
+    // seeded sample data. Say so where a client previewing the console cannot
+    // miss it — mistaking these figures for the church's own records would be
+    // the worst possible first impression.
+    renderDemoBanner() {
+        const bar = document.getElementById('demo-banner');
+        if (!bar) return;
+        if (this.apiEnabled() || sessionStorage.getItem('church2_demo_notice') === 'hidden') {
+            bar.hidden = true;
+            return;
+        }
+        const name = (window.MMC_BRAND && MMC_BRAND.name) || 'this church';
+        bar.querySelector('.demo-banner-text').innerHTML =
+            `<strong>Sample data.</strong> These members, gifts and attendance records are ` +
+            `illustrative — none of ${esc(name)}'s real information is in this preview, and ` +
+            `giving is recorded here, not charged.`;
+        bar.hidden = false;
+        bar.querySelector('.demo-banner-close').onclick = () => {
+            sessionStorage.setItem('church2_demo_notice', 'hidden');
+            bar.hidden = true;
+        };
+    },
 
     // Paint immediately with whatever we have, then refresh from the server.
     // First paint is never blocked on the network; a slow/failed fetch just

@@ -2248,3 +2248,65 @@ body { transition: background-color 0.35s ease, color 0.35s ease; }
 .receipt-no,
 .branch-pill,
 .amount-cell { white-space: nowrap; }
+
+
+/* ==========================================================================
+   Sample-data notice (standalone demo mode only)
+   A client previewing the console must never mistake seeded names and giving
+   figures for their own records, so say so plainly and keep it on screen.
+   ========================================================================== */
+.demo-banner {
+    position: sticky;
+    top: 0;
+    z-index: 900;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 30px;
+    font-size: 0.8rem;
+    line-height: 1.45;
+    color: #2a1c00;
+    background: linear-gradient(90deg, var(--mmc-gold), #f7cd5a);
+    border-bottom: 1px solid var(--mmc-gold-deep);
+}
+.demo-banner[hidden] { display: none; }
+.demo-banner-tag {
+    flex-shrink: 0;
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    background: #2a1c00;
+    color: var(--mmc-gold);
+    padding: 3px 7px;
+    border-radius: 4px;
+}
+.demo-banner-text { flex: 1 1 auto; }
+.demo-banner-text strong { font-weight: 700; }
+.demo-banner-close {
+    flex-shrink: 0;
+    background: none;
+    border: 0;
+    color: #2a1c00;
+    font-size: 1.15rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+    opacity: 0.7;
+}
+.demo-banner-close:hover { opacity: 1; background: rgba(0, 0, 0, 0.08); }
+.demo-banner-close:focus-visible { outline: 2px solid #2a1c00; outline-offset: 1px; }
+
+/* The auth screen gets the same message before anyone even signs in. */
+.auth-demo-notice {
+    margin-top: 14px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 0.72rem;
+    line-height: 1.5;
+    color: var(--text-secondary);
+    background: rgba(240, 180, 41, 0.10);
+    border: 1px solid rgba(240, 180, 41, 0.35);
+}
+.auth-demo-notice strong { color: var(--text-primary); }
