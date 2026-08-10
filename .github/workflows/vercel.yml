@@ -88,13 +88,43 @@ jobs:
           echo "url=$URL" >> "$GITHUB_OUTPUT"
           echo "Deployed to $URL"
 
+      # New Vercel projects ship with Vercel Authentication on, which puts a
+      # Vercel login in front of the URL. Anyone we send the link to — a church
+      # with no Vercel account — would hit that wall instead of the app. Turn it
+      # off so the preview is genuinely one click. Non-fatal: a deploy that is
+      # otherwise fine should not be reported as failed because of this.
+      - name: Make the deployment publicly reachable
+        if: steps.guard.outputs.ready == 'true'
+        continue-on-error: true
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          code=$(curl -sS -o /tmp/vp.json -w '%{http_code}' -X PATCH \
+            "https://api.vercel.com/v9/projects/$PROJECT" \
+            -H "Authorization: Bearer $VERCEL_TOKEN" \
+            -H 'Content-Type: application/json' \
+            -d '{"ssoProtection":null,"passwordProtection":null}')
+          echo "HTTP $code"
+          if [ "$code" = "200" ]; then
+            echo "Deployment protection disabled — the URL is public."
+          else
+            echo "Could not change protection automatically; disable it in"
+            echo "Project → Settings → Deployment Protection."
+            head -c 400 /tmp/vp.json || true
+          fi
+
       - name: Summary
         if: steps.guard.outputs.ready == 'true'
         run: |
           {
             echo "### Vercel deploy"
             echo ""
-            echo "**${{ steps.deploy.outputs.url }}**"
+            echo "Client preview (opens straight into the console, no sign-in):"
             echo ""
-            echo "Sign in with \`admin@maximummiracle.org\` / \`grace\`, MFA code \`123456\`."
+            echo "**https://$PROJECT.vercel.app/?preview**"
+            echo ""
+            echo "This build: ${{ steps.deploy.outputs.url }}"
+            echo ""
+            echo "To see the login flow instead, drop \`?preview\` and sign in with"
+            echo "\`admin@maximummiracle.org\` / \`grace\`, MFA code \`123456\`."
           } >> "$GITHUB_STEP_SUMMARY"

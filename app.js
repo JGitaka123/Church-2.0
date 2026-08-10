@@ -185,6 +185,8 @@ const ChurchApp = {
                 this.applyUser(session);
                 this.showApp();
                 this.renderAll();
+            } else if (this.wantsPreviewEntry()) {
+                this.enterPreview();
             } else {
                 this.showAuthScreen('credentials');
             }
@@ -332,6 +334,31 @@ const ChurchApp = {
         }
     },
 
+    // A client opening a preview link should land in the app, not on a login
+    // form. `?preview` (or #preview) does that.
+    //
+    // Deliberately impossible to reach once a real backend is configured:
+    // apiEnabled() means live data behind real credentials, and no URL
+    // parameter may ever bypass that. In standalone mode there is nothing to
+    // protect — every record on screen is seeded sample data.
+    wantsPreviewEntry() {
+        if (this.apiEnabled()) return false;
+        const q = window.location.search + window.location.hash;
+        return /(^|[?&#])preview\b/.test(q);
+    },
+
+    // Sign straight in as the HQ administrator, the role that shows the whole
+    // product. The auth gate is still there — signing out reveals it.
+    enterPreview() {
+        const user = this.DEMO_USERS.find((u) => u.role === 'hq_admin');
+        if (!user) { this.showAuthScreen('credentials'); return; }
+        const { password, ...safe } = user;
+        this.saveSession(safe);
+        this.applyUser(safe);
+        this.showApp();
+        this.renderAll();
+    },
+
     applyUser(user) {
         this.session.currentUser = user;
         this.session.currentRole = user.role;
@@ -391,9 +418,14 @@ const ChurchApp = {
                     <p id="auth-error" class="auth-error" role="alert"></p>
                     <button type="submit" class="auth-btn">Continue</button>
                 </form>
-                ${this.apiEnabled() ? '' : `<p class="auth-demo-notice"><strong>Preview with sample data.</strong>
+                ${this.apiEnabled() ? '' : `
+                <button type="button" class="auth-btn auth-preview-btn" id="enter-preview-btn">
+                    Open the preview &rarr;
+                </button>
+                <p class="auth-demo-notice"><strong>Sample data.</strong>
                     Nothing here is ${esc((window.MMC_BRAND && MMC_BRAND.name) || 'the church')}'s real
-                    membership or giving. Sign in with any account below to look around.</p>`}
+                    membership or giving, and giving is recorded rather than charged. Or sign in
+                    below with any account to see the login flow.</p>`}
                 <div class="auth-demo">
                     <span>Demo accounts (password <code>grace</code>):</span>
                     <div class="auth-demo-chips">
@@ -405,6 +437,9 @@ const ChurchApp = {
                 </div>
             </div>`;
         document.getElementById('login-form').onsubmit = (e) => { e.preventDefault(); this.handleLogin(); };
+        const previewBtn = document.getElementById('enter-preview-btn');
+        if (previewBtn) previewBtn.onclick = () => this.enterPreview();
+
         auth.querySelectorAll('.auth-demo-chip').forEach(chip => {
             chip.onclick = () => {
                 document.getElementById('login-email').value = chip.dataset.email;

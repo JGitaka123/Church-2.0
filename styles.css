@@ -2310,3 +2310,11 @@ body { transition: background-color 0.35s ease, color 0.35s ease; }
     border: 1px solid rgba(240, 180, 41, 0.35);
 }
 .auth-demo-notice strong { color: var(--text-primary); }
+
+/* One-click way into the preview, above the credential form. */
+.auth-preview-btn {
+    margin-top: 4px;
+    background: var(--accent-gradient);
+    color: #2a1c00;
+    font-weight: 700;
+}
