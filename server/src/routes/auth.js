@@ -2,7 +2,7 @@ import { Router } from 'express';
 import jwt from 'jsonwebtoken';
 import { query } from '../db/pool.js';
 import { config } from '../config.js';
-import { verifyPassword, signToken, authenticate } from '../auth.js';
+import { verifyPassword, issueSession, authenticate } from '../auth.js';
 
 const router = Router();
 
@@ -25,7 +25,7 @@ router.post('/login', async (req, res, next) => {
       const ticket = jwt.sign({ sub: user.id, purpose: 'mfa' }, config.jwtSecret, { expiresIn: '5m' });
       return res.json({ mfaRequired: true, ticket });
     }
-    return res.json({ token: signToken(user), user: publicUser(user) });
+    return res.json({ token: await issueSession(user), user: publicUser(user) });
   } catch (e) {
     next(e);
   }
@@ -53,7 +53,7 @@ router.post('/mfa', async (req, res, next) => {
     const { rows } = await query('SELECT * FROM users WHERE id = $1', [payload.sub]);
     const user = rows[0];
     if (!user) return res.status(401).json({ error: 'Account not found' });
-    return res.json({ token: signToken(user), user: publicUser(user) });
+    return res.json({ token: await issueSession(user), user: publicUser(user) });
   } catch (e) {
     next(e);
   }

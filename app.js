@@ -54,13 +54,13 @@ const ChurchApp = {
             { id: 'b3', name: 'Nakuru', location: 'Langa Langa, Kanu Street, Nakuru', code: 'NKR' }
         ],
         members: [
-            { id: 'm1', branchId: 'b1', branchName: 'Nairobi CBD', firstName: 'John', lastName: 'Kamau', email: 'john.kamau@maximummiracle.org', phone: '+254712345678', familyId: 'fam_kamau', familyRole: 'Husband', spiritualMilestones: ['Baptized: 2018-04-12', 'Member: 2019-01-01'], volunteer_skills: ['Worship Vocals', 'Keyboard', 'Guitar'], engagement_score: 95 },
-            { id: 'm2', branchId: 'b1', branchName: 'Nairobi CBD', firstName: 'Mary', lastName: 'Kamau', email: 'mary.kamau@maximummiracle.org', phone: '+254722345678', familyId: 'fam_kamau', familyRole: 'Wife', spiritualMilestones: ['Baptized: 2019-06-20'], volunteer_skills: ['Childcare', 'Greeting'], engagement_score: 88 },
+            { id: 'm1', branchId: 'b1', branchName: 'Nairobi CBD', firstName: 'John', lastName: 'Kamau', email: 'john.kamau@maximummiracle.org', phone: '+254712345678', familyId: 'fam_kamau', familyRole: 'Husband', spiritualMilestones: ['Baptized: 2018-04-12', 'Member: 2019-01-01'], volunteer_skills: ['Worship Vocals', 'Keyboard', 'Guitar'], engagement_score: 95, maritalStatus: 'Married', background: 'Led worship at a fellowship in Thika for six years; works as a sound technician in the CBD.', expectations: 'To grow the worship team and mentor younger musicians.' },
+            { id: 'm2', branchId: 'b1', branchName: 'Nairobi CBD', firstName: 'Mary', lastName: 'Kamau', email: 'mary.kamau@maximummiracle.org', phone: '+254722345678', familyId: 'fam_kamau', familyRole: 'Wife', spiritualMilestones: ['Baptized: 2019-06-20'], volunteer_skills: ['Childcare', 'Greeting'], engagement_score: 88, maritalStatus: 'Married', background: "Primary school teacher; ran a children's holiday programme before joining.", expectations: "To help build up the children's ministry." },
             { id: 'm3', branchId: 'b1', branchName: 'Nairobi CBD', firstName: 'David', lastName: 'Onyango', email: 'david.onyango@email.com', phone: '+254733333333', familyId: 'fam_onyango', familyRole: 'Single', spiritualMilestones: ['Member: 2021-03-10'], volunteer_skills: ['Ushering', 'Security', 'First Aid'], engagement_score: 75 },
             { id: 'm4', branchId: 'b1', branchName: 'Nairobi CBD', firstName: 'Grace', lastName: 'Mwangi', email: 'grace.m@email.com', phone: '+254744444444', familyId: 'fam_mwangi', familyRole: 'Single', spiritualMilestones: ['Baptized: 2022-11-05'], volunteer_skills: ['Ushering', 'Greeting'], engagement_score: 62 },
             { id: 'm5', branchId: 'b2', branchName: 'Kawangware', firstName: 'Samuel', lastName: 'Kariuki', email: 'samuel.kariuki@email.com', phone: '+254701223344', familyId: 'fam_kariuki', familyRole: 'Husband', spiritualMilestones: ['Member: 2015-05-24'], volunteer_skills: ['Sound Engineering', 'Video Editing'], engagement_score: 92 },
             { id: 'm6', branchId: 'b2', branchName: 'Kawangware', firstName: 'Esther', lastName: 'Kariuki', email: 'esther.kariuki@email.com', phone: '+254701223355', familyId: 'fam_kariuki', familyRole: 'Wife', spiritualMilestones: ['Member: 2015-05-24'], volunteer_skills: ['Worship Vocals', 'Public Speaking'], engagement_score: 78 },
-            { id: 'm7', branchId: 'b2', branchName: 'Kawangware', firstName: 'Faith', lastName: 'Wanjiku', email: 'faith.wanjiku@email.com', phone: '+254702334455', familyId: 'fam_wanjiku', familyRole: 'Single', spiritualMilestones: ['Baptized: 2024-02-14'], volunteer_skills: ['Greeting', 'Social Media'], engagement_score: 41 }, // Flagged at risk
+            { id: 'm7', branchId: 'b2', branchName: 'Kawangware', firstName: 'Faith', lastName: 'Wanjiku', email: 'faith.wanjiku@email.com', phone: '+254702334455', familyId: 'fam_wanjiku', familyRole: 'Single', spiritualMilestones: ['Baptized: 2024-02-14'], volunteer_skills: ['Greeting', 'Social Media'], engagement_score: 41, maritalStatus: 'Single', background: 'Recent graduate, works in a salon in Kawangware. New to church life.', expectations: 'To find community and a small group close to home.' }, // Flagged at risk
             { id: 'm8', branchId: 'b3', branchName: 'Nakuru', firstName: 'Peter', lastName: 'Kiprono', email: 'peter.kiprono@email.com', phone: '+254703445566', familyId: 'fam_kiprono', familyRole: 'Single', spiritualMilestones: ['Member: 2023-09-12'], volunteer_skills: ['Graphics', 'Video Editing', 'Website Support'], engagement_score: 84 },
             { id: 'm9', branchId: 'b3', branchName: 'Nakuru', firstName: 'Alice', lastName: 'Chebet', email: 'alice.chebet@email.com', phone: '+254704556677', familyId: 'fam_chebet', familyRole: 'Single', spiritualMilestones: [], volunteer_skills: ['Greeting', 'First Aid'], engagement_score: 35 }, // Flagged at risk
             { id: 'm10', branchId: 'b1', branchName: 'Nairobi CBD', firstName: 'Kennedy', lastName: 'Otieno', email: 'kennedy.o@email.com', phone: '+254755555555', familyId: 'fam_otieno', familyRole: 'Husband', spiritualMilestones: ['Baptized: 2010-08-15'], volunteer_skills: ['Youth Mentorship', 'Security'], engagement_score: 30 } // Flagged at risk
@@ -221,7 +221,7 @@ const ChurchApp = {
     // (campuses, people, currency). A saved DB stamped with an older version is
     // discarded and re-seeded so returning demo visitors don't keep stale data.
     // In API mode this is moot — the server's data replaces it on hydrate.
-    SEED_VERSION: 4,
+    SEED_VERSION: 5,
 
     // Persistence: Load state
     loadDB() {
@@ -474,6 +474,66 @@ const ChurchApp = {
     // below is used unchanged.
     apiEnabled() { return Boolean(window.Church2API && Church2API.isEnabled()); },
 
+    // Who may change the membership roll. Agreed 17 Aug: adding and removing
+    // members is the administrator's job alone — ministry leaders and members
+    // may read the roll but never alter it. Checked at every mutation as well
+    // as when drawing the UI, because a hidden button is not a permission.
+    isAdmin() {
+        return this.session.currentRole === 'hq_admin' || this.session.currentRole === 'branch_admin';
+    },
+
+    // How someone travelled to the service. Motorcycle is labelled for Kenya,
+    // where a boda is the everyday equivalent of a bus fare.
+    ARRIVAL_MODES: ['Car', 'Motorcycle (boda)', 'Bicycle', 'Walked', 'Other'],
+
+    // Marital status options offered at registration; '' means not disclosed.
+    MARITAL_STATUSES: ['Single', 'Married', 'Engaged', 'Widowed', 'Separated', 'Divorced'],
+
+    // The role shown beside a name on the check-in sheet. Members serve under
+    // their primary ministry skill; everyone else is simply a member.
+    serviceRole(member) {
+        const skills = member.volunteer_skills || [];
+        return skills.length ? skills[0] : 'Member';
+    },
+
+    // A promise-based confirm so destructive actions get a real dialog rather
+    // than a blocking window.confirm(), which the rest of the app avoids.
+    confirmAction({ title, body, confirmLabel = 'Confirm', danger = true }) {
+        return new Promise((resolve) => {
+            const modal = document.getElementById('confirm-modal');
+            if (!modal) { resolve(false); return; }
+            modal.querySelector('#confirm-title').textContent = title;
+            modal.querySelector('#confirm-body').textContent = body;
+            const ok = modal.querySelector('#confirm-ok');
+            const cancel = modal.querySelector('#confirm-cancel');
+            ok.textContent = confirmLabel;
+            ok.className = danger ? 'btn btn-danger' : 'btn btn-primary-gradient';
+            const finish = (answer) => {
+                ok.onclick = null;
+                cancel.onclick = null;
+                this.closeModal('confirm-modal');
+                resolve(answer);
+            };
+            ok.onclick = () => finish(true);
+            cancel.onclick = () => finish(false);
+            this.openModal('confirm-modal');
+        });
+    },
+
+    // One session per account. When the server rejects our token because the
+    // account signed in somewhere else, drop straight back to the login screen
+    // and say why — a silent failure would look like the app was broken.
+    handleSessionLost(message) {
+        if (this._sessionLostHandled) return;
+        this._sessionLostHandled = true;
+        if (typeof localStorage !== 'undefined') localStorage.removeItem('church2_session');
+        this.session.currentUser = null;
+        this.showAuthScreen('credentials');
+        const err = document.getElementById('auth-error');
+        if (err) err.textContent = message || 'Your session ended. Please sign in again.';
+        this._sessionLostHandled = false;
+    },
+
     // Standalone mode means every name, gift and attendance mark on screen is
     // seeded sample data. Say so where a client previewing the console cannot
     // miss it — mistaking these figures for the church's own records would be
@@ -631,6 +691,27 @@ const ChurchApp = {
             'Sound Engineering', 'Video Editing', 'Graphics', 'Childcare', 'Youth Mentorship',
             'Intercession', 'First Aid', 'Security', 'Social Media', 'Hospitality', 'Public Speaking'];
         const ROLES = ['Single', 'Husband', 'Wife'];
+        const MARITAL = ['Single', 'Married', 'Married', 'Engaged', 'Widowed', ''];
+        const BEFORE = [
+            'Ran a small shop in the estate before joining.',
+            'Teacher at a nearby primary school.',
+            'Worked upcountry in farming; moved to the city last year.',
+            'Boda operator; joined after a friend invited him.',
+            'Tailor with her own workshop.',
+            'Studied at a technical college; now looking for work.',
+            'Served as an usher at a previous church.',
+            'Nurse at a clinic in the neighbourhood.',
+            '',
+        ];
+        const HOPES = [
+            'To grow in the word and find a home group.',
+            'To serve somewhere practical.',
+            'To bring the whole family into church life.',
+            'To be discipled and eventually lead.',
+            'Prayer support through a difficult season.',
+            'To use their skills for the media team.',
+            '',
+        ];
 
         // Weighted so the CBD mother church carries most of the roll.
         const spread = [
@@ -668,7 +749,10 @@ const ChurchApp = {
                         ? [`Member: ${2012 + Math.floor(Math.random() * 13)}-0${1 + Math.floor(Math.random() * 9)}-1${Math.floor(Math.random() * 9)}`]
                         : [],
                     volunteer_skills: skills,
-                    engagement_score: engagement
+                    engagement_score: engagement,
+                    maritalStatus: pick(MARITAL),
+                    background: pick(BEFORE),
+                    expectations: pick(HOPES)
                 });
             }
         });
@@ -757,12 +841,14 @@ const ChurchApp = {
                 } else {
                     present = Math.random() < base;
                 }
+                const ARRIVALS = ['Car', 'Motorcycle (boda)', 'Bicycle', 'Walked', 'Walked', 'Other'];
                 this.db.attendance.push({
                     id: `att_${member.id}_${date}`,
                     memberId: member.id,
                     branchId: member.branchId,
                     date,
-                    present
+                    present,
+                    arrivalMode: present ? ARRIVALS[Math.floor(Math.random() * ARRIVALS.length)] : ''
                 });
             });
         });
@@ -1003,6 +1089,12 @@ const ChurchApp = {
             branchSelect.setAttribute('disabled', 'true');
         }
 
+        // Adding members is the administrator's job (agreed 17 Aug), so the
+        // enlist form is not offered to anyone else. handleCreateMember()
+        // re-checks — this only removes the temptation.
+        const addCard = document.getElementById('member-add-card');
+        if (addCard) addCard.style.display = this.isAdmin() ? '' : 'none';
+
         // Sidebar link visibility is driven entirely by ROLE_TABS — the single
         // source of truth — so the nav can never show a link the RBAC check at
         // the top of renderAll would immediately bounce.
@@ -1020,6 +1112,29 @@ const ChurchApp = {
             if (panelEl) {
                 panelEl.style.display = (p === activeTab) ? 'block' : 'none';
             }
+        });
+
+        // Only the active panel re-renders, so a panel the current role may not
+        // open keeps whatever markup it had when someone else was signed in —
+        // including admin-only controls such as Remove. They are inert (every
+        // mutation re-checks permission) but leaving them in the document is
+        // the sort of thing that quietly becomes a real hole later, so clear
+        // out the dynamic content of anything this role cannot reach.
+        const PANEL_CONTENT = {
+            admin_directory: ['member-directory-tbody'],
+            admin_financials: ['financials-tbody', 'contribution-summary', 'giving-insights'],
+            admin_attendance: ['attendance-tbody', 'attendance-arrival', 'attendance-summary'],
+            admin_ministry: ['rota-required-roles', 'prayer-requests-list'],
+            admin_followups: ['followup-board'],
+            admin_groups: ['groups-grid'],
+            admin_communications: ['broadcast-log'],
+        };
+        Object.entries(PANEL_CONTENT).forEach(([tab, ids]) => {
+            if (allowedTabs.includes(tab)) return;
+            ids.forEach((id) => {
+                const node = document.getElementById(id);
+                if (node) node.innerHTML = '';
+            });
         });
 
         // Trigger individual panel renders
@@ -1269,36 +1384,152 @@ const ChurchApp = {
                 <span class="attendance-when">· ${esc(this.formatServiceLabel(serviceDate) || 'no service selected')}</span>`;
         }
 
-        // Roster rows
+        // Roster rows. A register of a hundred-plus people is worked through in a
+        // hurry at the door, so: search to jump to a name, the role beside it so
+        // an usher recognises who they are looking at, the whole row as the
+        // check-in target, and travel recorded in the same pass.
+        const filter = (this.session.attendanceFilter || '').trim().toLowerCase();
+        const visible = filter
+            ? members.filter((m) =>
+                `${m.firstName} ${m.lastName}`.toLowerCase().includes(filter) ||
+                this.serviceRole(m).toLowerCase().includes(filter))
+            : members;
+
         const tbody = document.getElementById('attendance-tbody');
         if (tbody) {
-            tbody.innerHTML = members.map(m => {
-                const present = !!(recordFor(m.id) || {}).present;
-                return `<tr>
+            tbody.innerHTML = visible.map(m => {
+                const rec = recordFor(m.id) || {};
+                const present = !!rec.present;
+                const arrival = rec.arrivalMode || '';
+                const name = `${m.firstName} ${m.lastName}`;
+                const options = ['<option value="">How did they travel?</option>']
+                    .concat(this.ARRIVAL_MODES.map((mode) =>
+                        `<option value="${esc(mode)}"${mode === arrival ? ' selected' : ''}>${esc(mode)}</option>`))
+                    .join('');
+                return `<tr class="${present ? 'is-present' : ''}" onclick="ChurchApp.toggleAttendance('${esc(m.id)}')">
                     <td>
                         <div class="member-profile-cell">
                             <div class="member-avatar">${esc((m.firstName[0] || '') + (m.lastName[0] || ''))}</div>
-                            <span class="member-name">${esc(m.firstName)} ${esc(m.lastName)}</span>
+                            <span class="member-name">${esc(name)}</span>
                         </div>
                     </td>
+                    <td><span class="role-pill">${esc(this.serviceRole(m))}</span></td>
                     <td><span class="branch-pill badge-${esc(m.branchId)}">${esc(m.branchName)}</span></td>
-                    <td style="text-align:center;">
-                        <span class="attendance-status ${present ? 'is-present' : 'is-absent'}">${present ? 'Present' : 'Absent'}</span>
+                    <td>
+                        <select class="select-custom arrival-select" ${present ? '' : 'disabled'}
+                            aria-label="How ${esc(name)} arrived"
+                            onclick="event.stopPropagation()"
+                            onchange="event.stopPropagation(); ChurchApp.setArrivalMode('${esc(m.id)}', this.value)">
+                            ${options}
+                        </select>
                     </td>
                     <td style="text-align:right;">
                         <button class="attendance-toggle ${present ? 'on' : ''}" role="switch" aria-checked="${present}"
-                            aria-label="Toggle attendance for ${esc(m.firstName)} ${esc(m.lastName)}"
-                            onclick="ChurchApp.toggleAttendance('${esc(m.id)}')">
+                            aria-label="Mark ${esc(name)} ${present ? 'absent' : 'present'}"
+                            onclick="event.stopPropagation(); ChurchApp.toggleAttendance('${esc(m.id)}')">
                             <span class="attendance-toggle-knob"></span>
                         </button>
                     </td>
                 </tr>`;
-            }).join('') || `<tr><td colspan="4" class="muted-italic" style="text-align:center; padding:24px;">No members in this scope.</td></tr>`;
+            }).join('') || `<tr><td colspan="5" class="muted-italic" style="text-align:center; padding:24px;">${
+                filter ? 'Nobody on this register matches that search.' : 'No members in this scope.'
+            }</td></tr>`;
         }
+
+        // Search and bulk controls. Re-bound each render because the panel's
+        // markup is static but its handlers depend on the current scope.
+        const search = document.getElementById('attendance-search');
+        if (search) {
+            search.value = this.session.attendanceFilter || '';
+            search.oninput = (e) => {
+                this.session.attendanceFilter = e.target.value;
+                this.renderAttendance();
+            };
+        }
+        const allPresent = document.getElementById('attendance-all-present');
+        if (allPresent) allPresent.onclick = () => this.setAllAttendance(visible, true);
+        const allAbsent = document.getElementById('attendance-all-absent');
+        if (allAbsent) allAbsent.onclick = () => this.setAllAttendance(visible, false);
 
         // Trend + summary
         this.renderAttendanceChart(attendance, serviceDates);
         this.renderAttendanceSummary(members, attendance);
+        this.renderArrivalSummary(members, serviceDate);
+    },
+
+    // How the congregation travelled to the selected service. Useful for
+    // planning parking, boda bays and walking-distance outreach.
+    renderArrivalSummary(members, serviceDate) {
+        const el = document.getElementById('attendance-arrival');
+        if (!el) return;
+        const records = (this.db.attendance || []).filter(
+            (a) => a.date === serviceDate && a.present && members.some((m) => m.id === a.memberId));
+        if (!records.length) {
+            el.innerHTML = '<h4>How they arrived</h4><p class="muted-italic" style="font-size:0.78rem;">Nobody checked in yet for this service.</p>';
+            return;
+        }
+        const counts = {};
+        this.ARRIVAL_MODES.forEach((m) => { counts[m] = 0; });
+        let unrecorded = 0;
+        records.forEach((r) => {
+            if (r.arrivalMode && counts[r.arrivalMode] !== undefined) counts[r.arrivalMode] += 1;
+            else unrecorded += 1;
+        });
+        const max = Math.max(1, ...Object.values(counts), unrecorded);
+        const row = (label, n) => `<div class="arrival-row">
+            <span class="arrival-label">${esc(label)}</span>
+            <span class="arrival-bar"><span style="width:${Math.round((n / max) * 100)}%"></span></span>
+            <span class="arrival-count">${n}</span>
+        </div>`;
+        el.innerHTML = '<h4>How they arrived</h4>'
+            + this.ARRIVAL_MODES.map((m) => row(m, counts[m])).join('')
+            + (unrecorded ? row('Not recorded', unrecorded) : '');
+    },
+
+    // Mark everyone currently listed. Operates on the filtered view, so a
+    // search for "Ushering" followed by "Mark all present" checks in the ushers
+    // and nobody else.
+    setAllAttendance(members, present) {
+        const serviceDate = this.session.selectedServiceDate;
+        if (!serviceDate || !members.length) return;
+        this.db.attendance = this.db.attendance || [];
+        members.forEach((m) => {
+            const rec = this.db.attendance.find((a) => a.memberId === m.id && a.date === serviceDate);
+            if (rec) {
+                rec.present = present;
+                if (!present) rec.arrivalMode = '';
+            } else {
+                this.db.attendance.push({
+                    id: `att_${m.id}_${serviceDate}`, memberId: m.id, branchId: m.branchId,
+                    date: serviceDate, present, arrivalMode: '',
+                });
+            }
+            this.apiWrite(() => Church2API.setAttendance({ memberId: m.id, date: serviceDate, present }));
+        });
+        this.saveDB();
+        this.toast(`${members.length} ${members.length === 1 ? 'person' : 'people'} marked ${present ? 'present' : 'absent'}.`);
+        this.renderAttendance();
+    },
+
+    // Record how somebody travelled. Only meaningful for someone present, which
+    // is why the control is disabled until they are checked in.
+    setArrivalMode(memberId, mode) {
+        const serviceDate = this.session.selectedServiceDate;
+        if (!serviceDate) return;
+        const rec = (this.db.attendance || []).find((a) => a.memberId === memberId && a.date === serviceDate);
+        if (!rec || !rec.present) return;
+        rec.arrivalMode = mode;
+        this.saveDB();
+        this.apiWrite(() => Church2API.setAttendance({
+            memberId, date: serviceDate, present: true, arrivalMode: mode,
+        }));
+        this.renderArrivalSummary(
+            this.db.members.filter((m) => {
+                const b = this.session.currentBranch;
+                return !b || b === 'global' || m.branchId === b;
+            }),
+            serviceDate
+        );
     },
 
     formatServiceLabel(dateStr) {
@@ -1315,8 +1546,10 @@ const ChurchApp = {
         const member = this.db.members.find(m => m.id === memberId);
         if (rec) {
             rec.present = !rec.present;
+            // A travel note on someone marked absent is stale data, not history.
+            if (!rec.present) rec.arrivalMode = '';
         } else if (member) {
-            this.db.attendance.push({ id: `att_${memberId}_${serviceDate}`, memberId, branchId: member.branchId, date: serviceDate, present: true });
+            this.db.attendance.push({ id: `att_${memberId}_${serviceDate}`, memberId, branchId: member.branchId, date: serviceDate, present: true, arrivalMode: '' });
         }
         this.saveDB();
         this.apiWrite(() => Church2API.setAttendance({ memberId, date: serviceDate, present: rec ? rec.present : true }));
@@ -1613,6 +1846,9 @@ const ChurchApp = {
                 </td>
                 <td>
                     <button class="action-btn-sm" onclick="ChurchApp.viewMemberDetails('${m.id}')">View Profile</button>
+                    ${this.isAdmin() ? `<button class="action-btn-sm action-btn-danger"
+                        onclick="ChurchApp.removeMember('${esc(m.id)}')"
+                        aria-label="Remove ${esc(m.firstName)} ${esc(m.lastName)} from the roll">Remove</button>` : ''}
                 </td>
             `;
             tbody.appendChild(tr);
@@ -1656,9 +1892,25 @@ const ChurchApp = {
                             <h4>Family Connections</h4>
                             <p><strong>Family Unit ID:</strong> ${esc(member.familyId || 'None Linked')}</p>
                             <p><strong>Family Role:</strong> ${esc(member.familyRole || 'N/A')}</p>
+                            <p><strong>Marital Status:</strong> ${esc(member.maritalStatus || 'Not stated')}</p>
                             <ul class="family-linked-list">
                                 ${familyList.length > 0 ? familyList.map(f => `<li>${esc(f.firstName)} ${esc(f.lastName)} (${esc(f.familyRole)})</li>`).join('') : '<li class="muted-italic">No other family members linked.</li>'}
                             </ul>
+                        </div>
+                    </div>
+
+                    <div class="profile-narrative">
+                        <div>
+                            <h5>Before Joining</h5>
+                            ${member.background
+                                ? `<p>${esc(member.background)}</p>`
+                                : '<p class="empty">Not recorded at registration.</p>'}
+                        </div>
+                        <div>
+                            <h5>Expectations</h5>
+                            ${member.expectations
+                                ? `<p>${esc(member.expectations)}</p>`
+                                : '<p class="empty">Not recorded at registration.</p>'}
                         </div>
                     </div>
 
@@ -1726,14 +1978,55 @@ const ChurchApp = {
         }
     },
 
+    // Remove someone from the roll. Administrators only, confirmed first, and
+    // their attendance history goes with them so no orphan records are left
+    // pointing at a member who no longer exists.
+    async removeMember(memberId) {
+        if (!this.isAdmin()) {
+            this.toast('Only an administrator can remove members.', 'error');
+            return;
+        }
+        const member = this.db.members.find((m) => m.id === memberId);
+        if (!member) return;
+        const name = `${member.firstName} ${member.lastName}`;
+
+        const confirmed = await this.confirmAction({
+            title: `Remove ${name}?`,
+            body: `${name} will be taken off the membership roll along with their `
+                + `attendance history. Giving already recorded is kept for the financial `
+                + `record. This cannot be undone.`,
+            confirmLabel: 'Remove member',
+        });
+        if (!confirmed) return;
+
+        this.db.members = this.db.members.filter((m) => m.id !== memberId);
+        this.db.attendance = (this.db.attendance || []).filter((a) => a.memberId !== memberId);
+        (this.db.groups || []).forEach((g) => {
+            g.memberIds = (g.memberIds || []).filter((id) => id !== memberId);
+        });
+        this.saveDB();
+        this.apiWrite(() => Church2API.removeMember(memberId));
+        this.toast(`${name} removed from the roll.`);
+        this.renderAll();
+    },
+
     handleCreateMember() {
+        // Enforced here as well as in the UI: hiding the form is presentation,
+        // this is the rule.
+        if (!this.isAdmin()) {
+            this.toast('Only an administrator can add members.', 'error');
+            return;
+        }
         const firstName = document.getElementById('member-first-name').value.trim();
         const lastName = document.getElementById('member-last-name').value.trim();
         const email = document.getElementById('member-email').value.trim();
         const phone = document.getElementById('member-phone').value.trim();
         const branchId = document.getElementById('member-branch-select').value;
         const skillsText = document.getElementById('member-skills').value.trim();
-        
+        const maritalStatus = document.getElementById('member-marital-status').value;
+        const background = document.getElementById('member-background').value.trim();
+        const expectations = document.getElementById('member-expectations').value.trim();
+
         const branchObj = this.db.branches.find(b => b.id === branchId);
         const skillsArray = skillsText ? skillsText.split(',').map(s => s.trim()) : [];
 
@@ -1749,13 +2042,19 @@ const ChurchApp = {
             familyRole: 'Single',
             spiritualMilestones: ['Registered: ' + new Date().toISOString().split('T')[0]],
             volunteer_skills: skillsArray,
-            engagement_score: 50
+            engagement_score: 50,
+            // Captured at registration so the administrator has context on who
+            // this person is, not just how to reach them.
+            maritalStatus,
+            background,
+            expectations
         };
 
         this.db.members.push(newMember);
         this.saveDB();
         this.apiWrite(
-            () => Church2API.createMember({ firstName, lastName, email, phone, volunteer_skills: skillsArray, branchId }),
+            () => Church2API.createMember({ firstName, lastName, email, phone, volunteer_skills: skillsArray,
+                branchId, maritalStatus, background, expectations }),
             (srv) => { if (srv && srv.id) newMember.id = srv.id; }
         );
         document.getElementById('add-member-form').reset();
@@ -1802,7 +2101,74 @@ const ChurchApp = {
         document.getElementById('export-csv-btn').onclick = () => this.exportFinancialCSV(filteredTx);
 
         // Campaign progress + recurring-gift insights strip
+        this.renderContributionSummary(branchId);
         this.renderGivingInsights(branchId);
+    },
+
+    // Contributions, standing on their own.
+    //
+    // Agreed 17 Aug 2026: money is not tied to projects, attendance or
+    // individual activities. This panel therefore reads nothing but the
+    // transaction ledger — no campaign, no register, no event — and answers the
+    // two questions the administrator actually asked for: what has each person
+    // given, and what is the total.
+    renderContributionSummary(branchId) {
+        const el = document.getElementById('contribution-summary');
+        if (!el) return;
+        const inScope = (bId) => (!branchId || branchId === 'global') ? true : bId === branchId;
+
+        const gifts = (this.db.transactions || []).filter((t) => inScope(t.branchId));
+        const total = gifts.reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
+
+        // Individual totals, largest first.
+        const byGiver = new Map();
+        gifts.forEach((t) => {
+            const key = t.memberId || 'anonymous';
+            const entry = byGiver.get(key) || { name: t.memberName || 'Anonymous', total: 0, count: 0 };
+            entry.total += parseFloat(t.amount) || 0;
+            entry.count += 1;
+            byGiver.set(key, entry);
+        });
+        const givers = [...byGiver.values()].sort((a, b) => b.total - a.total);
+        const shown = this.session.showAllGivers ? givers : givers.slice(0, 8);
+
+        const rows = shown.map((g) => `<tr>
+            <td>${esc(g.name)}</td>
+            <td class="num">${g.count}</td>
+            <td class="num amount-cell">${money(g.total)}</td>
+        </tr>`).join('') || '<tr><td colspan="3" class="muted-italic" style="text-align:center;">No contributions recorded in this scope.</td></tr>';
+
+        const moreBtn = givers.length > 8
+            ? `<button type="button" class="btn btn-secondary btn-sm" id="toggle-all-givers">${
+                  this.session.showAllGivers ? 'Show top 8 only' : `Show all ${givers.length} givers`
+              }</button>`
+            : '';
+
+        el.innerHTML = `
+            <div class="card-glass contribution-totals">
+                <span class="contribution-eyebrow">Total Contributions</span>
+                <div class="contribution-total">${money(total)}</div>
+                <p class="contribution-meta">${gifts.length} contribution${gifts.length === 1 ? '' : 's'}
+                   from ${givers.length} ${givers.length === 1 ? 'giver' : 'givers'}</p>
+            </div>
+            <div class="card-glass contribution-people">
+                <div class="contribution-head">
+                    <h3>Individual Contributions</h3>
+                    ${moreBtn}
+                </div>
+                <div class="table-responsive">
+                    <table class="financial-table">
+                        <thead><tr><th>Member</th><th class="num">Gifts</th><th class="num">Total given</th></tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>
+            </div>`;
+
+        const toggle = document.getElementById('toggle-all-givers');
+        if (toggle) toggle.onclick = () => {
+            this.session.showAllGivers = !this.session.showAllGivers;
+            this.renderContributionSummary(branchId);
+        };
     },
 
     renderGivingInsights(branchId) {
@@ -1810,39 +2176,21 @@ const ChurchApp = {
         if (!el) return;
         const inScope = (bId) => (!branchId || branchId === 'global') ? true : bId === branchId;
 
-        // Pledge campaigns: raised = sum of matching-fund transactions in scope
-        const campaigns = (this.db.campaigns || []).filter(c => inScope(c.branchId) || (branchId === 'global'));
-        const campaignCards = campaigns.map(c => {
-            const raised = (parseFloat(c.raisedOffset) || 0) + this.db.transactions
-                .filter(t => t.category === c.fundCategory && inScope(t.branchId))
-                .reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
-            const pct = c.goal ? Math.min(100, Math.round((raised / c.goal) * 100)) : 0;
-            const money = (n) => window.money(n, { decimals: 0 });
-            return `<div class="card-glass campaign-card">
-                <div class="campaign-head">
-                    <div>
-                        <span class="campaign-eyebrow"><svg class="inline-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18M5 21V8l7-4 7 4v13"/><path d="M9.5 21v-5h5v5"/></svg> Pledge Campaign</span>
-                        <h4>${esc(c.name)}</h4>
-                    </div>
-                    <span class="campaign-pct">${pct}%</span>
-                </div>
-                <div class="campaign-bar"><div class="campaign-bar-fill" style="width:${pct}%;"></div></div>
-                <div class="campaign-figures"><strong>${money(raised)}</strong> raised of ${money(c.goal)} goal</div>
-            </div>`;
-        }).join('');
-
-        // Active recurring gifts in scope
-        const recurring = (this.db.recurringGifts || []).filter(r => r.active && inScope(r.branchId));
+        // Standing orders are money, not a project, so they belong here. Pledge
+        // campaigns used to sit alongside them, deriving "raised" by summing
+        // transactions in a matching fund — exactly the money-to-project link
+        // the 17 Aug meeting asked us to break. The campaign records remain in
+        // the database untouched, pending Thursday's decision on where (and
+        // whether) project fundraising should live.
+        const recurring = (this.db.recurringGifts || []).filter((r) => r.active && inScope(r.branchId));
         const recurringTotal = recurring.reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
-        const recurringCard = `<div class="card-glass campaign-card">
+        el.innerHTML = `<div class="card-glass campaign-card">
             <span class="campaign-eyebrow"><svg class="inline-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9a8 8 0 0 1 13.5-3.5L20 8"/><path d="M20 4v4h-4"/><path d="M20 15a8 8 0 0 1-13.5 3.5L4 16"/><path d="M4 20v-4h4"/></svg> Recurring Giving</span>
             <h4>${recurring.length} active schedule${recurring.length === 1 ? '' : 's'}</h4>
             <div class="campaign-figures"><strong>${window.money(recurringTotal)}</strong> committed per cycle</div>
-            ${recurring.length ? `<ul class="recurring-list">${recurring.slice(0, 3).map(r =>
+            ${recurring.length ? `<ul class="recurring-list">${recurring.slice(0, 3).map((r) =>
                 `<li>${esc(r.memberName)} — ${window.money(parseFloat(r.amount))} ${esc(r.frequency)} (${esc(r.category)})</li>`).join('')}</ul>` : ''}
         </div>`;
-
-        el.innerHTML = campaignCards + recurringCard;
     },
 
     // Printable, tax-ready annual giving statement for one member.
@@ -3103,6 +3451,10 @@ const bootChurchApp = () => {
             if (e.target === overlay) ChurchApp.closeModal(overlay.id);
         });
     });
+
+    // The API client calls this when the server rejects our token — most often
+    // because the account was signed in somewhere else.
+    window.onChurch2SessionLost = (message) => ChurchApp.handleSessionLost(message);
 
     try {
         ChurchApp.init();

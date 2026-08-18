@@ -103,6 +103,24 @@ function generateCongregation(core) {
     'Sound Engineering', 'Video Editing', 'Graphics', 'Childcare', 'Youth Mentorship',
     'Intercession', 'First Aid', 'Security', 'Social Media', 'Hospitality', 'Public Speaking'];
   const ROLES = ['Single', 'Husband', 'Wife'];
+  const MARITAL = ['Single', 'Married', 'Married', 'Engaged', 'Widowed', null];
+  const BEFORE = [
+    'Ran a small shop in the estate before joining.',
+    'Teacher at a nearby primary school.',
+    'Worked upcountry in farming; moved to the city last year.',
+    'Boda operator; joined after a friend invited him.',
+    'Tailor with her own workshop.',
+    'Served as an usher at a previous church.',
+    null,
+  ];
+  const HOPES = [
+    'To grow in the word and find a home group.',
+    'To serve somewhere practical.',
+    'To bring the whole family into church life.',
+    'To be discipled and eventually lead.',
+    'Prayer support through a difficult season.',
+    null,
+  ];
   // Weighted so the CBD mother church carries most of the roll.
   const spread = [
     { branch_id: 'b1', count: 78 },
@@ -136,6 +154,9 @@ function generateCongregation(core) {
           : [],
         volunteer_skills: [...new Set([pick(SKILLS), pick(SKILLS)])],
         engagement_score,
+        marital_status: pick(MARITAL),
+        background: pick(BEFORE),
+        expectations: pick(HOPES),
       });
     }
   }
@@ -173,9 +194,11 @@ async function seed() {
     }
     for (const m of roster) {
       await c.query(
-        `INSERT INTO members (id,branch_id,first_name,last_name,email,phone,family_id,family_role,engagement_score,volunteer_skills,spiritual_milestones)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
-        [m.id, m.branch_id, m.first_name, m.last_name, m.email, m.phone, m.family_id, m.family_role, m.engagement_score, m.volunteer_skills, m.spiritual_milestones]
+        `INSERT INTO members (id,branch_id,first_name,last_name,email,phone,family_id,family_role,engagement_score,
+                              volunteer_skills,spiritual_milestones,marital_status,background,expectations)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
+        [m.id, m.branch_id, m.first_name, m.last_name, m.email, m.phone, m.family_id, m.family_role, m.engagement_score,
+         m.volunteer_skills, m.spiritual_milestones, m.marital_status || null, m.background || null, m.expectations || null]
       );
     }
 
@@ -210,7 +233,9 @@ async function seed() {
         const date = services[idx];
         const recent = idx >= services.length - 3;
         const present = streak.includes(m.id) && recent ? false : Math.random() < base;
-        await c.query('INSERT INTO attendance (id,member_id,branch_id,service_date,present) VALUES ($1,$2,$3,$4,$5)', [`att_${m.id}_${date}`, m.id, m.branch_id, date, present]);
+        const ARRIVALS = ['Car', 'Motorcycle (boda)', 'Bicycle', 'Walked', 'Walked', 'Other'];
+        const arrival = present ? ARRIVALS[Math.floor(Math.random() * ARRIVALS.length)] : null;
+        await c.query('INSERT INTO attendance (id,member_id,branch_id,service_date,present,arrival_mode) VALUES ($1,$2,$3,$4,$5,$6)', [`att_${m.id}_${date}`, m.id, m.branch_id, date, present, arrival]);
       }
     }
 

@@ -208,8 +208,8 @@
                         </div>
                     </div>
 
-                    <!-- Enlist Member Form -->
-                    <div class="card-glass">
+                    <!-- Enlist Member Form — administrators only (see renderAll). -->
+                    <div class="card-glass" id="member-add-card">
                         <h3 style="font-family: var(--font-header); font-size:1.05rem; margin-bottom:15px;">Enlist New Congregation Member</h3>
                         <form id="add-member-form" style="display:flex; flex-direction:column; gap:12px;">
                             <div>
@@ -237,6 +237,28 @@
                                 <label style="font-size:0.75rem; color:var(--text-secondary); display:block; margin-bottom:4px;">Volunteer Skills (comma-separated)</label>
                                 <input type="text" id="member-skills" class="form-control" placeholder="e.g. Greeting, Sound Engineering">
                             </div>
+                            <div>
+                                <label for="member-marital-status" style="font-size:0.75rem; color:var(--text-secondary); display:block; margin-bottom:4px;">Marital Status</label>
+                                <select id="member-marital-status" class="select-custom" style="width:100%;">
+                                    <option value="">Prefer not to say</option>
+                                    <option value="Single">Single</option>
+                                    <option value="Married">Married</option>
+                                    <option value="Engaged">Engaged</option>
+                                    <option value="Widowed">Widowed</option>
+                                    <option value="Separated">Separated</option>
+                                    <option value="Divorced">Divorced</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="member-background" style="font-size:0.75rem; color:var(--text-secondary); display:block; margin-bottom:4px;">Before Joining</label>
+                                <textarea id="member-background" class="form-control" rows="3"
+                                    placeholder="Previous activities, work or experience — e.g. taught Sunday school for 6 years; runs a carpentry business in Kawangware"></textarea>
+                            </div>
+                            <div>
+                                <label for="member-expectations" style="font-size:0.75rem; color:var(--text-secondary); display:block; margin-bottom:4px;">Expectations</label>
+                                <textarea id="member-expectations" class="form-control" rows="3"
+                                    placeholder="What they are hoping for from the church — e.g. grow in discipleship, serve in the media team"></textarea>
+                            </div>
                             <button type="submit" class="btn btn-primary-gradient" style="margin-top:8px;">Add Member to Registry</button>
                         </form>
                     </div>
@@ -246,6 +268,11 @@
 
             <!-- 5. VIEW PANEL: FINANCIALS -->
             <section id="admin_financials" class="view-panel" style="display: none;">
+                <!-- Contributions stand alone. Agreed 17 Aug: money is not tied to
+                     projects, attendance or activities — the administrator wants
+                     individual contributions and the total, at a glance. -->
+                <div id="contribution-summary" class="contribution-summary"></div>
+
                 <div id="giving-insights" class="giving-insights"></div>
                 <div class="grid-dashboard" style="align-items: start;">
 
@@ -329,7 +356,7 @@
                         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:15px;">
                             <div>
                                 <h3 style="font-family: var(--font-header); font-size:1.05rem;">Service Check-In Roster</h3>
-                                <span style="font-size:0.75rem; color:var(--text-secondary);">Tap a member to toggle attendance for the selected service</span>
+                                <span style="font-size:0.75rem; color:var(--text-secondary);">Tap anywhere on a row to check someone in, then record how they travelled</span>
                             </div>
                             <div style="display:flex; align-items:center; gap:8px;">
                                 <label for="attendance-service-select" style="font-size:0.8rem; color:var(--text-primary);">Service:</label>
@@ -337,14 +364,25 @@
                             </div>
                         </div>
                         <div id="attendance-headcount" class="attendance-headcount"></div>
+
+                        <div class="attendance-tools">
+                            <input type="search" id="attendance-search" class="form-control"
+                                   placeholder="Find someone by name or role…" aria-label="Search the check-in roster">
+                            <div class="attendance-bulk">
+                                <button type="button" class="btn btn-secondary btn-sm" id="attendance-all-present">Mark all present</button>
+                                <button type="button" class="btn btn-secondary btn-sm" id="attendance-all-absent">Clear all</button>
+                            </div>
+                        </div>
+
                         <div class="table-responsive">
-                            <table class="financial-table">
+                            <table class="financial-table attendance-table">
                                 <thead>
                                     <tr>
-                                        <th>Member</th>
+                                        <th>Name</th>
+                                        <th>Role</th>
                                         <th>Campus</th>
-                                        <th style="text-align:center;">Status</th>
-                                        <th style="text-align:right;">Check-In</th>
+                                        <th>Arrived by</th>
+                                        <th style="text-align:right;">Present</th>
                                     </tr>
                                 </thead>
                                 <tbody id="attendance-tbody"></tbody>
@@ -360,6 +398,7 @@
                             <canvas id="attendance-trend-chart" role="img" aria-label="Present headcount over the last 8 services"></canvas>
                         </div>
                         <div id="attendance-summary" style="margin-top:14px;"></div>
+                        <div id="attendance-arrival" class="arrival-summary"></div>
                     </div>
                 </div>
             </section>
@@ -774,6 +813,26 @@
             </section>
 
         </main>
+    </div>
+
+    <!-- Confirmation dialog, used for destructive actions such as removing a
+         member. Opened through ChurchApp.confirmAction() so it inherits the
+         focus trap and Escape handling every other dialog has. -->
+    <div id="confirm-modal" class="modal-overlay" style="display:none;">
+        <div class="modal-card confirm-card" role="alertdialog" aria-modal="true"
+             aria-labelledby="confirm-title" aria-describedby="confirm-body">
+            <div class="modal-header">
+                <h3 id="confirm-title">Are you sure?</h3>
+                <button class="modal-close" aria-label="Cancel" onclick="ChurchApp.closeModal('confirm-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="confirm-body"></p>
+            </div>
+            <div class="modal-footer confirm-actions">
+                <button type="button" class="btn btn-secondary" id="confirm-cancel">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirm-ok">Confirm</button>
+            </div>
+        </div>
     </div>
 
     <!-- Modals Layout Frame -->

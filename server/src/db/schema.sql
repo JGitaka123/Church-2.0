@@ -126,6 +126,19 @@ CREATE TABLE IF NOT EXISTS campaigns (
 );
 ALTER TABLE campaigns ADD COLUMN IF NOT EXISTS raised_offset NUMERIC(12,2) NOT NULL DEFAULT 0;
 
+-- Detail captured at registration (agreed 17 Aug 2026): who this person is
+-- beyond their contact details.
+ALTER TABLE members ADD COLUMN IF NOT EXISTS marital_status TEXT;
+ALTER TABLE members ADD COLUMN IF NOT EXISTS background     TEXT;
+ALTER TABLE members ADD COLUMN IF NOT EXISTS expectations   TEXT;
+
+-- How a member travelled to the service.
+ALTER TABLE attendance ADD COLUMN IF NOT EXISTS arrival_mode TEXT;
+
+-- One active session per account: every issued token carries the value of this
+-- counter, and logging in increments it, so any older token stops validating.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS token_version INTEGER NOT NULL DEFAULT 0;
+
 CREATE TABLE IF NOT EXISTS recurring_gifts (
   id          TEXT PRIMARY KEY,
   member_id   TEXT,

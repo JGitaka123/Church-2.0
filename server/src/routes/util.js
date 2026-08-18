@@ -9,6 +9,9 @@ export const mapMember = (r) => ({
   email: r.email, phone: r.phone, familyId: r.family_id, familyRole: r.family_role,
   engagement_score: r.engagement_score, volunteer_skills: r.volunteer_skills || [],
   spiritualMilestones: r.spiritual_milestones || [],
+  maritalStatus: r.marital_status || '',
+  background: r.background || '',
+  expectations: r.expectations || '',
   branchName: r.branch_name || undefined,
 });
 

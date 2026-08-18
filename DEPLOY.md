@@ -148,6 +148,23 @@ against localStorage — no backend required.
 > it off under Project → Settings → Deployment Protection, or the recipient
 > will hit an auth wall instead of the app.
 
+### Changes from the 17 Aug 2026 requirements meeting
+
+| Agreed | Where it lives |
+|---|---|
+| Only the administrator may add or remove members | `ChurchApp.isAdmin()` gates the UI; `handleCreateMember` / `removeMember` re-check; the API enforces it with `requireRole('hq_admin','branch_admin')` on `POST /members` and `DELETE /members/:id` |
+| One person logged in at a time | `users.token_version` is bumped by `issueSession()` on every login and checked in `authenticate()`; an older token gets `401 session_superseded` and the client returns to the login screen |
+| Registration captures marital status, previous activities/work/experience, and expectations | `members.marital_status`, `members.background`, `members.expectations`; shown on the member profile |
+| Money independent of projects, attendance and activities | The Financials tab leads with **Total Contributions** and **Individual Contributions**, computed from the transaction ledger alone. Project fundraising no longer derives its progress from giving — see the open question below |
+| Attendance simplified; roles listed beside names; how members arrived | Role pill per row, whole-row check-in, search, mark-all/clear-all, and an `arrival_mode` column (Car, Motorcycle (boda), Bicycle, Walked, Other) with a breakdown panel |
+
+**Open for Thursday 20 Aug:** pledge campaigns used to show progress by summing
+giving in a matching fund — precisely the money-to-project link the meeting
+asked us to break — so the cards are gone from the money section. The campaign
+records are still in the database, untouched. The decision to make is whether
+project fundraising disappears entirely, or reappears somewhere outside the
+financial section with its own totals.
+
 ### Before go-live, confirm with the church
 
 - [ ] **M-Pesa paybill / account number.** `js/brand.js` ships `paybill: '891300'` with `shortCodeConfirmed: false` — a placeholder. Replace it with the church's real short code and flip the flag. **Until that flag is `true` the giving screen deliberately shows no number at all**, just a "not live yet, give in person or by bank transfer" notice — a plausible-but-wrong paybill is how a member's tithe reaches a stranger's account.

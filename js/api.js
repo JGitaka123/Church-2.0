@@ -27,6 +27,16 @@
     if (!res.ok) {
       const err = new Error((data && data.error) || `Request failed (${res.status})`);
       err.status = res.status;
+      err.code = data && data.code;
+      // One session per account: when another sign-in supersedes this one the
+      // server rejects the token. Drop it and let the app return to the login
+      // screen rather than retrying with a credential that can never work.
+      if (res.status === 401) {
+        setToken(null);
+        if (typeof window.onChurch2SessionLost === 'function') {
+          window.onChurch2SessionLost(err.code === 'session_superseded' ? err.message : null);
+        }
+      }
       throw err;
     }
     return data;
@@ -60,6 +70,7 @@
     // ---- Resources (branch = active campus scope, or 'global') ----
     members: (branch, search) => request('GET', scoped('/members' + (search ? `?search=${encodeURIComponent(search)}` : ''), branch)),
     createMember: (m) => request('POST', '/members', m),
+    removeMember: (id) => request('DELETE', `/members/${encodeURIComponent(id)}`),
     transactions: (branch) => request('GET', scoped('/transactions', branch)),
     recordTransaction: (t) => request('POST', '/transactions', t),
     attendance: (branch) => request('GET', scoped('/attendance', branch)),
